@@ -1,5 +1,4 @@
 "use client";
-import Link from "next/link";
 import Slider from "react-slick";
 
 const FeaturesOne = () => {
@@ -38,6 +37,7 @@ const FeaturesOne = () => {
       },
     ],
   };
+
   return (
     <section className='features py-120 position-relative overflow-hidden'>
       <img
@@ -53,11 +53,11 @@ const FeaturesOne = () => {
       <div className='container'>
         <div className='section-heading text-center'>
           <h2 className='mb-24 wow bounceIn'>
-            Explore 4,000+ Free Online Courses For Students
+            Üç addımda övladınızın biliyini görün
           </h2>
           <p className='wow bounceInUp'>
-            Welcome to our diverse and dynamic course catalog. we're dedicated
-            to providing you with access to high-quality education
+            Mövzunu seçin, sınağa başlayın və nəticəni aydın hesabatla izləyin.
+            Harada güclüdür, harada dəstəyə ehtiyacı var - hamısı görünür.
           </p>
         </div>
         <Slider {...settings} className='features-slider'>
@@ -71,19 +71,12 @@ const FeaturesOne = () => {
                 />
               </span>
               <h4 className='mb-16 transition-1 item-hover__text'>
-                Language Learning
+                Mövzunu seçin
               </h4>
-              <p className='transition-1 item-hover__text text-line-2'>
-                Courses teaching languages such as English, Spanish, French,
-                Mandarin etc
+              <p className='transition-1 item-hover__text '>
+                Övladınızın məktəbdə keçdiyi mövzunu seçin. Riyaziyyat, fizika,
+                kimya, Azərbaycan dili və digər əsas fənlər üzrə sınaq hazırlayın.
               </p>
-              <Link
-                href='/course-list-view'
-                className='item-hover__text flex-align gap-8 text-main-600 mt-24 hover-text-decoration-underline transition-1'
-              >
-                View Category
-                <i className='ph ph-arrow-right' />
-              </Link>
             </div>
           </div>
           <div className='px-8' data-aos='zoom-in' data-aos-duration={800}>
@@ -96,19 +89,12 @@ const FeaturesOne = () => {
                 />
               </span>
               <h4 className='mb-16 transition-1 item-hover__text'>
-                Creative Arts &amp; Design
+                Sınağa başlayın
               </h4>
-              <p className='transition-1 item-hover__text text-line-2'>
-                Courses on graphic design, digital art, photography, video
-                editing
+              <p className='transition-1 item-hover__text'>
+                Qısa və fokuslu testlə real bilik yoxlanır. Suallar hər dəfə yenilənir,
+                ona görə cavabı əzbərləmək yox, mövzunu anlamaq önə çıxır.
               </p>
-              <Link
-                href='/course-list-view'
-                className='item-hover__text flex-align gap-8 text-main-600 mt-24 hover-text-decoration-underline transition-1'
-              >
-                View Category
-                <i className='ph ph-arrow-right' />
-              </Link>
             </div>
           </div>
           <div className='px-8' data-aos='zoom-in' data-aos-duration={1200}>
@@ -121,44 +107,12 @@ const FeaturesOne = () => {
                 />
               </span>
               <h4 className='mb-16 transition-1 item-hover__text'>
-                Health &amp; Fitness
+                Nəticəni görün
               </h4>
-              <p className='transition-1 item-hover__text text-line-2'>
-                Courses on nutrition, fitness training, yoga, meditation,
-                wellness coaching...
+              <p className='transition-1 item-hover__text '>
+                Səhvlər, zəif mövzular və növbəti öyrənmə addımları bir hesabatda
+                toplanır. Nə üzərində işləmək lazım olduğu dərhal aydın olur.
               </p>
-              <Link
-                href='/course-list-view'
-                className='item-hover__text flex-align gap-8 text-main-600 mt-24 hover-text-decoration-underline transition-1'
-              >
-                View Category
-                <i className='ph ph-arrow-right' />
-              </Link>
-            </div>
-          </div>
-          <div className='px-8' data-aos='zoom-in' data-aos-duration={1600}>
-            <div className='features-item item-hover animation-item bg-main-25 border border-neutral-30 rounded-16 transition-1 hover-bg-main-600 hover-border-main-600'>
-              <span className='mb-32 w-110 h-110 flex-center bg-white rounded-circle'>
-                <img
-                  src='assets/images/icons/feature-icon2.png'
-                  className='animate__bounce'
-                  alt=''
-                />
-              </span>
-              <h4 className='mb-16 transition-1 item-hover__text'>
-                Creative Arts &amp; Design
-              </h4>
-              <p className='transition-1 item-hover__text text-line-2'>
-                Courses on graphic design, digital art, photography, video
-                editing
-              </p>
-              <Link
-                href='/course-list-view'
-                className='item-hover__text flex-align gap-8 text-main-600 mt-24 hover-text-decoration-underline transition-1'
-              >
-                View Category
-                <i className='ph ph-arrow-right' />
-              </Link>
             </div>
           </div>
         </Slider>

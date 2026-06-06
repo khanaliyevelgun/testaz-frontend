@@ -1,8 +1,29 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 
-const SubscriptionPlanOne = () => {
+const YEARLY_DISCOUNT_PERCENT = 25;
+const PREMIUM_MONTHLY_PRICE = 19.9;
+const MAXIMUM_MONTHLY_PRICE = 44.9;
+
+const getPlanPrice = (monthlyPrice, isYearly) => {
+  if (!isYearly) {
+    return monthlyPrice;
+  }
+
+  return monthlyPrice * 12 * (1 - YEARLY_DISCOUNT_PERCENT / 100);
+};
+
+const formatPrice = (price) =>
+  price.toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1");
+
+const SubscriptionPlanOne = ({ className = "" }) => {
+  const [isYearly, setIsYearly] = useState(false);
+  const billingSuffix = isYearly ? "/İL" : "/AY";
+
   return (
-    <section className='favorite-course py-96'>
+    <section className={`favorite-course py-96 ${className}`}>
       <div className='container'>
         <div className='section-heading text-center'>
           <div className='flex-align d-inline-flex gap-8 mb-16'>
@@ -19,15 +40,20 @@ const SubscriptionPlanOne = () => {
         </div>
         <div className='mb-40 d-flex align-items-center gap-24 justify-content-center'>
           <span className='text-neutral-700 fw-semibold'>Aylıq</span>
-          <div className='form-check form-switch'>
+          <div className='form-check form-switch cursor-pointer'>
             <input
-              className='form-check-input shadow-none py-10 px-24'
+              className='form-check-input shadow-none py-10 px-24 '
               type='checkbox'
               role='switch'
+              checked={isYearly}
+              onChange={(event) => setIsYearly(event.target.checked)}
             />
           </div>
           <span className='text-neutral-700 fw-semibold'>
-            İllik <span className='text-main-600'>(Save 20%) </span>{" "}
+            İllik{" "}
+            <span className='text-main-600'>
+              ({YEARLY_DISCOUNT_PERCENT}% endirim)
+            </span>{" "}
           </span>
         </div>
         <div className='row gy-4'>
@@ -45,7 +71,8 @@ const SubscriptionPlanOne = () => {
                   <i className='ph ph-house' />
                 </div>
                 <h1 className='display-4 fw-bold mb-0 mt-32 text-neutral-700 transition-2'>
-                  0₼<span className='text-sm fw-normal'></span>{" "}
+                  {formatPrice(getPlanPrice(0, isYearly))}₼
+                  <span className='text-sm fw-normal'></span>{" "}
                 </h1>
                 <span className='d-block border border-neutral-30 my-24 border-dashed' />
                 <ul className='d-flex flex-column gap-16'>
@@ -136,7 +163,8 @@ const SubscriptionPlanOne = () => {
                   <i className='ph-bold ph-tag' />
                 </div>
                 <h1 className='display-4 fw-bold mb-0 mt-32 text-neutral-700 transition-2'>
-                  19.9₼<span className='text-sm fw-normal'>/AY</span>{" "}
+                  {formatPrice(getPlanPrice(PREMIUM_MONTHLY_PRICE, isYearly))}₼
+                  <span className='text-sm fw-normal'>{billingSuffix}</span>{" "}
                 </h1>
                 <span className='d-block border border-neutral-30 my-24 border-dashed' />
                 <ul className='d-flex flex-column gap-16'>
@@ -227,7 +255,8 @@ const SubscriptionPlanOne = () => {
                   <i className='ph-bold ph-piggy-bank' />
                 </div>
                 <h1 className='display-4 fw-bold mb-0 mt-32 text-neutral-700 transition-2'>
-                  44.9₼<span className='text-sm fw-normal'>/AY</span>{" "}
+                  {formatPrice(getPlanPrice(MAXIMUM_MONTHLY_PRICE, isYearly))}₼
+                  <span className='text-sm fw-normal'>{billingSuffix}</span>{" "}
                 </h1>
                 <span className='d-block border border-neutral-30 my-24 border-dashed' />
                 <ul className='d-flex flex-column gap-16'>

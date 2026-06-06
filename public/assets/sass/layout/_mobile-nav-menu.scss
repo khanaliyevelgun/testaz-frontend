@@ -51,7 +51,9 @@
                 position: relative;
                 padding: 12px 0;
                 padding-inline-end: 16px;
-              
+                &::after {
+                    display: none;
+                }
             } 
         }
         .nav-submenu {

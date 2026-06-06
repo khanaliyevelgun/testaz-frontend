@@ -59,12 +59,22 @@
                     color: hsl(var(--main));
                 }
             }
+            > .nav-menu__link::after {
+                transform: scaleX(1);
+            }
         }
         &:hover {
             > a {
                 color: var(--neutral-700);
                 @media (min-width: 992px) {
                     color: hsl(var(--main));
+                }
+            }
+            &:not(.activePage) {
+                > .nav-menu__link::after {
+                    @media (min-width: 992px) {
+                        transform: scaleX(1);
+                    }
                 }
             }
         }
@@ -75,6 +85,20 @@
         width: 100%;
         padding: 38px 0;
         width: 100%;
+        position: relative;
+        &::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 30px;
+            height: 2px;
+            background-color: hsl(var(--main));
+            border-radius: 999px;
+            transform: scaleX(0);
+            transform-origin: left center;
+            transition: transform 0.3s ease;
+        }
         @include xl-screen {
             font-size: rem(14px) !important;
         }

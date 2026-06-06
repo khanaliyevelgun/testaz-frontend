@@ -63,7 +63,7 @@ const HeaderOne = () => {
     { href: "/", label: "Ana səhifə" },
     { href: "/pricing-plan", label: "Planlar" },
     { href: "/about", label: "Haqqımızda" },
-    { href: "/blog", label: "Blog" },
+    // { href: "/blog", label: "Blog" },
     { href: "/contact", label: "Əlaqə" },
   ];
 
@@ -82,7 +82,7 @@ const HeaderOne = () => {
               </div>
               {/* Logo End  */}
               {/* Menu Start  */}
-              <div className='header-menu d-lg-block d-none'>
+              <div className='header-menu d-lg-flex justify-content-center w-100 d-none'>
                 <ul className='nav-menu flex-align'>
                   {menuItems.map((item, index) =>
                     item.links ? (
