@@ -10,16 +10,16 @@ const CertificateOne = () => {
                   <div className='certificate__content'>
                     <div className='flex-align gap-8 mb-16 wow bounceInDown'>
                       <span className='w-8 h-8 bg-white rounded-circle' />
-                      <h5 className='text-white mb-0'>Get Certificate</h5>
+                      <h5 className='text-white mb-0'>İndi başla</h5>
                     </div>
                     <h2 className='text-white mb-40 fw-medium wow bounceIn'>
-                      Get Quality Skills Certificate From the EduAll
+                      Elə indi başlayaraq övladınızın biliyini test edin.
                     </h2>
                     <a
                       href=''
                       className='btn btn-white rounded-pill flex-align d-inline-flex gap-8 hover-bg-main-800 wow bounceInUp'
                     >
-                      Get Started Now
+                      Qeydiyyatdan keç
                       <i className='ph-bold ph-arrow-up-right d-flex text-lg' />
                     </a>
                   </div>

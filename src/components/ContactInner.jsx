@@ -8,12 +8,12 @@ const ContactInner = () => {
               <span className='text-main-600 text-2xl d-flex'>
                 <i className='ph-bold ph-book' />
               </span>
-              <h5 className='text-main-600 mb-0'>Get In Touch</h5>
+              <h5 className='text-main-600 mb-0'>Əlaqə</h5>
             </div>
-            <h2 className='mb-24'>Let us help you</h2>
+            <h2 className='mb-24'>Sizə kömək etmək üçün buradayıq</h2>
             <p className=''>
-              Our platform is built on the principles of innovation, quality,
-              and inclusivity, aiming to provide a seamless learning
+              Sınaqlar, sual bazası, nəticə analizi və planlarla bağlı
+              suallarınız üçün bizimlə rahat əlaqə saxlaya bilərsiniz.
             </p>
           </div>
           <div className='row gy-4'>
@@ -23,15 +23,15 @@ const ContactInner = () => {
                   <i className='ph ph-map-pin-line' />
                 </span>
                 <div className='flex-grow-1'>
-                  <h4 className='mb-12'>Main Office</h4>
+                  <h4 className='mb-12'>Ofis ünvanı</h4>
                   <p className='text-neutral-500'>
-                    2972 Westheimer Rd. Santa Ana, Illinois 85486{" "}
+                    Bakı şəh., Suraxanı ray.
                   </p>
                   <a
                     href='#'
                     className='text-main-600 fw-semibold text-decoration-underline mt-16'
                   >
-                    Find Location
+                    Ünvanı göstər
                   </a>
                 </div>
               </div>
@@ -42,14 +42,14 @@ const ContactInner = () => {
                   <i className='ph ph-envelope-open' />
                 </span>
                 <div className='flex-grow-1'>
-                  <h4 className='mb-12'>Email Address</h4>
-                  <p className='text-neutral-500'>infoexample@gmail.com</p>
-                  <p className='text-neutral-500'>example@gmail.com</p>
+                  <h4 className='mb-12'>Email ünvanı</h4>
+                  <p className='text-neutral-500'>dwallo@gmail.com</p>
+                  <p className='text-neutral-500'>info@edusinaq.az</p>
                   <a
-                    href='mailto:infoexample@gmail.com'
+                    href='mailto:dwallo@gmail.com'
                     className='text-main-600 fw-semibold text-decoration-underline mt-16'
                   >
-                    Get In Touch
+                    Email göndər
                   </a>
                 </div>
               </div>
@@ -60,14 +60,14 @@ const ContactInner = () => {
                   <i className='ph ph-phone-call' />
                 </span>
                 <div className='flex-grow-1'>
-                  <h4 className='mb-12'>Phone Number</h4>
-                  <p className='text-neutral-500'>(505) 555-0125</p>
-                  <p className='text-neutral-500'>(406) 555-0120</p>
+                  <h4 className='mb-12'>Telefon nömrəsi</h4>
+                  <p className='text-neutral-500'>(050) 879-3791</p>
+                  <p className='text-neutral-500'>(207) 555-0119</p>
                   <a
-                    href='tel:(406)555-0120'
+                    href='tel:+994508793791'
                     className='text-main-600 fw-semibold text-decoration-underline mt-16'
                   >
-                    Contact Us Today!
+                    Bizə zəng edin
                   </a>
                 </div>
               </div>
@@ -89,16 +89,15 @@ const ContactInner = () => {
                   <span className='text-main-600 text-2xl d-flex'>
                     <i className='ph-bold ph-book' />
                   </span>
-                  <h5 className='text-main-600 mb-0'>Contact Us</h5>
+                  <h5 className='text-main-600 mb-0'>Bizimlə əlaqə</h5>
                 </div>
                 <h2 className='mb-24'>
-                  Have questions? don't hesitate to contact us
+                  Sualınız var? Bizə yazın
                 </h2>
                 <p className='text-neutral-500 text-line-3 max-w-636'>
-                  We are passionate about transforming lives through education.
-                  Founded with a vision to make learning accessible to all, we
-                  believe in the power of knowledge to unlock opportunities and
-                  shape the future.
+                  EduSınaq valideynlərə və tələbələrə bilik səviyyəsini aydın
+                  görmək, zəif mövzuları müəyyən etmək və inkişafı izləmək üçün
+                  dəstək olur. Komandamız müraciətinizi qısa zamanda cavablandıracaq.
                 </p>
               </div>
               <div className='flex-align gap-40 flex-wrap'>
@@ -154,7 +153,7 @@ const ContactInner = () => {
                   </ul>
                   <span className='text-neutral-700 fw-medium'>
                     {" "}
-                    2.5k+ reviews (4.95 of 5)
+                    2.5k+ rəy (5 üzərindən 4.95)
                   </span>
                 </div>
               </div>
@@ -163,20 +162,20 @@ const ContactInner = () => {
               <div className='p-24 bg-white rounded-12 box-shadow-md'>
                 <div className='border border-neutral-30 rounded-8 bg-main-25 p-24'>
                   <form action='#' id='commentForm'>
-                    <h4 className='mb-0'>Get In Touch</h4>
+                    <h4 className='mb-0'>Müraciət forması</h4>
                     <span className='d-block border border-neutral-30 my-24 border-dashed' />
                     <div className='mb-24'>
                       <label
                         htmlFor='name'
                         className='text-neutral-700 text-lg fw-medium mb-12'
                       >
-                        Name{" "}
+                        Adınız{" "}
                       </label>
                       <input
                         type='text'
                         className='common-input rounded-pill border-transparent focus-border-main-600'
                         id='name'
-                        placeholder='Enter Name...'
+                        placeholder='Adınızı daxil edin...'
                       />
                     </div>
                     <div className='mb-24'>
@@ -190,7 +189,7 @@ const ContactInner = () => {
                         type='email'
                         className='common-input rounded-pill border-transparent focus-border-main-600'
                         id='email'
-                        placeholder='Enter Email...'
+                        placeholder='Email ünvanınızı daxil edin...'
                       />
                     </div>
                     <div className='mb-24'>
@@ -198,13 +197,13 @@ const ContactInner = () => {
                         htmlFor='phone'
                         className='text-neutral-700 text-lg fw-medium mb-12'
                       >
-                        Phone{" "}
+                        Telefon{" "}
                       </label>
                       <input
                         type='tel'
                         className='common-input rounded-pill border-transparent focus-border-main-600'
                         id='phone'
-                        placeholder='Enter Your Number...'
+                        placeholder='Telefon nömrənizi daxil edin...'
                       />
                     </div>
                     <div className='mb-24'>
@@ -212,12 +211,12 @@ const ContactInner = () => {
                         htmlFor='desc'
                         className='text-neutral-700 text-lg fw-medium mb-12'
                       >
-                        Message
+                        Mesaj
                       </label>
                       <textarea
                         id='desc'
                         className='common-input rounded-24 border-transparent focus-border-main-600 h-110'
-                        placeholder='Enter Your Message...'
+                        placeholder='Mesajınızı yazın...'
                         defaultValue={""}
                       />
                     </div>
@@ -226,7 +225,7 @@ const ContactInner = () => {
                         type='submit'
                         className='btn btn-main rounded-pill flex-center gap-8 mt-40'
                       >
-                        Send Message
+                        Mesaj göndər
                         <i className='ph-bold ph-arrow-up-right d-flex text-lg' />
                       </button>
                     </div>

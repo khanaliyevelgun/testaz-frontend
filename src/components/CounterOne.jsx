@@ -24,7 +24,7 @@ const CounterOne = () => {
                 )}
               </VisibilitySensor>
               <span className='text-neutral-500 text-lg'>
-                Successfully Trained
+                Aktiv tələbə və valideyn
               </span>
             </div>
           </div>
@@ -45,7 +45,7 @@ const CounterOne = () => {
                 )}
               </VisibilitySensor>
               <span className='text-neutral-500 text-lg'>
-                Courses Completed
+                Tamamlanmış sınaq
               </span>
             </div>
           </div>
@@ -66,7 +66,7 @@ const CounterOne = () => {
                 )}
               </VisibilitySensor>
               <span className='text-neutral-500 text-lg'>
-                Satisfaction Rate
+                Analiz edilmiş nəticə
               </span>
             </div>
           </div>
@@ -87,7 +87,7 @@ const CounterOne = () => {
                 )}
               </VisibilitySensor>
               <span className='text-neutral-500 text-lg'>
-                Students Community
+                Sual bazası potensialı
               </span>
             </div>
           </div>

@@ -34,8 +34,8 @@ const SubscriptionPlanOne = ({ className = "" }) => {
           </div>
           <h2 className='mb-24'>Hər valideyn və tələbə üçün uyğun plan</h2>
           <p className=''>
-            We embrace innovation and creativity as catalysts for positive
-            change, driving forward-thinking research, teaching methodologies
+            Biz innovasiyanı və yaradıcılığı müsbət dəyişikliklər üçün 
+            irəliyə yönəlmiş tədqiqatları və tədris metodologiyalarını irəli aparırıq
           </p>
         </div>
         <div className='mb-40 d-flex align-items-center gap-24 justify-content-center'>
@@ -205,7 +205,7 @@ const SubscriptionPlanOne = ({ className = "" }) => {
                   >
                     <img src='assets/images/icons/check.png' alt='' />
                     <span className='text-neutral-500 text-md fw-medium'>
-                      Access to all our room
+                      Aylıq və həftəlik statistikalar
                     </span>
                   </li>
                   <li
@@ -215,7 +215,7 @@ const SubscriptionPlanOne = ({ className = "" }) => {
                   >
                     <img src='assets/images/icons/check.png' alt='' />
                     <span className='text-neutral-500 text-md fw-medium'>
-                      24/7 dedicated Support
+                      24/7 texniki dəstək
                     </span>
                   </li>
                   <li

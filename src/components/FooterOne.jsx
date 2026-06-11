@@ -15,7 +15,7 @@ const FooterOne = () => {
       />
       <div className='py-120 '>
         <div className='container container-two'>
-          <div className='row row-cols-xxl-5 row-cols-lg-3 row-cols-sm-2 row-cols-1 gy-5'>
+          <div className='row row-cols-xxl-4 row-cols-lg-3 row-cols-sm-2 row-cols-1 gy-5'>
             <div className='col' data-aos='fade-up' data-aos-duration={300}>
               <div className='footer-item'>
                 <div className='footer-item__logo'>
@@ -25,8 +25,7 @@ const FooterOne = () => {
                   </Link>
                 </div>
                 <p className='my-32'>
-                  EduAll exceeded all my expectations! The instructors were not
-                  only experts
+                  EduSınaq ilə övladınızın biliyini istədiyiniz vaxt rahatlıqla ölçə bilərsiniz.
                 </p>
                 <ul className='social-list flex-align gap-24'>
                   <li className='social-list__item'>
@@ -74,7 +73,7 @@ const FooterOne = () => {
                       href='/about'
                       className='text-neutral-500 hover-text-main-600 hover-text-decoration-underline'
                     >
-                      About us
+                      Haqqımızda
                     </Link>
                   </li>
                   <li className='mb-16'>
@@ -82,15 +81,7 @@ const FooterOne = () => {
                       href='/courses'
                       className='text-neutral-500 hover-text-main-600 hover-text-decoration-underline'
                     >
-                      Courses
-                    </Link>
-                  </li>
-                  <li className='mb-16'>
-                    <Link
-                      href='/instructor'
-                      className='text-neutral-500 hover-text-main-600 hover-text-decoration-underline'
-                    >
-                      Instructor
+                      Planlar
                     </Link>
                   </li>
                   <li className='mb-16'>
@@ -98,7 +89,7 @@ const FooterOne = () => {
                       href='/faq'
                       className='text-neutral-500 hover-text-main-600 hover-text-decoration-underline'
                     >
-                      FAQs
+                      FAQ
                     </Link>
                   </li>
                   <li className='mb-0'>
@@ -106,13 +97,13 @@ const FooterOne = () => {
                       href='/blog'
                       className='text-neutral-500 hover-text-main-600 hover-text-decoration-underline'
                     >
-                      Blogs
+                      Bloglar
                     </Link>
                   </li>
                 </ul>
               </div>
             </div>
-            <div className='col' data-aos='fade-up' data-aos-duration={600}>
+            <div className='col d-none' data-aos='fade-up' data-aos-duration={600}>
               <div className='footer-item'>
                 <h4 className='footer-item__title mb-32'>Category</h4>
                 <ul className='footer-menu'>
@@ -161,7 +152,7 @@ const FooterOne = () => {
             </div>
             <div className='col' data-aos='fade-up' data-aos-duration={800}>
               <div className='footer-item'>
-                <h4 className='footer-item__title mb-32'>Contact Us</h4>
+                <h4 className='footer-item__title mb-32'>Əlaqə</h4>
                 <div className='flex-align gap-20 mb-24'>
                   <span className='icon d-flex text-32 text-main-600'>
                     <i className='ph ph-phone' />
@@ -173,12 +164,7 @@ const FooterOne = () => {
                     >
                       (207) 555-0119
                     </Link>
-                    <Link
-                      href='/tel:(704)555-0127'
-                      className='text-neutral-500 d-block hover-text-main-600 mb-0'
-                    >
-                      (704) 555-0127
-                    </Link>
+                    
                   </div>
                 </div>
                 <div className='flex-align gap-20 mb-24'>
@@ -192,12 +178,7 @@ const FooterOne = () => {
                     >
                       dwallo@gmail.com
                     </Link>
-                    <Link
-                      href='/mailto:eduAll@gmail.com'
-                      className='text-neutral-500 d-block hover-text-main-600 mb-0'
-                    >
-                      eduAll@gmail.com
-                    </Link>
+                    
                   </div>
                 </div>
                 <div className='flex-align gap-20 mb-24'>
@@ -206,21 +187,18 @@ const FooterOne = () => {
                   </span>
                   <div className=''>
                     <span className='text-neutral-500 d-block mb-4'>
-                      5488 srker Rd .
+                      Bakı şəh., Suraxanı ray.   
                     </span>
-                    <span className='text-neutral-500 d-block mb-0'>
-                      8745 doer Dr.
-                    </span>
+                    
                   </div>
                 </div>
               </div>
             </div>
             <div className='col' data-aos='fade-up' data-aos-duration={1000}>
               <div className='footer-item'>
-                <h4 className='footer-item__title mb-32'>Subscribe Here</h4>
+                <h4 className='footer-item__title mb-32'>Abunə ol</h4>
                 <p className='text-neutral-500'>
-                  Enter your email address to register to our newsletter
-                  subscription
+                  Email ünvanınızı yazaraq yeniliklərdən ilk siz xəbərdar olun
                 </p>
                 <form action='#' className='mt-24 position-relative'>
                   <input
@@ -247,22 +225,17 @@ const FooterOne = () => {
             <div className='bottom-footer__inner flex-between gap-3 flex-wrap'>
               <p className='bottom-footer__text'>
                 {" "}
-                Copyright © 2025 <span className='fw-semibold'>EduAll </span>
-                All Rights Reserved.
+                Copyright © 2025 <span className='fw-semibold'>EduSınaq &nbsp; </span>
+                Bütün hquqları qorunur. 
               </p>
               <div className='footer-links'>
                 <Link
                   href='#'
                   className='text-neutral-500 hover-text-main-600 hover-text-decoration-underline'
                 >
-                  Privacy Policy
+                  İstifadə qaydaları
                 </Link>
-                <Link
-                  href='#'
-                  className='text-neutral-500 hover-text-main-600 hover-text-decoration-underline'
-                >
-                  Terms &amp; Conditions
-                </Link>
+                
               </div>
             </div>
           </div>
