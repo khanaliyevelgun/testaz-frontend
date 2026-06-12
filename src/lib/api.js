@@ -170,3 +170,13 @@ export const markNotificationsRead = (ids) =>
     method: "POST",
     body: JSON.stringify({ ids }),
   });
+
+export const fetchUsers = ({ page = 1, perPage = 10 } = {}) =>
+  apiFetch(`/users?page=${page}&perPage=${perPage}`);
+
+export const fetchUser = (id) => apiFetch(`/users/${id}`);
+
+export const deleteUser = (id) =>
+  apiFetch(`/users/${id}`, {
+    method: "DELETE",
+  });

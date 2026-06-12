@@ -1,5 +1,5 @@
-import AdminPlaceholderPage from "@/components/admin/AdminPlaceholderPage";
+import AdminUsersPage from "@/components/admin/AdminUsersPage";
 
 export default function Page() {
-  return <AdminPlaceholderPage title='Users' description='Admin kullanıcı yönetimi burada geliştirilecek.' />;
+  return <AdminUsersPage />;
 }

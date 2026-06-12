@@ -22,6 +22,8 @@ tags:
     description: Authentication and current-user endpoints.
   - name: Notifications
     description: User notification endpoints.
+  - name: Users
+    description: Admin user management endpoints.
 paths:
   /auth/register:
     post:
@@ -322,6 +324,94 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "500":
           $ref: "#/components/responses/ServerError"
+  /users:
+    get:
+      tags:
+        - Users
+      summary: List users
+      description: Lists users for admin user management.
+      operationId: listUsers
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: perPage
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+      responses:
+        "200":
+          description: Paginated users.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UsersResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /users/{id}:
+    get:
+      tags:
+        - Users
+      summary: Get user
+      operationId: getUser
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          description: User details.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
+    delete:
+      tags:
+        - Users
+      summary: Delete user
+      description: Deletes a user account after frontend confirmation.
+      operationId: deleteUser
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          description: User deleted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
 components:
   securitySchemes:
     BearerAuth:
@@ -340,6 +430,14 @@ components:
       schema:
         type: string
         example: refreshToken=opaque-token; HttpOnly; Secure; SameSite=Strict; Path=/auth/refresh; Max-Age=2592000
+  parameters:
+    UserId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      example: usr_123
   schemas:
     RegisterRequest:
       type: object
@@ -461,6 +559,12 @@ components:
         name:
           type: string
           example: John Doe
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: Doe
         email:
           type: string
           format: email
@@ -549,6 +653,19 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Notification"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+    UsersResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
         meta:
           $ref: "#/components/schemas/PaginationMeta"
     MarkNotificationsReadRequest:
@@ -645,6 +762,15 @@ components:
           example:
             message: Email already exists
             code: CONFLICT
+    NotFound:
+      description: Resource not found.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            message: Resource not found
+            code: NOT_FOUND
     TooManyRequests:
       description: Too many requests. Rate limit exceeded.
       headers:
