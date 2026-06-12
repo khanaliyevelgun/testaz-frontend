@@ -57,6 +57,20 @@ Set the backend origin with:
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
 ```
 
+Frontend-only development without a backend:
+
+Leave `NEXT_PUBLIC_API_BASE_URL` empty and enable the server-side mock auth routes:
+
+```bash
+NEXT_PUBLIC_API_BASE_URL=
+AUTH_MOCK_ENABLED=true
+AUTH_MOCK_GRANT_AUTH=true
+AUTH_MOCK_ROLE=admin
+AUTH_MOCK_ERROR_MODE=none
+```
+
+`AUTH_MOCK_*` variables are intentionally not `NEXT_PUBLIC_*`, so they are not bundled into browser code. The mock route handlers are also ignored automatically when `NODE_ENV=production`, even if `AUTH_MOCK_ENABLED=true` is set by mistake. Use `AUTH_MOCK_ROLE=admin|parent|child` to test role sidebars, `AUTH_MOCK_GRANT_AUTH=false` to test unauthorized flows, and `AUTH_MOCK_ERROR_MODE=login|register|refresh|profile|forgot-password|reset-password|all` to test error states.
+
 Backend cookie requirements:
 
 - `HttpOnly`
