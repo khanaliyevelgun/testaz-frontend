@@ -53,21 +53,44 @@
     transform: translateX(0px);
 }
 
+.dashboard-side-overlay {
+    position: fixed;
+    inset: 0;
+    background: hsl(var(--black) / .45);
+    z-index: 998;
+    border: 0;
+    padding: 0;
+}
+
 @media (max-width: 991px) {
     .dashboard-sidebar {
         position: fixed !important;
         inset-inline-start: 0;
         top: 0;
-        z-index: 99;
+        z-index: 999;
         width: 100%;
         max-width: 348px;
         border-radius: 0 !important;
         border: 0 !important;
         border-inline-end: 1px solid var(--neutral-30) !important;
         transform: translateX(-100%);
-        transition: 0.2slinear;
+        transition: 0.2s linear;
         overflow-y: auto;
         height: 100vh;
+    }
+}
+
+.admin-users-mobile-list {
+    display: none;
+}
+
+@media (max-width: 767px) {
+    .admin-users-table {
+        display: none;
+    }
+
+    .admin-users-mobile-list {
+        display: flex;
     }
 }
 

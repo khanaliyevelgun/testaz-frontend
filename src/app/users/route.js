@@ -15,6 +15,11 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
 
   return NextResponse.json(
-    paginateUsers(searchParams.get("page"), searchParams.get("perPage"))
+    paginateUsers({
+      page: searchParams.get("page"),
+      perPage: searchParams.get("perPage"),
+      search: searchParams.get("search"),
+      role: searchParams.get("role"),
+    })
   );
 }

@@ -8,6 +8,7 @@ const RoleSidebar = ({
   userName = "İstifadəçi",
   roleLabel = "Admin",
   onLogout,
+  onNavigate,
   isOpen = false,
 }) => {
   const pathname = usePathname();
@@ -34,6 +35,7 @@ const RoleSidebar = ({
                 <li className={`mb-8 ${active ? "activePage" : ""}`} key={item.href}>
                   <Link
                     href={item.href}
+                    onClick={onNavigate}
                     className='fw-medium d-flex align-items-center text-14 gap-8 text-neutral-500 hover-bg-main-600 px-24 py-10 hover-text-white rounded-12 item-hover flex-wrap'
                   >
                     <span className='text-16 text-main-600 item-hover__text transition-03'>

@@ -349,6 +349,23 @@ paths:
             minimum: 1
             maximum: 50
             default: 10
+        - name: search
+          in: query
+          required: false
+          description: Case-insensitive search across user name and email.
+          schema:
+            type: string
+            example: aysel
+        - name: role
+          in: query
+          required: false
+          description: Filter users by role.
+          schema:
+            type: string
+            enum:
+              - admin
+              - parent
+              - child
       responses:
         "200":
           description: Paginated users.

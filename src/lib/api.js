@@ -171,8 +171,17 @@ export const markNotificationsRead = (ids) =>
     body: JSON.stringify({ ids }),
   });
 
-export const fetchUsers = ({ page = 1, perPage = 10 } = {}) =>
-  apiFetch(`/users?page=${page}&perPage=${perPage}`);
+export const fetchUsers = ({ page = 1, perPage = 10, search = "", role = "" } = {}) => {
+  const params = new URLSearchParams({
+    page: String(page),
+    perPage: String(perPage),
+  });
+
+  if (search) params.set("search", search);
+  if (role) params.set("role", role);
+
+  return apiFetch(`/users?${params.toString()}`);
+};
 
 export const fetchUser = (id) => apiFetch(`/users/${id}`);
 

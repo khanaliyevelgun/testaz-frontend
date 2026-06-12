@@ -51,15 +51,25 @@ export const mockUsers = [
   },
 ];
 
-export const paginateUsers = (page = 1, perPage = 10) => {
+export const paginateUsers = ({ page = 1, perPage = 10, search = "", role = "" } = {}) => {
   const safePage = Math.max(Number(page) || 1, 1);
   const safePerPage = Math.min(Math.max(Number(perPage) || 10, 1), 50);
-  const total = mockUsers.length;
+  const normalizedSearch = String(search).trim().toLowerCase();
+  const normalizedRole = String(role).trim().toLowerCase();
+  const filteredUsers = mockUsers.filter((user) => {
+    const matchesSearch = normalizedSearch
+      ? `${user.name} ${user.email}`.toLowerCase().includes(normalizedSearch)
+      : true;
+    const matchesRole = normalizedRole ? user.role === normalizedRole : true;
+
+    return matchesSearch && matchesRole;
+  });
+  const total = filteredUsers.length;
   const totalPages = Math.max(Math.ceil(total / safePerPage), 1);
   const start = (safePage - 1) * safePerPage;
 
   return {
-    data: mockUsers.slice(start, start + safePerPage),
+    data: filteredUsers.slice(start, start + safePerPage),
     meta: {
       page: safePage,
       perPage: safePerPage,

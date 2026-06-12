@@ -33,11 +33,16 @@ const AdminLayout = ({ children }) => {
   return (
     <RoleProtectedRoute allowedRoles={ADMIN_ROLES}>
       <div className='d-flex bg-main-25 min-h-screen'>
-        <Sidebar userName={name} onLogout={handleLogout} isOpen={sidebarOpen} />
+        <Sidebar
+          userName={name}
+          onLogout={handleLogout}
+          onNavigate={() => setSidebarOpen(false)}
+          isOpen={sidebarOpen}
+        />
         {sidebarOpen ? (
           <button
             type='button'
-            className='side-overlay active'
+            className='dashboard-side-overlay active'
             aria-label='Close dashboard sidebar'
             onClick={() => setSidebarOpen(false)}
           ></button>
