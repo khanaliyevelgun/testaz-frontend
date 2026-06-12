@@ -12,6 +12,7 @@ const SignUpInner = () => {
     email: "",
     password: "",
   });
+  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { register } = useAuth();
@@ -29,26 +30,29 @@ const SignUpInner = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setMessage("");
     setError("");
 
     if (!form.firstName || !form.email || form.password.length < 8) {
-      setError("Name, valid email, and at least 8 character password are required.");
+      setError("Ad, düzgün email və ən azı 8 simvoldan ibarət şifrə tələb olunur.");
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      await register({
+      const response = await register({
         name: `${form.firstName} ${form.lastName}`.trim(),
         email: form.email,
         password: form.password,
       });
+      setMessage(response?.message || "Qeydiyyat uğurla tamamlandı.");
       const next = searchParams.get("next");
-      router.replace(next?.startsWith("/") ? next : "/");
+      window.setTimeout(() => {
+        router.replace(next?.startsWith("/") ? next : "/");
+      }, 800);
     } catch {
-      setError("Registration failed. Please check your details.");
-    } finally {
+      setError("Qeydiyyat alınmadı. Məlumatlarınızı yoxlayın.");
       setIsSubmitting(false);
     }
   };
@@ -60,10 +64,9 @@ const SignUpInner = () => {
           <div className='col-lg-6'>
             <div className='bg-main-25 border border-neutral-30 rounded-8 p-32'>
               <div className='mb-40'>
-                <h3 className='mb-16 text-neutral-500'>Let's Get Started!</h3>
+                <h3 className='mb-16 text-neutral-500'>Başlayaq!</h3>
                 <p className='text-neutral-500'>
-                  Please Enter your Email Address to Start your Online
-                  Application
+                  Onlayn müraciətə başlamaq üçün email ünvanınızı daxil edin
                 </p>
               </div>
               <form onSubmit={handleSubmit}>
@@ -73,14 +76,14 @@ const SignUpInner = () => {
                       htmlFor='fname'
                       className='fw-medium text-lg text-neutral-500 mb-16'
                     >
-                      First Name
+                      Ad
                     </label>
                     <input
                       type='text'
                       name='firstName'
                       className='common-input rounded-pill'
                       id='fname'
-                      placeholder='Enter Your First Name'
+                      placeholder='Adınızı daxil edin'
                       autoComplete='given-name'
                       value={form.firstName}
                       onChange={handleChange}
@@ -91,14 +94,14 @@ const SignUpInner = () => {
                       htmlFor='lname'
                       className='fw-medium text-lg text-neutral-500 mb-16'
                     >
-                      Last Name
+                      Soyad
                     </label>
                     <input
                       type='text'
                       name='lastName'
                       className='common-input rounded-pill'
                       id='lname'
-                      placeholder='Enter Your Last Name'
+                      placeholder='Soyadınızı daxil edin'
                       autoComplete='family-name'
                       value={form.lastName}
                       onChange={handleChange}
@@ -109,14 +112,14 @@ const SignUpInner = () => {
                       htmlFor='email'
                       className='fw-medium text-lg text-neutral-500 mb-16'
                     >
-                      Enter Your Email ID
+                      Email ünvanınızı daxil edin
                     </label>
                     <input
                       type='email'
                       name='email'
                       className='common-input rounded-pill'
                       id='email'
-                      placeholder='Enter Your Email...'
+                      placeholder='Email ünvanınızı daxil edin...'
                       autoComplete='email'
                       value={form.email}
                       onChange={handleChange}
@@ -127,7 +130,7 @@ const SignUpInner = () => {
                       htmlFor='password'
                       className='fw-medium text-lg text-neutral-500 mb-16'
                     >
-                      Password
+                      Şifrə
                     </label>
                     <div className='position-relative'>
                       <input
@@ -135,7 +138,7 @@ const SignUpInner = () => {
                         name='password'
                         className='common-input rounded-pill pe-44'
                         id='password'
-                        placeholder='Enter Your Password...'
+                        placeholder='Şifrənizi daxil edin...'
                         autoComplete='new-password'
                         value={form.password}
                         onChange={handleChange}
@@ -150,18 +153,23 @@ const SignUpInner = () => {
                   </div>
                   <div className='col-sm-12'>
                     <p className='text-neutral-500 mt-8'>
-                      Have an accounts?
+                      Hesabınız var?
                       <Link
                         href='/sign-in'
                         className='fw-semibold text-main-600 hover-text-decoration-underline'
                       >
-                        Sign In
+                        Daxil olun
                       </Link>
                     </p>
                   </div>
                   {error ? (
                     <div className='col-sm-12'>
                       <p className='text-danger mb-0'>{error}</p>
+                    </div>
+                  ) : null}
+                  {message ? (
+                    <div className='col-sm-12'>
+                      <p className='text-success-600 mb-0'>{message}</p>
                     </div>
                   ) : null}
                   <div className='col-sm-12'>
@@ -171,7 +179,7 @@ const SignUpInner = () => {
                         className='btn btn-main rounded-pill flex-center gap-8'
                         disabled={isSubmitting}
                       >
-                        {isSubmitting ? "Signing Up..." : "Sign Up"}
+                        {isSubmitting ? "Qeydiyyat aparılır..." : "Qeydiyyatdan keç"}
                         <i className='ph-bold ph-arrow-up-right d-flex text-lg' />
                       </button>
                     </div>

@@ -16,7 +16,7 @@ const ForgotPasswordInner = () => {
     setError("");
 
     if (!email) {
-      setError("Email is required.");
+      setError("Email tələb olunur.");
       return;
     }
 
@@ -24,9 +24,9 @@ const ForgotPasswordInner = () => {
 
     try {
       const response = await forgotPassword({ email });
-      setMessage(response?.message || "If the account exists, a reset link has been sent.");
+      setMessage(response?.message || "Əgər hesab mövcuddursa, şifrə yeniləmə linki göndərildi.");
     } catch {
-      setError("Password reset request failed.");
+      setError("Şifrə yeniləmə sorğusu alınmadı.");
     } finally {
       setIsSubmitting(false);
     }
@@ -39,37 +39,37 @@ const ForgotPasswordInner = () => {
           <div className='col-lg-6'>
             <div className='bg-main-25 border border-neutral-30 rounded-8 p-32'>
               <div className='mb-40'>
-                <h3 className='mb-16 text-neutral-500'>Reset Password</h3>
+                <h3 className='mb-16 text-neutral-500'>Şifrəni yenilə</h3>
                 <p className='text-neutral-500'>
-                  Enter your email address to receive password reset instructions.
+                  Şifrəni yeniləmək üçün email ünvanınızı daxil edin.
                 </p>
               </div>
               <form onSubmit={handleSubmit}>
                 <div className='mb-24'>
                   <label htmlFor='email' className='fw-medium text-lg text-neutral-500 mb-16'>
-                    Enter Your Email ID
+                    Email ünvanınızı daxil edin
                   </label>
                   <input
                     type='email'
                     name='email'
                     className='common-input rounded-pill'
                     id='email'
-                    placeholder='Enter Your Email...'
+                    placeholder='Email ünvanınızı daxil edin...'
                     autoComplete='email'
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
                   />
                 </div>
-                {message ? <p className='text-success mb-0'>{message}</p> : null}
+                {message ? <p className='text-success-600 mb-0'>{message}</p> : null}
                 {error ? <p className='text-danger mb-0'>{error}</p> : null}
                 <div className='mb-16 mt-24'>
                   <p className='text-neutral-500'>
-                    Remembered your password?
+                    Şifrənizi xatırladınız?
                     <Link
                       href='/sign-in'
                       className='fw-semibold text-main-600 hover-text-decoration-underline'
                     >
-                      Sign In
+                      Daxil olun
                     </Link>
                   </p>
                 </div>
@@ -79,7 +79,7 @@ const ForgotPasswordInner = () => {
                     className='btn btn-main rounded-pill flex-center gap-8 mt-40'
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ? "Sending..." : "Send Reset Link"}
+                    {isSubmitting ? "Göndərilir..." : "Link göndər"}
                     <i className='ph-bold ph-arrow-up-right d-flex text-lg' />
                   </button>
                 </div>

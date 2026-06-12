@@ -43,7 +43,7 @@ $colors: (
     "800": hsl(var(--main-three-h), var(--main-three-s), calc(var(--main-three-l) - var(--main-three-l) * 0.2)),
     "900": hsl(var(--main-three-h), var(--main-three-s), calc(var(--main-three-l) - var(--main-three-l) * 0.3))
   ),
-  
+ 
   "neutral": (
     "10": #FFFFFF,
     "20": #F5F6F7,
@@ -64,7 +64,7 @@ $colors: (
     "800": #13203B,
     "900": #071431,
   ),
-
+ 
   "light": (
     "50": #F5F6FA,
     "100": #F3F4F6,
@@ -72,20 +72,20 @@ $colors: (
     "700": #374151,
     "800": #1F2937,
   ),
-  
+ 
   "primary": (
-    "50": #E4F1FF,
-    "100": #BFDCFF,
-    "200": #95C7FF,
-    "300": #6BB1FF,
-    "400": #519FFF,
-    "500": #458EFF,
-    "600": #487FFF,
-    "700": #486CEA,
-    "800": #4759D6,
-    "900": #4536B6
+    "50":  #F0EEFF,
+    "100": #D9D4FB,
+    "200": #BAAFF7,
+    "300": #9B8AF3,
+    "400": #7C65EF,
+    "500": #6A4FEB,
+    "600": #5C3AE0,
+    "700": #4F2EC8,
+    "800": #4123A8,
+    "900": #2F1880,
   ),
-
+ 
   "danger": (
     "50": #FEF2F2,
     "100": #FEE2E2,
@@ -98,7 +98,7 @@ $colors: (
     "800": #991B1B,
     "900": #7F1D1D
   ),
-
+ 
   "success": (
     "50": #F0FDF4,
     "100": #DCFCE7,
@@ -111,11 +111,11 @@ $colors: (
     "800": #166534,
     "900": #14532D
   ),
-
+ 
   "warning": (
-    "5": #F376390D,  
-    "30": #F376390D,  
-    "50": #FEFCE8,  
+    "5":   #F376390D,
+    "30":  #F376390D,
+    "50":  #FEFCE8,
     "100": #FEF9C3,
     "200": #FEF08A,
     "300": #FDE047,
@@ -126,9 +126,9 @@ $colors: (
     "800": #e58209,
     "900": #d77907
   ),
-
+ 
   "info": (
-    "50": #EFF6FF,
+    "50":  #EFF6FF,
     "100": #DBEAFE,
     "200": #BFDBFE,
     "300": #93C5FD,
@@ -139,9 +139,9 @@ $colors: (
     "800": #1E40AF,
     "900": #1E3A8A
   ),
-
+ 
   "purple": (
-    "50": #ede7fe,
+    "50":  #ede7fe,
     "100": #cab6fb,
     "200": #a685f9,
     "300": #8255f7,
@@ -152,8 +152,9 @@ $colors: (
     "800": #27067a,
     "900": #170449
   ),
+ 
   "yellow": (
-    "50": #fcefc1,
+    "50":  #fcefc1,
     "100": #f8e6a7,
     "600": #FFCA0E,
     "700": #e1b001,
@@ -256,21 +257,21 @@ $font-sizes: (
   /* Font Size End */
 
   /* template main color */
-  --main-h: 209;
-  --main-s: 94%;
-  --main-l: 41%;
+  --main-h: 145;
+  --main-s: 52%;
+  --main-l: 38%;
   --main: var(--main-h) var(--main-s) var(--main-l);
 
   /* template main Two color */
-  --main-two-h: 20;
-  --main-two-s: 89%;
-  --main-two-l: 59%;
+  --main-two-h: 32;
+  --main-two-s: 90%;
+  --main-two-l: 52%;
   --main-two: var(--main-two-h) var(--main-two-s) var(--main-two-l);
 
-  /* template main Two color */
-  --main-three-h: 144;
+  /* template main Three color */
+  --main-three-h: 162;
   --main-three-s: 56%;
-  --main-three-l: 42%;
+  --main-three-l: 38%;
   --main-three: var(--main-three-h) var(--main-three-s) var(--main-three-l);
 
    /* White Color */

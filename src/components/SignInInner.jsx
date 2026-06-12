@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 const SignInInner = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
+  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { login } = useAuth();
@@ -24,22 +25,25 @@ const SignInInner = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setMessage("");
     setError("");
 
     if (!form.email || !form.password) {
-      setError("Email and password are required.");
+      setError("Email və şifrə tələb olunur.");
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      await login(form);
+      const response = await login(form);
+      setMessage(response?.message || "Uğurla daxil oldunuz.");
       const next = searchParams.get("next");
-      router.replace(next?.startsWith("/") ? next : "/");
+      window.setTimeout(() => {
+        router.replace(next?.startsWith("/") ? next : "/");
+      }, 800);
     } catch {
-      setError("Invalid email or password.");
-    } finally {
+      setError("Email və ya şifrə yanlışdır.");
       setIsSubmitting(false);
     }
   };
@@ -51,9 +55,9 @@ const SignInInner = () => {
           <div className='col-lg-6'>
             <div className='bg-main-25 border border-neutral-30 rounded-8 p-32'>
               <div className='mb-40'>
-                <h3 className='mb-16 text-neutral-500'>Welcome Back!</h3>
+                <h3 className='mb-16 text-neutral-500'>Xoş gəlmisiniz!</h3>
                 <p className='text-neutral-500'>
-                  Sign in to your account and join us
+                  Hesabınıza daxil olun və bizə qoşulun
                 </p>
               </div>
               <form onSubmit={handleSubmit}>
@@ -62,14 +66,14 @@ const SignInInner = () => {
                     htmlFor='email'
                     className='fw-medium text-lg text-neutral-500 mb-16'
                   >
-                    Enter Your Email ID
+                    Email ünvanınızı daxil edin
                   </label>
                   <input
                     type='email'
                     name='email'
                     className='common-input rounded-pill'
                     id='email'
-                    placeholder='Enter Your Email...'
+                    placeholder='Email ünvanınızı daxil edin...'
                     autoComplete='email'
                     value={form.email}
                     onChange={handleChange}
@@ -80,7 +84,7 @@ const SignInInner = () => {
                     htmlFor='password'
                     className='fw-medium text-lg text-neutral-500 mb-16'
                   >
-                    Enter Your Password
+                    Şifrənizi daxil edin
                   </label>
                   <div className='position-relative'>
                     <input
@@ -88,7 +92,7 @@ const SignInInner = () => {
                       name='password'
                       className='common-input rounded-pill pe-44'
                       id='password'
-                      placeholder='Enter Your Password...'
+                      placeholder='Şifrənizi daxil edin...'
                       autoComplete='current-password'
                       value={form.password}
                       onChange={handleChange}
@@ -106,20 +110,21 @@ const SignInInner = () => {
                     href='/forgot-password'
                     className='text-warning-600 hover-text-decoration-underline'
                   >
-                    Forget password
+                    Şifrəni unutmusunuz?
                   </Link>
                 </div>
                 <div className='mb-16'>
                   <p className='text-neutral-500'>
-                    Don't have an account?
+                    Hesabınız yoxdur?
                     <Link
                       href='/sign-up'
                       className='fw-semibold text-main-600 hover-text-decoration-underline'
                     >
-                      Sign Up
+                      Qeydiyyatdan keçin
                     </Link>
                   </p>
                 </div>
+                {message ? <p className='text-success-600 mb-0'>{message}</p> : null}
                 {error ? <p className='text-danger mb-0'>{error}</p> : null}
                 <div className='mt-40'>
                   <button
@@ -127,7 +132,7 @@ const SignInInner = () => {
                     className='btn btn-main rounded-pill flex-center gap-8 mt-40'
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ? "Signing In..." : "Sign In"}
+                    {isSubmitting ? "Daxil olunur..." : "Daxil ol"}
                     <i className='ph-bold ph-arrow-up-right d-flex text-lg' />
                   </button>
                 </div>

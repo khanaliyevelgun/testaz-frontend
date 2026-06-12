@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 
-export default function PublicOnlyRoute({ children, redirectTo = "/" }) {
+export default function PublicOnlyRoute({ children, redirectTo = "/", redirectDelayMs = 0 }) {
   const { isAuthenticated, isInitialized } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -13,8 +13,13 @@ export default function PublicOnlyRoute({ children, redirectTo = "/" }) {
     if (!isInitialized || !isAuthenticated) return;
 
     const next = searchParams.get("next");
-    router.replace(next?.startsWith("/") ? next : redirectTo);
-  }, [isAuthenticated, isInitialized, redirectTo, router, searchParams]);
+    const target = next?.startsWith("/") ? next : redirectTo;
+    const timer = window.setTimeout(() => {
+      router.replace(target);
+    }, redirectDelayMs);
+
+    return () => window.clearTimeout(timer);
+  }, [isAuthenticated, isInitialized, redirectDelayMs, redirectTo, router, searchParams]);
 
   if (isInitialized && isAuthenticated) {
     return null;

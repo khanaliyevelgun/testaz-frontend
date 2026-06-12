@@ -1,14 +1,14 @@
 import Breadcrumb from "@/components/Breadcrumb";
 import FooterOne from "@/components/FooterOne";
-import ForgotPasswordInner from "@/components/ForgotPasswordInner";
 import HeaderOne from "@/components/HeaderOne";
+import ResetPasswordInner from "@/components/ResetPasswordInner";
 import PublicOnlyRoute from "@/components/auth/PublicOnlyRoute";
 import Animation from "@/helper/Animation";
 import { Suspense } from "react";
 
 export const metadata = {
-  title: "Şifrəni yenilə - EduAll",
-  description: "EduAll hesabınız üçün şifrə yeniləmə linki istəyin.",
+  title: "Yeni şifrə - EduAll",
+  description: "EduAll hesabınız üçün yeni şifrə təyin edin.",
 };
 
 const page = () => {
@@ -16,10 +16,10 @@ const page = () => {
     <>
       <Animation />
       <HeaderOne />
-      <Breadcrumb title={"Şifrəni yenilə"} />
+      <Breadcrumb title={"Yeni şifrə"} />
       <Suspense fallback={null}>
         <PublicOnlyRoute>
-          <ForgotPasswordInner />
+          <ResetPasswordInner />
         </PublicOnlyRoute>
       </Suspense>
       <FooterOne />

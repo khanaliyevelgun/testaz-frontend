@@ -7,6 +7,7 @@ let refreshPromise = null;
 const isAuthEndpoint = (url) =>
   url.endsWith("/auth/login") ||
   url.endsWith("/auth/register") ||
+  url.endsWith("/auth/reset-password") ||
   url.endsWith("/auth/refresh") ||
   url.endsWith("/auth/logout");
 
@@ -149,6 +150,12 @@ export const logout = () =>
 
 export const forgotPassword = (payload) =>
   apiFetch("/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+
+export const resetPassword = (payload) =>
+  apiFetch("/auth/reset-password", {
     method: "POST",
     body: JSON.stringify(payload),
   });
