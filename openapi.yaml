@@ -24,6 +24,8 @@ tags:
     description: User notification endpoints.
   - name: Users
     description: Admin user management endpoints.
+  - name: Subjects
+    description: Subject and topic management endpoints.
 paths:
   /auth/register:
     post:
@@ -429,6 +431,162 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/ServerError"
+  /subjects:
+    get:
+      tags:
+        - Subjects
+      summary: List subjects
+      operationId: listSubjects
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PerPage"
+      responses:
+        "200":
+          description: Paginated subjects.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubjectsResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/ServerError"
+    post:
+      tags:
+        - Subjects
+      summary: Create subject
+      operationId: createSubject
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateNamedEntityRequest"
+      responses:
+        "201":
+          description: Subject created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subject"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /subjects/{id}:
+    get:
+      tags:
+        - Subjects
+      summary: Get subject
+      operationId: getSubject
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/SubjectId"
+      responses:
+        "200":
+          description: Subject details.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subject"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      tags:
+        - Subjects
+      summary: Delete subject
+      operationId: deleteSubject
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/SubjectId"
+      responses:
+        "200":
+          description: Subject deleted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /subjects/{id}/topics:
+    get:
+      tags:
+        - Subjects
+      summary: List subject topics
+      operationId: listTopics
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/SubjectId"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/PerPage"
+      responses:
+        "200":
+          description: Paginated topics.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TopicsResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      tags:
+        - Subjects
+      summary: Create topic
+      operationId: createTopic
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/SubjectId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateNamedEntityRequest"
+      responses:
+        "201":
+          description: Topic created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Topic"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /subjects/{id}/topics/{topicId}:
+    delete:
+      tags:
+        - Subjects
+      summary: Delete topic
+      operationId: deleteTopic
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/SubjectId"
+        - $ref: "#/components/parameters/TopicId"
+      responses:
+        "200":
+          description: Topic deleted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
 components:
   securitySchemes:
     BearerAuth:
@@ -455,6 +613,37 @@ components:
       schema:
         type: string
       example: usr_123
+    SubjectId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      example: sub_123
+    TopicId:
+      name: topicId
+      in: path
+      required: true
+      schema:
+        type: string
+      example: top_123
+    Page:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PerPage:
+      name: perPage
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 50
+        default: 10
   schemas:
     RegisterRequest:
       type: object
@@ -683,6 +872,103 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/User"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+    CreateNamedEntityRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+          example: Riyaziyyat
+    Subject:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - name
+        - topicCount
+        - status
+        - createdAt
+      properties:
+        id:
+          type: string
+          example: sub_123
+        name:
+          type: string
+          example: Riyaziyyat
+        topicCount:
+          type: integer
+          example: 3
+        status:
+          type: string
+          enum:
+            - active
+            - inactive
+          example: active
+        createdAt:
+          type: string
+          format: date-time
+    Topic:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - subjectId
+        - name
+        - questionCount
+        - status
+        - createdAt
+      properties:
+        id:
+          type: string
+          example: top_123
+        subjectId:
+          type: string
+          example: sub_123
+        name:
+          type: string
+          example: Faizlər
+        questionCount:
+          type: integer
+          example: 42
+        status:
+          type: string
+          enum:
+            - active
+            - inactive
+          example: active
+        createdAt:
+          type: string
+          format: date-time
+    SubjectsResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Subject"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+    TopicsResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Topic"
         meta:
           $ref: "#/components/schemas/PaginationMeta"
     MarkNotificationsReadRequest:

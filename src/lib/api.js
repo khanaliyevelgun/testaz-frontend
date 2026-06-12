@@ -189,3 +189,31 @@ export const deleteUser = (id) =>
   apiFetch(`/users/${id}`, {
     method: "DELETE",
   });
+
+export const fetchSubjects = ({ page = 1, perPage = 10 } = {}) =>
+  apiFetch(`/subjects?page=${page}&perPage=${perPage}`);
+
+export const createSubject = (payload) =>
+  apiFetch("/subjects", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+
+export const deleteSubject = (id) =>
+  apiFetch(`/subjects/${id}`, {
+    method: "DELETE",
+  });
+
+export const fetchTopics = (subjectId, { page = 1, perPage = 10 } = {}) =>
+  apiFetch(`/subjects/${subjectId}/topics?page=${page}&perPage=${perPage}`);
+
+export const createTopic = (subjectId, payload) =>
+  apiFetch(`/subjects/${subjectId}/topics`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+
+export const deleteTopic = (subjectId, topicId) =>
+  apiFetch(`/subjects/${subjectId}/topics/${topicId}`, {
+    method: "DELETE",
+  });

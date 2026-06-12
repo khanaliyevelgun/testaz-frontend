@@ -1,5 +1,5 @@
-import AdminPlaceholderPage from "@/components/admin/AdminPlaceholderPage";
+import AdminSubjectsPage from "@/components/admin/AdminSubjectsPage";
 
 export default function Page() {
-  return <AdminPlaceholderPage title='Courses' description='Kurs yönetimi komponentleri bu sayfada yer alacak.' />;
+  return <AdminSubjectsPage />;
 }
