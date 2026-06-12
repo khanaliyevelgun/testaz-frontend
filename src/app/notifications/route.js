@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAuthMockConfig, mockDisabledResponse } from "@/lib/server/authMock";
-import { mockNotifications, paginate } from "@/lib/server/mockNotifications";
+import { getMockNotifications, paginate } from "@/lib/server/mockNotifications";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +15,7 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const page = searchParams.get("page");
   const perPage = searchParams.get("perPage");
+  const unreadOnly = searchParams.get("unreadOnly") === "true";
 
-  return NextResponse.json(paginate(mockNotifications, page, perPage));
+  return NextResponse.json(paginate(getMockNotifications({ unreadOnly }), page, perPage));
 }

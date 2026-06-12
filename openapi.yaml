@@ -276,6 +276,13 @@ paths:
             minimum: 1
             maximum: 50
             default: 10
+        - name: unreadOnly
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+          description: When true, returns only unread notifications, newest first.
       responses:
         "200":
           description: Paginated notifications.
@@ -283,6 +290,34 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/NotificationsResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /notifications/mark-read:
+    post:
+      tags:
+        - Notifications
+      summary: Mark notifications as read
+      description: Marks the selected notifications as read for the authenticated user.
+      operationId: markNotificationsRead
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MarkNotificationsReadRequest"
+      responses:
+        "200":
+          description: Notifications marked as read.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MarkNotificationsReadResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "500":
@@ -516,6 +551,37 @@ components:
             $ref: "#/components/schemas/Notification"
         meta:
           $ref: "#/components/schemas/PaginationMeta"
+    MarkNotificationsReadRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - ids
+      properties:
+        ids:
+          type: array
+          minItems: 1
+          items:
+            type: string
+          example:
+            - ntf_123
+            - ntf_124
+    MarkNotificationsReadResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - message
+        - updatedCount
+        - unreadCount
+      properties:
+        message:
+          type: string
+          example: Notifications marked as read.
+        updatedCount:
+          type: integer
+          example: 2
+        unreadCount:
+          type: integer
+          example: 5
     ErrorResponse:
       type: object
       additionalProperties: false

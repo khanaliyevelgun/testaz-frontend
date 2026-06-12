@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { fetchNotifications } from "@/lib/api";
+import { fetchNotifications, markNotificationsRead } from "@/lib/api";
 
 const fallbackNotifications = {
   data: [],
@@ -16,10 +16,10 @@ const AdminNotificationDropdown = () => {
   const unreadCount = notifications?.meta?.unreadCount || 0;
   const badgeText = unreadCount > 9 ? "9+" : String(unreadCount);
 
-  useEffect(() => {
+  const loadUnreadNotifications = () => {
     let isMounted = true;
 
-    fetchNotifications({ page: 1, perPage: 5 })
+    fetchNotifications({ page: 1, perPage: 5, unreadOnly: true })
       .then((response) => {
         if (isMounted) setNotifications(response || fallbackNotifications);
       })
@@ -30,7 +30,9 @@ const AdminNotificationDropdown = () => {
     return () => {
       isMounted = false;
     };
-  }, []);
+  };
+
+  useEffect(() => loadUnreadNotifications(), []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -42,6 +44,20 @@ const AdminNotificationDropdown = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleMarkVisibleRead = async () => {
+    const ids = notifications.data.map((item) => item.id);
+    if (!ids.length) return;
+
+    await markNotificationsRead(ids);
+    setNotifications((currentState) => ({
+      data: [],
+      meta: {
+        ...currentState.meta,
+        unreadCount: Math.max((currentState.meta?.unreadCount || 0) - ids.length, 0),
+      },
+    }));
+  };
 
   return (
     <div className='dropdown position-relative' ref={dropdownRef}>
@@ -63,13 +79,18 @@ const AdminNotificationDropdown = () => {
       {isOpen ? (
         <ul
           className='dropdown-menu rounded-12 show p-0 overflow-hidden shadow-md border border-neutral-30'
-          style={{ insetInlineEnd: 0, insetInlineStart: "auto", minWidth: 320 }}
+          style={{ insetInlineEnd: 0, insetInlineStart: "auto", minWidth: 340 }}
         >
-          <li className='px-16 py-12 border-bottom border-neutral-30 d-flex align-items-center justify-content-between'>
+          <li className='px-16 py-12 border-bottom border-neutral-30 d-flex align-items-center justify-content-between gap-12'>
             <span className='fw-medium text-14 text-neutral-500'>Bildirişlər</span>
-            <Link href='/admin/notifications' className='text-12 text-main-600 fw-medium'>
-              Hamısını gör
-            </Link>
+            <button
+              type='button'
+              className='text-12 text-main-600 fw-medium bg-transparent text-end'
+              disabled={!notifications.data.length}
+              onClick={handleMarkVisibleRead}
+            >
+              Hamısını oxundu olaraq işarətlə
+            </button>
           </li>
           {notifications.data.length ? (
             notifications.data.map((item) => (
@@ -86,14 +107,12 @@ const AdminNotificationDropdown = () => {
                     <span className='d-block text-13 fw-medium text-neutral-500'>{item.title}</span>
                     <span className='d-block text-12 text-neutral-400 line-clamp-1'>{item.message}</span>
                   </span>
-                  {!item.isRead ? (
-                    <span className='w-8 h-8 bg-danger-600 rounded-circle flex-shrink-0 mt-8'></span>
-                  ) : null}
+                  <span className='w-8 h-8 bg-danger-600 rounded-circle flex-shrink-0 mt-8'></span>
                 </Link>
               </li>
             ))
           ) : (
-            <li className='px-16 py-20 text-13 text-neutral-400'>Bildiriş yoxdur.</li>
+            <li className='px-16 py-20 text-13 text-neutral-400'>Yeni bildirişiniz yoxdur.</li>
           )}
           <li className='border-top border-neutral-30'>
             <Link

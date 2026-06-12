@@ -1,14 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchNotifications } from "@/lib/api";
+import { fetchNotifications, markNotificationsRead } from "@/lib/api";
+
+const emptyState = (page = 1) => ({
+  data: [],
+  meta: { page, perPage: 10, total: 0, totalPages: 1, unreadCount: 0 },
+});
 
 const AdminNotificationsPage = () => {
   const [page, setPage] = useState(1);
-  const [state, setState] = useState({
-    data: [],
-    meta: { page: 1, perPage: 10, total: 0, totalPages: 1, unreadCount: 0 },
-  });
+  const [state, setState] = useState(emptyState());
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -16,16 +18,39 @@ const AdminNotificationsPage = () => {
     setIsLoading(true);
 
     fetchNotifications({ page, perPage: 10 })
-      .then((response) => {
-        if (isMounted) setState(response);
+      .then(async (response) => {
+        if (!isMounted) return;
+
+        const unreadVisibleIds = response.data
+          .filter((notification) => !notification.isRead)
+          .map((notification) => notification.id);
+
+        setState(response);
+
+        if (unreadVisibleIds.length) {
+          await markNotificationsRead(unreadVisibleIds);
+
+          if (isMounted) {
+            setState((currentState) => ({
+              ...currentState,
+              data: currentState.data.map((notification) =>
+                unreadVisibleIds.includes(notification.id)
+                  ? { ...notification, isRead: true }
+                  : notification
+              ),
+              meta: {
+                ...currentState.meta,
+                unreadCount: Math.max(
+                  (currentState.meta?.unreadCount || 0) - unreadVisibleIds.length,
+                  0
+                ),
+              },
+            }));
+          }
+        }
       })
       .catch(() => {
-        if (isMounted) {
-          setState({
-            data: [],
-            meta: { page, perPage: 10, total: 0, totalPages: 1, unreadCount: 0 },
-          });
-        }
+        if (isMounted) setState(emptyState(page));
       })
       .finally(() => {
         if (isMounted) setIsLoading(false);

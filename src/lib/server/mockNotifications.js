@@ -13,6 +13,29 @@ export const mockNotifications = Array.from({ length: 23 }, (_, index) => {
   };
 });
 
+export const getMockNotifications = ({ unreadOnly = false } = {}) => {
+  const items = unreadOnly
+    ? mockNotifications.filter((item) => !item.isRead)
+    : mockNotifications;
+
+  return [...items].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+};
+
+export const markMockNotificationsRead = (ids = []) => {
+  const idSet = new Set(ids);
+
+  mockNotifications.forEach((item) => {
+    if (idSet.has(item.id)) {
+      item.isRead = true;
+    }
+  });
+
+  return {
+    updatedCount: mockNotifications.filter((item) => idSet.has(item.id)).length,
+    unreadCount: mockNotifications.filter((item) => !item.isRead).length,
+  };
+};
+
 export const paginate = (items, page = 1, perPage = 10) => {
   const safePage = Math.max(Number(page) || 1, 1);
   const safePerPage = Math.min(Math.max(Number(perPage) || 10, 1), 50);

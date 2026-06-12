@@ -162,5 +162,11 @@ export const resetPassword = (payload) =>
 
 export const fetchProfile = () => apiFetch("/auth/profile");
 
-export const fetchNotifications = ({ page = 1, perPage = 10 } = {}) =>
-  apiFetch(`/notifications?page=${page}&perPage=${perPage}`);
+export const fetchNotifications = ({ page = 1, perPage = 10, unreadOnly = false } = {}) =>
+  apiFetch(`/notifications?page=${page}&perPage=${perPage}&unreadOnly=${unreadOnly}`);
+
+export const markNotificationsRead = (ids) =>
+  apiFetch("/notifications/mark-read", {
+    method: "POST",
+    body: JSON.stringify({ ids }),
+  });
