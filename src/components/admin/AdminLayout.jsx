@@ -43,7 +43,11 @@ const AdminLayout = ({ children }) => {
           ></button>
         ) : null}
         <div className='dashbord-body flex-grow-1 min-h-screen d-flex flex-column'>
-          <AdminHeader user={user} onToggleSidebar={() => setSidebarOpen(true)} />
+          <AdminHeader
+            user={user}
+            onLogout={handleLogout}
+            onToggleSidebar={() => setSidebarOpen(true)}
+          />
           <main className='flex-grow-1'>{children}</main>
           <AdminFooter />
         </div>

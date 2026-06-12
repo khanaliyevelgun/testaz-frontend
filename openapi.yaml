@@ -20,6 +20,8 @@ servers:
 tags:
   - name: Auth
     description: Authentication and current-user endpoints.
+  - name: Notifications
+    description: User notification endpoints.
 paths:
   /auth/register:
     post:
@@ -218,6 +220,73 @@ paths:
           $ref: "#/components/responses/TooManyRequests"
         "500":
           $ref: "#/components/responses/ServerError"
+  /auth/reset-password:
+    post:
+      tags:
+        - Auth
+      summary: Reset password with token
+      description: |
+        Completes the forgot-password flow using the one-time token from the email reset link.
+
+        Tokens must be short-lived, single-use, and stored hashed server-side.
+      operationId: resetPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordRequest"
+      responses:
+        "200":
+          description: Password reset successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /notifications:
+    get:
+      tags:
+        - Notifications
+      summary: List current user notifications
+      description: Returns paginated notifications for the authenticated user.
+      operationId: listNotifications
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: perPage
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+      responses:
+        "200":
+          description: Paginated notifications.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationsResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
 components:
   securitySchemes:
     BearerAuth:
@@ -276,6 +345,27 @@ components:
           type: string
           format: password
           example: StrongPass123!
+    ResetPasswordRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - token
+        - password
+      properties:
+        token:
+          type: string
+          example: reset_opaque_token
+        email:
+          type: string
+          format: email
+          description: Optional when the reset token already identifies the account.
+          example: john@example.com
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 128
+          example: StrongPass123!
     AuthResponse:
       type: object
       additionalProperties: false
@@ -289,6 +379,9 @@ components:
           type: string
           description: Short-lived JWT access token. Do not persist in localStorage or sessionStorage.
           example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        message:
+          type: string
+          example: Login successful
     RefreshResponse:
       type: object
       additionalProperties: false
@@ -308,6 +401,15 @@ components:
         message:
           type: string
           example: Logged out successfully
+    MessageResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          example: Operation completed successfully
     User:
       type: object
       additionalProperties: false
@@ -330,12 +432,90 @@ components:
           example: john@example.com
         role:
           type: string
-          example: student
-          description: Role value reserved for future role-based access control.
+          enum:
+            - admin
+            - parent
+            - child
+          example: admin
+          description: Primary role used by the frontend dashboard guard.
+        roles:
+          type: array
+          description: Optional role list. Frontend accepts either role or roles.
+          items:
+            type: string
+            enum:
+              - admin
+              - parent
+              - child
+          example:
+            - admin
         createdAt:
           type: string
           format: date-time
           example: "2026-06-11T12:00:00.000Z"
+    Notification:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - title
+        - message
+        - isRead
+        - createdAt
+      properties:
+        id:
+          type: string
+          example: ntf_123
+        title:
+          type: string
+          example: Yeni imtahan təyin edildi
+        message:
+          type: string
+          example: Sizin üçün yeni imtahan yaradıldı.
+        isRead:
+          type: boolean
+          example: false
+        createdAt:
+          type: string
+          format: date-time
+          example: "2026-06-12T09:00:00.000Z"
+    PaginationMeta:
+      type: object
+      additionalProperties: false
+      required:
+        - page
+        - perPage
+        - total
+        - totalPages
+      properties:
+        page:
+          type: integer
+          example: 1
+        perPage:
+          type: integer
+          example: 10
+        total:
+          type: integer
+          example: 23
+        totalPages:
+          type: integer
+          example: 3
+        unreadCount:
+          type: integer
+          example: 7
+    NotificationsResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - data
+        - meta
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Notification"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
     ErrorResponse:
       type: object
       additionalProperties: false

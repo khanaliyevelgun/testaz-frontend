@@ -19,6 +19,7 @@ export const getAuthMockConfig = () => {
       email: process.env.AUTH_MOCK_EMAIL || "admin@example.com",
       role: normalizedRole,
       roles: [normalizedRole],
+      createdAt: "2026-06-12T00:00:00.000Z",
     },
   };
 };

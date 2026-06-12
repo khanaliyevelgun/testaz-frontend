@@ -1,5 +1,11 @@
-const AdminHeader = ({ onToggleSidebar, user }) => {
-  const name = user?.name || user?.fullName || user?.email || "Admin";
+import Link from "next/link";
+import AdminNotificationDropdown from "@/components/admin/AdminNotificationDropdown";
+import AdminProfileDropdown from "@/components/admin/AdminProfileDropdown";
+import { getPrimaryRole } from "@/lib/authRoles";
+
+const AdminHeader = ({ onToggleSidebar, onLogout, user }) => {
+  const role = getPrimaryRole(user);
+  const canCreateExam = role === "admin" || role === "parent";
 
   return (
     <div className='px-24 py-16 bg-neutral-10 border-bottom border-neutral-40 w-100'>
@@ -12,45 +18,20 @@ const AdminHeader = ({ onToggleSidebar, user }) => {
           >
             <i className='ph-bold ph-list'></i>
           </button>
-          <div className='max-w-357-px position-relative d-sm-block d-none'>
-            <form>
-              <input
-                type='text'
-                placeholder='Axtar'
-                className='ps-16 pe-36 py-9 border border-neutral-40 rounded-pill focus-visible-outline focus-border-main-600 text-14 line-height-1'
-              />
-              <button
-                type='button'
-                className='w-28 h-28 bg-main-600 text-white text-16 rounded-circle justify-content-center align-items-center d-flex position-absolute top-50-percent translate-middle-y inset-inline-end-0-px me-4'
-              >
-                <i className='ph-bold ph-magnifying-glass'></i>
-              </button>
-            </form>
-          </div>
+          <h5 className='mb-0 text-neutral-500 fw-semibold text-18'>İdarə paneli</h5>
         </div>
 
         <div className='d-flex align-items-center gap-16'>
-          <button
-            type='button'
-            className='px-20 py-10 border-main-600 border rounded-pill text-14 text-main-600 hover-bg-main-600 hover-text-white hover-border-600 d-lg-block d-none line-height-1'
-          >
-            Yeni kurs yarat
-          </button>
-          <button
-            type='button'
-            className='w-36 h-36 border-neutral-50 border rounded-pill justify-content-center align-items-center d-flex text-20 text-neutral-500 hover-bg-main-600 transition-03 hover-text-white'
-          >
-            <i className='ph ph-bell'></i>
-          </button>
-          <div className='d-flex align-items-center gap-8'>
-            <span className='w-36 h-36 rounded-circle bg-main-25 flex-center text-main-600'>
-              <i className='ph ph-user'></i>
-            </span>
-            <div className='d-sm-block d-none'>
-              <span className='text-14 fw-medium text-neutral-500 d-block'>{name}</span>
-              <span className='text-12 text-neutral-400'>Dashboard</span>
-            </div>
-          </div>
+          {canCreateExam ? (
+            <Link
+              href='/admin/exams/new'
+              className='px-20 py-10 border-main-600 border rounded-pill text-14 text-main-600 hover-bg-main-600 hover-text-white hover-border-600 d-lg-block d-none line-height-1'
+            >
+              Yeni imtahan yarat
+            </Link>
+          ) : null}
+          <AdminNotificationDropdown />
+          <AdminProfileDropdown user={user} onLogout={onLogout} />
         </div>
       </div>
     </div>
