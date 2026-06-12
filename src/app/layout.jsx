@@ -1,6 +1,7 @@
 import BootstrapInit from "@/helper/BootstrapInit";
 import RouteScrollToTop from "@/helper/RouteScrollToTop";
 import LoadPhosphorIcons from "@/helper/LoadPhosphorIcons";
+import { AuthProvider } from "@/stores/authStore";
 
 import "./font.css";
 import "./globals.scss";
@@ -19,7 +20,7 @@ export default function RootLayout({ children }) {
         <LoadPhosphorIcons />
 
         <RouteScrollToTop />
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

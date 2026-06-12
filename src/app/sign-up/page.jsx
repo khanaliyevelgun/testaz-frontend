@@ -2,7 +2,9 @@ import Breadcrumb from "@/components/Breadcrumb";
 import FooterOne from "@/components/FooterOne";
 import HeaderOne from "@/components/HeaderOne";
 import SignUpInner from "@/components/SignUpInner";
+import PublicOnlyRoute from "@/components/auth/PublicOnlyRoute";
 import Animation from "@/helper/Animation";
+import { Suspense } from "react";
 
 export const metadata = {
   title: "EduAll - LMS, Tutors, Education & Online Course NEXT JS Template",
@@ -23,7 +25,11 @@ const page = () => {
       <Breadcrumb title={"Sign Up"} />
 
       {/* SignUpInner */}
-      <SignUpInner />
+      <Suspense fallback={null}>
+        <PublicOnlyRoute>
+          <SignUpInner />
+        </PublicOnlyRoute>
+      </Suspense>
 
       {/* FooterOne */}
       <FooterOne />

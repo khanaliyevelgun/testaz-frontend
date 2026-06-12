@@ -1,0 +1,425 @@
+openapi: 3.1.0
+info:
+  title: EduAll Auth API
+  version: 1.0.0
+  description: |
+    JWT authentication contract for the EduAll frontend.
+
+    Security model:
+    - Access tokens are short-lived JWTs returned in JSON responses and must be stored only in frontend memory.
+    - Refresh tokens must never be returned in a response body. The backend sets and clears the refresh token as an HttpOnly cookie.
+    - Refresh cookie attributes: HttpOnly, Secure, SameSite=Lax or Strict in production when compatible, Path=/auth/refresh, Max-Age controlled by the backend.
+    - Refresh token rotation is recommended on every successful refresh, with reuse detection and server-side revocation.
+    - CORS must allow only approved frontend origins and must enable credentials only for those origins.
+    - Refresh and logout are cookie-authenticated state-changing endpoints. SameSite cookies reduce CSRF risk; add a CSRF token mechanism if cross-site flows require SameSite=Lax.
+servers:
+  - url: https://api.example.com
+    description: Production API
+  - url: http://localhost:8000
+    description: Local development API
+tags:
+  - name: Auth
+    description: Authentication and current-user endpoints.
+paths:
+  /auth/register:
+    post:
+      tags:
+        - Auth
+      summary: Register a new user
+      description: |
+        Creates a user and returns a short-lived access token. The refresh token is set by the backend as an HttpOnly cookie and is not included in the response body.
+
+        Rate limit required, for example 5 requests per minute per IP/email.
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: User registered successfully. Backend also sets the refresh token cookie.
+          headers:
+            Set-Cookie:
+              $ref: "#/components/headers/RefreshTokenCookie"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Login with email and password
+      description: |
+        Authenticates the user and returns a short-lived access token. The refresh token is set by the backend as an HttpOnly cookie and is not included in the response body.
+
+        Rate limit required, for example 5 requests per minute per IP/email. Error messages should not reveal whether the email or password was incorrect.
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login successful. Backend also sets the refresh token cookie.
+          headers:
+            Set-Cookie:
+              $ref: "#/components/headers/RefreshTokenCookie"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /auth/refresh:
+    post:
+      tags:
+        - Auth
+      summary: Rotate refresh token and issue a new access token
+      description: |
+        Uses the HttpOnly refresh token cookie. Request body is empty. On success, returns a new short-lived access token.
+
+        Rate limit required, for example 20 requests per minute per IP/session. Refresh token rotation, reuse detection, and server-side revocation are recommended.
+      operationId: refresh
+      security:
+        - RefreshCookieAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+      responses:
+        "200":
+          description: Access token refreshed successfully.
+          headers:
+            Set-Cookie:
+              $ref: "#/components/headers/RefreshTokenCookie"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RefreshResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /auth/logout:
+    post:
+      tags:
+        - Auth
+      summary: Logout current session
+      description: |
+        Revokes the refresh token server-side when possible and clears the refresh cookie. Client must always clear access token and user state after this call, including when the network request fails.
+
+        If the refresh cookie uses Path=/auth/refresh, the browser will not send it to /auth/logout. The backend should still clear the cookie by setting Set-Cookie with the same Path=/auth/refresh attributes, and should use an access-token/session identifier if server-side revocation is required at logout.
+
+        CSRF protection should be considered because this endpoint uses cookie credentials.
+      operationId: logout
+      security:
+        - RefreshCookieAuth: []
+      responses:
+        "200":
+          description: Logged out successfully.
+          headers:
+            Set-Cookie:
+              description: Clears the refresh token cookie with Max-Age=0 or an expired Expires value.
+              schema:
+                type: string
+                example: refreshToken=; HttpOnly; Secure; SameSite=Strict; Path=/auth/refresh; Max-Age=0
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LogoutResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /auth/profile:
+    get:
+      tags:
+        - Auth
+      summary: Get current user profile
+      description: Requires a valid Bearer access token.
+      operationId: getProfile
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Current user profile.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/ServerError"
+  /auth/forgot-password:
+    post:
+      tags:
+        - Auth
+      summary: Request password reset
+      description: |
+        Optional endpoint for public forgot-password flow. Always return a generic success message so user enumeration is not possible.
+
+        Rate limit required, for example 3 requests per hour per email/IP.
+      operationId: forgotPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        "200":
+          description: Generic reset response.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  message:
+                    type: string
+                    example: If the account exists, a reset link has been sent.
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/ServerError"
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "Short-lived access token sent as Authorization: Bearer <accessToken>."
+    RefreshCookieAuth:
+      type: apiKey
+      in: cookie
+      name: refreshToken
+      description: HttpOnly refresh token cookie. It is not readable by frontend JavaScript.
+  headers:
+    RefreshTokenCookie:
+      description: HttpOnly refresh token cookie set by backend.
+      schema:
+        type: string
+        example: refreshToken=opaque-token; HttpOnly; Secure; SameSite=Strict; Path=/auth/refresh; Max-Age=2592000
+  schemas:
+    RegisterRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - name
+        - email
+        - password
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+          example: John Doe
+        email:
+          type: string
+          format: email
+          example: john@example.com
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 128
+          example: StrongPass123!
+          description: Frontend may validate password shape, but backend validation is authoritative.
+    LoginRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: john@example.com
+        password:
+          type: string
+          format: password
+          example: StrongPass123!
+    AuthResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - user
+        - accessToken
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        accessToken:
+          type: string
+          description: Short-lived JWT access token. Do not persist in localStorage or sessionStorage.
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+    RefreshResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - accessToken
+      properties:
+        accessToken:
+          type: string
+          description: New short-lived JWT access token.
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+    LogoutResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          example: Logged out successfully
+    User:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - name
+        - email
+        - role
+        - createdAt
+      properties:
+        id:
+          type: string
+          example: usr_123
+        name:
+          type: string
+          example: John Doe
+        email:
+          type: string
+          format: email
+          example: john@example.com
+        role:
+          type: string
+          example: student
+          description: Role value reserved for future role-based access control.
+        createdAt:
+          type: string
+          format: date-time
+          example: "2026-06-11T12:00:00.000Z"
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          example: Request failed
+        code:
+          type: string
+          example: UNAUTHORIZED
+    ValidationErrorResponse:
+      allOf:
+        - $ref: "#/components/schemas/ErrorResponse"
+        - type: object
+          properties:
+            errors:
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                properties:
+                  field:
+                    type: string
+                    example: email
+                  message:
+                    type: string
+                    example: Invalid email address
+  responses:
+    ValidationError:
+      description: Validation error.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationErrorResponse"
+    Unauthorized:
+      description: Unauthorized. Token is missing, invalid, expired, or revoked.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            message: Unauthorized
+            code: UNAUTHORIZED
+    Forbidden:
+      description: Forbidden. User is authenticated but does not have permission.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            message: Forbidden
+            code: FORBIDDEN
+    Conflict:
+      description: Conflict, for example email already exists.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            message: Email already exists
+            code: CONFLICT
+    TooManyRequests:
+      description: Too many requests. Rate limit exceeded.
+      headers:
+        Retry-After:
+          description: Seconds until the client may retry.
+          schema:
+            type: integer
+            example: 60
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            message: Too many requests
+            code: RATE_LIMITED
+    ServerError:
+      description: Server error. Response must not expose sensitive internals.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            message: Server error
+            code: SERVER_ERROR
