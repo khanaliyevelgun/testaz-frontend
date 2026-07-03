@@ -1,5 +1,5 @@
-import AdminPlaceholderPage from "@/components/admin/AdminPlaceholderPage";
+import AdminReportsPage from "@/components/admin/AdminReportsPage";
 
 export default function Page() {
-  return <AdminPlaceholderPage title='Reports' description='Raporlar ve grafikler bu bölümde genişletilecek.' />;
+  return <AdminReportsPage />;
 }

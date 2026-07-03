@@ -19,7 +19,7 @@ const AdminNotificationDropdown = () => {
   const loadUnreadNotifications = () => {
     let isMounted = true;
 
-    fetchNotifications({ page: 1, perPage: 5, unreadOnly: true })
+    fetchNotifications({ page: 1, perPage: 10, unreadOnly: true })
       .then((response) => {
         if (isMounted) setNotifications(response || fallbackNotifications);
       })
@@ -46,7 +46,7 @@ const AdminNotificationDropdown = () => {
   }, []);
 
   const handleMarkVisibleRead = async () => {
-    const ids = notifications.data.map((item) => item.id);
+    const ids = notifications.data.filter((item) => !item.isRead).map((item) => item.id);
     if (!ids.length) return;
 
     await markNotificationsRead(ids);
@@ -65,7 +65,7 @@ const AdminNotificationDropdown = () => {
         className='w-36 h-36 border-neutral-50 border rounded-pill hover-bg-main-600 hover-text-white transition-03 position-relative'
         type='button'
         aria-expanded={isOpen}
-        aria-label='Bildirişlər'
+        aria-label='Notifications'
         onClick={() => setIsOpen((currentValue) => !currentValue)}
       >
         <i className='ph ph-bell-simple'></i>
@@ -82,14 +82,14 @@ const AdminNotificationDropdown = () => {
           style={{ insetInlineEnd: 0, insetInlineStart: "auto", minWidth: 340 }}
         >
           <li className='px-16 py-12 border-bottom border-neutral-30 d-flex align-items-center justify-content-between gap-12'>
-            <span className='fw-medium text-14 text-neutral-500'>Bildirişlər</span>
+            <span className='fw-medium text-14 text-neutral-500'>Notifications</span>
             <button
               type='button'
               className='text-12 text-main-600 fw-medium bg-transparent text-end'
               disabled={!notifications.data.length}
               onClick={handleMarkVisibleRead}
             >
-              Hamısını oxundu olaraq işarətlə
+              Mark visible as read
             </button>
           </li>
           {notifications.data.length ? (
@@ -97,7 +97,7 @@ const AdminNotificationDropdown = () => {
               <li key={item.id}>
                 <Link
                   className='dropdown-item d-flex align-items-start gap-12 px-16 py-12'
-                  href='/admin/notifications'
+                  href={item.href || "/admin/notifications"}
                   onClick={() => setIsOpen(false)}
                 >
                   <span className='w-32 h-32 rounded-circle bg-main-25 text-main-600 flex-center flex-shrink-0'>
@@ -112,7 +112,7 @@ const AdminNotificationDropdown = () => {
               </li>
             ))
           ) : (
-            <li className='px-16 py-20 text-13 text-neutral-400'>Yeni bildirişiniz yoxdur.</li>
+            <li className='px-16 py-20 text-13 text-neutral-400'>No new notifications.</li>
           )}
           <li className='border-top border-neutral-30'>
             <Link
@@ -120,7 +120,7 @@ const AdminNotificationDropdown = () => {
               className='dropdown-item text-center text-main-600 fw-medium py-12'
               onClick={() => setIsOpen(false)}
             >
-              Hamısını gör
+              View all
             </Link>
           </li>
         </ul>

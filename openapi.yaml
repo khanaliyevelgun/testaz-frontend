@@ -1,1100 +1,4081 @@
-openapi: 3.1.0
-info:
-  title: EduAll Auth API
-  version: 1.0.0
-  description: |
-    JWT authentication contract for the EduAll frontend.
-
-    Security model:
-    - Access tokens are short-lived JWTs returned in JSON responses and must be stored only in frontend memory.
-    - Refresh tokens must never be returned in a response body. The backend sets and clears the refresh token as an HttpOnly cookie.
-    - Refresh cookie attributes: HttpOnly, Secure, SameSite=Lax or Strict in production when compatible, Path=/auth/refresh, Max-Age controlled by the backend.
-    - Refresh token rotation is recommended on every successful refresh, with reuse detection and server-side revocation.
-    - CORS must allow only approved frontend origins and must enable credentials only for those origins.
-    - Refresh and logout are cookie-authenticated state-changing endpoints. SameSite cookies reduce CSRF risk; add a CSRF token mechanism if cross-site flows require SameSite=Lax.
-servers:
-  - url: https://api.example.com
-    description: Production API
-  - url: http://localhost:8000
-    description: Local development API
-tags:
-  - name: Auth
-    description: Authentication and current-user endpoints.
-  - name: Notifications
-    description: User notification endpoints.
-  - name: Users
-    description: Admin user management endpoints.
-  - name: Subjects
-    description: Subject and topic management endpoints.
-paths:
-  /auth/register:
-    post:
-      tags:
-        - Auth
-      summary: Register a new user
-      description: |
-        Creates a user and returns a short-lived access token. The refresh token is set by the backend as an HttpOnly cookie and is not included in the response body.
-
-        Rate limit required, for example 5 requests per minute per IP/email.
-      operationId: register
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RegisterRequest"
-      responses:
-        "201":
-          description: User registered successfully. Backend also sets the refresh token cookie.
-          headers:
-            Set-Cookie:
-              $ref: "#/components/headers/RefreshTokenCookie"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AuthResponse"
-        "400":
-          $ref: "#/components/responses/ValidationError"
-        "409":
-          $ref: "#/components/responses/Conflict"
-        "429":
-          $ref: "#/components/responses/TooManyRequests"
-        "500":
-          $ref: "#/components/responses/ServerError"
-  /auth/login:
-    post:
-      tags:
-        - Auth
-      summary: Login with email and password
-      description: |
-        Authenticates the user and returns a short-lived access token. The refresh token is set by the backend as an HttpOnly cookie and is not included in the response body.
-
-        Rate limit required, for example 5 requests per minute per IP/email. Error messages should not reveal whether the email or password was incorrect.
-      operationId: login
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/LoginRequest"
-      responses:
-        "200":
-          description: Login successful. Backend also sets the refresh token cookie.
-          headers:
-            Set-Cookie:
-              $ref: "#/components/headers/RefreshTokenCookie"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AuthResponse"
-        "400":
-          $ref: "#/components/responses/ValidationError"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "429":
-          $ref: "#/components/responses/TooManyRequests"
-        "500":
-          $ref: "#/components/responses/ServerError"
-  /auth/refresh:
-    post:
-      tags:
-        - Auth
-      summary: Rotate refresh token and issue a new access token
-      description: |
-        Uses the HttpOnly refresh token cookie. Request body is empty. On success, returns a new short-lived access token.
-
-        Rate limit required, for example 20 requests per minute per IP/session. Refresh token rotation, reuse detection, and server-side revocation are recommended.
-      operationId: refresh
-      security:
-        - RefreshCookieAuth: []
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              type: object
-              additionalProperties: false
-      responses:
-        "200":
-          description: Access token refreshed successfully.
-          headers:
-            Set-Cookie:
-              $ref: "#/components/headers/RefreshTokenCookie"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/RefreshResponse"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "429":
-          $ref: "#/components/responses/TooManyRequests"
-        "500":
-          $ref: "#/components/responses/ServerError"
-  /auth/logout:
-    post:
-      tags:
-        - Auth
-      summary: Logout current session
-      description: |
-        Revokes the refresh token server-side when possible and clears the refresh cookie. Client must always clear access token and user state after this call, including when the network request fails.
-
-        If the refresh cookie uses Path=/auth/refresh, the browser will not send it to /auth/logout. The backend should still clear the cookie by setting Set-Cookie with the same Path=/auth/refresh attributes, and should use an access-token/session identifier if server-side revocation is required at logout.
-
-        CSRF protection should be considered because this endpoint uses cookie credentials.
-      operationId: logout
-      security:
-        - RefreshCookieAuth: []
-      responses:
-        "200":
-          description: Logged out successfully.
-          headers:
-            Set-Cookie:
-              description: Clears the refresh token cookie with Max-Age=0 or an expired Expires value.
-              schema:
-                type: string
-                example: refreshToken=; HttpOnly; Secure; SameSite=Strict; Path=/auth/refresh; Max-Age=0
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/LogoutResponse"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "500":
-          $ref: "#/components/responses/ServerError"
-  /auth/profile:
-    get:
-      tags:
-        - Auth
-      summary: Get current user profile
-      description: Requires a valid Bearer access token.
-      operationId: getProfile
-      security:
-        - BearerAuth: []
-      responses:
-        "200":
-          description: Current user profile.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/User"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "500":
-          $ref: "#/components/responses/ServerError"
-  /auth/forgot-password:
-    post:
-      tags:
-        - Auth
-      summary: Request password reset
-      description: |
-        Optional endpoint for public forgot-password flow. Always return a generic success message so user enumeration is not possible.
-
-        Rate limit required, for example 3 requests per hour per email/IP.
-      operationId: forgotPassword
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              additionalProperties: false
-              required:
-                - email
-              properties:
-                email:
-                  type: string
-                  format: email
-      responses:
-        "200":
-          description: Generic reset response.
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties: false
-                properties:
-                  message:
-                    type: string
-                    example: If the account exists, a reset link has been sent.
-        "400":
-          $ref: "#/components/responses/ValidationError"
-        "429":
-          $ref: "#/components/responses/TooManyRequests"
-        "500":
-          $ref: "#/components/responses/ServerError"
-  /auth/reset-password:
-    post:
-      tags:
-        - Auth
-      summary: Reset password with token
-      description: |
-        Completes the forgot-password flow using the one-time token from the email reset link.
-
-        Tokens must be short-lived, single-use, and stored hashed server-side.
-      operationId: resetPassword
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ResetPasswordRequest"
-      responses:
-        "200":
-          description: Password reset successfully.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/MessageResponse"
-        "400":
-          $ref: "#/components/responses/ValidationError"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "429":
-          $ref: "#/components/responses/TooManyRequests"
-        "500":
-          $ref: "#/components/responses/ServerError"
-  /notifications:
-    get:
-      tags:
-        - Notifications
-      summary: List current user notifications
-      description: Returns paginated notifications for the authenticated user.
-      operationId: listNotifications
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: page
-          in: query
-          required: false
-          schema:
-            type: integer
-            minimum: 1
-            default: 1
-        - name: perPage
-          in: query
-          required: false
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 50
-            default: 10
-        - name: unreadOnly
-          in: query
-          required: false
-          schema:
-            type: boolean
-            default: false
-          description: When true, returns only unread notifications, newest first.
-      responses:
-        "200":
-          description: Paginated notifications.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/NotificationsResponse"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "500":
-          $ref: "#/components/responses/ServerError"
-  /notifications/mark-read:
-    post:
-      tags:
-        - Notifications
-      summary: Mark notifications as read
-      description: Marks the selected notifications as read for the authenticated user.
-      operationId: markNotificationsRead
-      security:
-        - BearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/MarkNotificationsReadRequest"
-      responses:
-        "200":
-          description: Notifications marked as read.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/MarkNotificationsReadResponse"
-        "400":
-          $ref: "#/components/responses/ValidationError"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "500":
-          $ref: "#/components/responses/ServerError"
-  /users:
-    get:
-      tags:
-        - Users
-      summary: List users
-      description: Lists users for admin user management.
-      operationId: listUsers
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: page
-          in: query
-          required: false
-          schema:
-            type: integer
-            minimum: 1
-            default: 1
-        - name: perPage
-          in: query
-          required: false
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 50
-            default: 10
-        - name: search
-          in: query
-          required: false
-          description: Case-insensitive search across user name and email.
-          schema:
-            type: string
-            example: aysel
-        - name: role
-          in: query
-          required: false
-          description: Filter users by role.
-          schema:
-            type: string
-            enum:
-              - admin
-              - parent
-              - child
-      responses:
-        "200":
-          description: Paginated users.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UsersResponse"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "500":
-          $ref: "#/components/responses/ServerError"
-  /users/{id}:
-    get:
-      tags:
-        - Users
-      summary: Get user
-      operationId: getUser
-      security:
-        - BearerAuth: []
-      parameters:
-        - $ref: "#/components/parameters/UserId"
-      responses:
-        "200":
-          description: User details.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/User"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/ServerError"
-    delete:
-      tags:
-        - Users
-      summary: Delete user
-      description: Deletes a user account after frontend confirmation.
-      operationId: deleteUser
-      security:
-        - BearerAuth: []
-      parameters:
-        - $ref: "#/components/parameters/UserId"
-      responses:
-        "200":
-          description: User deleted.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/MessageResponse"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/ServerError"
-  /subjects:
-    get:
-      tags:
-        - Subjects
-      summary: List subjects
-      operationId: listSubjects
-      security:
-        - BearerAuth: []
-      parameters:
-        - $ref: "#/components/parameters/Page"
-        - $ref: "#/components/parameters/PerPage"
-      responses:
-        "200":
-          description: Paginated subjects.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SubjectsResponse"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "500":
-          $ref: "#/components/responses/ServerError"
-    post:
-      tags:
-        - Subjects
-      summary: Create subject
-      operationId: createSubject
-      security:
-        - BearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CreateNamedEntityRequest"
-      responses:
-        "201":
-          description: Subject created.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Subject"
-        "400":
-          $ref: "#/components/responses/ValidationError"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-        "500":
-          $ref: "#/components/responses/ServerError"
-  /subjects/{id}:
-    get:
-      tags:
-        - Subjects
-      summary: Get subject
-      operationId: getSubject
-      security:
-        - BearerAuth: []
-      parameters:
-        - $ref: "#/components/parameters/SubjectId"
-      responses:
-        "200":
-          description: Subject details.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Subject"
-        "404":
-          $ref: "#/components/responses/NotFound"
-    delete:
-      tags:
-        - Subjects
-      summary: Delete subject
-      operationId: deleteSubject
-      security:
-        - BearerAuth: []
-      parameters:
-        - $ref: "#/components/parameters/SubjectId"
-      responses:
-        "200":
-          description: Subject deleted.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/MessageResponse"
-        "404":
-          $ref: "#/components/responses/NotFound"
-  /subjects/{id}/topics:
-    get:
-      tags:
-        - Subjects
-      summary: List subject topics
-      operationId: listTopics
-      security:
-        - BearerAuth: []
-      parameters:
-        - $ref: "#/components/parameters/SubjectId"
-        - $ref: "#/components/parameters/Page"
-        - $ref: "#/components/parameters/PerPage"
-      responses:
-        "200":
-          description: Paginated topics.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/TopicsResponse"
-        "404":
-          $ref: "#/components/responses/NotFound"
-    post:
-      tags:
-        - Subjects
-      summary: Create topic
-      operationId: createTopic
-      security:
-        - BearerAuth: []
-      parameters:
-        - $ref: "#/components/parameters/SubjectId"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CreateNamedEntityRequest"
-      responses:
-        "201":
-          description: Topic created.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Topic"
-        "400":
-          $ref: "#/components/responses/ValidationError"
-        "404":
-          $ref: "#/components/responses/NotFound"
-  /subjects/{id}/topics/{topicId}:
-    delete:
-      tags:
-        - Subjects
-      summary: Delete topic
-      operationId: deleteTopic
-      security:
-        - BearerAuth: []
-      parameters:
-        - $ref: "#/components/parameters/SubjectId"
-        - $ref: "#/components/parameters/TopicId"
-      responses:
-        "200":
-          description: Topic deleted.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/MessageResponse"
-        "404":
-          $ref: "#/components/responses/NotFound"
-components:
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-      description: "Short-lived access token sent as Authorization: Bearer <accessToken>."
-    RefreshCookieAuth:
-      type: apiKey
-      in: cookie
-      name: refreshToken
-      description: HttpOnly refresh token cookie. It is not readable by frontend JavaScript.
-  headers:
-    RefreshTokenCookie:
-      description: HttpOnly refresh token cookie set by backend.
-      schema:
-        type: string
-        example: refreshToken=opaque-token; HttpOnly; Secure; SameSite=Strict; Path=/auth/refresh; Max-Age=2592000
-  parameters:
-    UserId:
-      name: id
-      in: path
-      required: true
-      schema:
-        type: string
-      example: usr_123
-    SubjectId:
-      name: id
-      in: path
-      required: true
-      schema:
-        type: string
-      example: sub_123
-    TopicId:
-      name: topicId
-      in: path
-      required: true
-      schema:
-        type: string
-      example: top_123
-    Page:
-      name: page
-      in: query
-      required: false
-      schema:
-        type: integer
-        minimum: 1
-        default: 1
-    PerPage:
-      name: perPage
-      in: query
-      required: false
-      schema:
-        type: integer
-        minimum: 1
-        maximum: 50
-        default: 10
-  schemas:
-    RegisterRequest:
-      type: object
-      additionalProperties: false
-      required:
-        - name
-        - email
-        - password
-      properties:
-        name:
-          type: string
-          minLength: 2
-          maxLength: 100
-          example: John Doe
-        email:
-          type: string
-          format: email
-          example: john@example.com
-        password:
-          type: string
-          format: password
-          minLength: 8
-          maxLength: 128
-          example: StrongPass123!
-          description: Frontend may validate password shape, but backend validation is authoritative.
-    LoginRequest:
-      type: object
-      additionalProperties: false
-      required:
-        - email
-        - password
-      properties:
-        email:
-          type: string
-          format: email
-          example: john@example.com
-        password:
-          type: string
-          format: password
-          example: StrongPass123!
-    ResetPasswordRequest:
-      type: object
-      additionalProperties: false
-      required:
-        - token
-        - password
-      properties:
-        token:
-          type: string
-          example: reset_opaque_token
-        email:
-          type: string
-          format: email
-          description: Optional when the reset token already identifies the account.
-          example: john@example.com
-        password:
-          type: string
-          format: password
-          minLength: 8
-          maxLength: 128
-          example: StrongPass123!
-    AuthResponse:
-      type: object
-      additionalProperties: false
-      required:
-        - user
-        - accessToken
-      properties:
-        user:
-          $ref: "#/components/schemas/User"
-        accessToken:
-          type: string
-          description: Short-lived JWT access token. Do not persist in localStorage or sessionStorage.
-          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-        message:
-          type: string
-          example: Login successful
-    RefreshResponse:
-      type: object
-      additionalProperties: false
-      required:
-        - accessToken
-      properties:
-        accessToken:
-          type: string
-          description: New short-lived JWT access token.
-          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-    LogoutResponse:
-      type: object
-      additionalProperties: false
-      required:
-        - message
-      properties:
-        message:
-          type: string
-          example: Logged out successfully
-    MessageResponse:
-      type: object
-      additionalProperties: false
-      required:
-        - message
-      properties:
-        message:
-          type: string
-          example: Operation completed successfully
-    User:
-      type: object
-      additionalProperties: false
-      required:
-        - id
-        - name
-        - email
-        - role
-        - createdAt
-      properties:
-        id:
-          type: string
-          example: usr_123
-        name:
-          type: string
-          example: John Doe
-        firstName:
-          type: string
-          example: John
-        lastName:
-          type: string
-          example: Doe
-        email:
-          type: string
-          format: email
-          example: john@example.com
-        role:
-          type: string
-          enum:
-            - admin
-            - parent
-            - child
-          example: admin
-          description: Primary role used by the frontend dashboard guard.
-        roles:
-          type: array
-          description: Optional role list. Frontend accepts either role or roles.
-          items:
-            type: string
-            enum:
-              - admin
-              - parent
-              - child
-          example:
-            - admin
-        createdAt:
-          type: string
-          format: date-time
-          example: "2026-06-11T12:00:00.000Z"
-    Notification:
-      type: object
-      additionalProperties: false
-      required:
-        - id
-        - title
-        - message
-        - isRead
-        - createdAt
-      properties:
-        id:
-          type: string
-          example: ntf_123
-        title:
-          type: string
-          example: Yeni imtahan təyin edildi
-        message:
-          type: string
-          example: Sizin üçün yeni imtahan yaradıldı.
-        isRead:
-          type: boolean
-          example: false
-        createdAt:
-          type: string
-          format: date-time
-          example: "2026-06-12T09:00:00.000Z"
-    PaginationMeta:
-      type: object
-      additionalProperties: false
-      required:
-        - page
-        - perPage
-        - total
-        - totalPages
-      properties:
-        page:
-          type: integer
-          example: 1
-        perPage:
-          type: integer
-          example: 10
-        total:
-          type: integer
-          example: 23
-        totalPages:
-          type: integer
-          example: 3
-        unreadCount:
-          type: integer
-          example: 7
-    NotificationsResponse:
-      type: object
-      additionalProperties: false
-      required:
-        - data
-        - meta
-      properties:
-        data:
-          type: array
-          items:
-            $ref: "#/components/schemas/Notification"
-        meta:
-          $ref: "#/components/schemas/PaginationMeta"
-    UsersResponse:
-      type: object
-      additionalProperties: false
-      required:
-        - data
-        - meta
-      properties:
-        data:
-          type: array
-          items:
-            $ref: "#/components/schemas/User"
-        meta:
-          $ref: "#/components/schemas/PaginationMeta"
-    CreateNamedEntityRequest:
-      type: object
-      additionalProperties: false
-      required:
-        - name
-      properties:
-        name:
-          type: string
-          minLength: 1
-          maxLength: 120
-          example: Riyaziyyat
-    Subject:
-      type: object
-      additionalProperties: false
-      required:
-        - id
-        - name
-        - topicCount
-        - status
-        - createdAt
-      properties:
-        id:
-          type: string
-          example: sub_123
-        name:
-          type: string
-          example: Riyaziyyat
-        topicCount:
-          type: integer
-          example: 3
-        status:
-          type: string
-          enum:
-            - active
-            - inactive
-          example: active
-        createdAt:
-          type: string
-          format: date-time
-    Topic:
-      type: object
-      additionalProperties: false
-      required:
-        - id
-        - subjectId
-        - name
-        - questionCount
-        - status
-        - createdAt
-      properties:
-        id:
-          type: string
-          example: top_123
-        subjectId:
-          type: string
-          example: sub_123
-        name:
-          type: string
-          example: Faizlər
-        questionCount:
-          type: integer
-          example: 42
-        status:
-          type: string
-          enum:
-            - active
-            - inactive
-          example: active
-        createdAt:
-          type: string
-          format: date-time
-    SubjectsResponse:
-      type: object
-      additionalProperties: false
-      required:
-        - data
-        - meta
-      properties:
-        data:
-          type: array
-          items:
-            $ref: "#/components/schemas/Subject"
-        meta:
-          $ref: "#/components/schemas/PaginationMeta"
-    TopicsResponse:
-      type: object
-      additionalProperties: false
-      required:
-        - data
-        - meta
-      properties:
-        data:
-          type: array
-          items:
-            $ref: "#/components/schemas/Topic"
-        meta:
-          $ref: "#/components/schemas/PaginationMeta"
-    MarkNotificationsReadRequest:
-      type: object
-      additionalProperties: false
-      required:
-        - ids
-      properties:
-        ids:
-          type: array
-          minItems: 1
-          items:
-            type: string
-          example:
-            - ntf_123
-            - ntf_124
-    MarkNotificationsReadResponse:
-      type: object
-      additionalProperties: false
-      required:
-        - message
-        - updatedCount
-        - unreadCount
-      properties:
-        message:
-          type: string
-          example: Notifications marked as read.
-        updatedCount:
-          type: integer
-          example: 2
-        unreadCount:
-          type: integer
-          example: 5
-    ErrorResponse:
-      type: object
-      additionalProperties: false
-      required:
-        - message
-      properties:
-        message:
-          type: string
-          example: Request failed
-        code:
-          type: string
-          example: UNAUTHORIZED
-    ValidationErrorResponse:
-      allOf:
-        - $ref: "#/components/schemas/ErrorResponse"
-        - type: object
-          properties:
-            errors:
-              type: array
-              items:
-                type: object
-                additionalProperties: false
-                properties:
-                  field:
-                    type: string
-                    example: email
-                  message:
-                    type: string
-                    example: Invalid email address
-  responses:
-    ValidationError:
-      description: Validation error.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ValidationErrorResponse"
-    Unauthorized:
-      description: Unauthorized. Token is missing, invalid, expired, or revoked.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorResponse"
-          example:
-            message: Unauthorized
-            code: UNAUTHORIZED
-    Forbidden:
-      description: Forbidden. User is authenticated but does not have permission.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorResponse"
-          example:
-            message: Forbidden
-            code: FORBIDDEN
-    Conflict:
-      description: Conflict, for example email already exists.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorResponse"
-          example:
-            message: Email already exists
-            code: CONFLICT
-    NotFound:
-      description: Resource not found.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorResponse"
-          example:
-            message: Resource not found
-            code: NOT_FOUND
-    TooManyRequests:
-      description: Too many requests. Rate limit exceeded.
-      headers:
-        Retry-After:
-          description: Seconds until the client may retry.
-          schema:
-            type: integer
-            example: 60
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorResponse"
-          example:
-            message: Too many requests
-            code: RATE_LIMITED
-    ServerError:
-      description: Server error. Response must not expose sensitive internals.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorResponse"
-          example:
-            message: Server error
-            code: SERVER_ERROR
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "testaz API",
+    "description": "Backend API for the testaz test/quiz platform (Azerbaijan).",
+    "version": "v1"
+  },
+  "servers": [
+    {
+      "url": "http://192.168.100.39:8080",
+      "description": "Generated server url"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Student",
+      "description": "Student profile and parent-link codes"
+    },
+    {
+      "name": "Admin: AI",
+      "description": "AI question generation jobs"
+    },
+    {
+      "name": "Parent",
+      "description": "Parent profile, child linking, and child results"
+    },
+    {
+      "name": "Authentication",
+      "description": "Registration, login, token refresh, logout"
+    },
+    {
+      "name": "Exams",
+      "description": "Official exam blueprints (Buraxılış, Qəbul)"
+    },
+    {
+      "name": "Account",
+      "description": "Verification and password reset"
+    },
+    {
+      "name": "Notifications",
+      "description": "In-app inbox and channel preferences"
+    },
+    {
+      "name": "Taxonomy",
+      "description": "Subjects, grades, and topics (reference data)"
+    },
+    {
+      "name": "Organization",
+      "description": "Course/tutor/school org management, invites, and dashboards"
+    },
+    {
+      "name": "Results",
+      "description": "Result page and history"
+    },
+    {
+      "name": "Test Sessions",
+      "description": "Take a test: start, autosave answers, submit"
+    },
+    {
+      "name": "Admin: Questions",
+      "description": "Question bank CRUD and review"
+    },
+    {
+      "name": "System",
+      "description": "Liveness and meta endpoints"
+    }
+  ],
+  "paths": {
+    "/api/v1/students/me": {
+      "get": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "Get my student profile (created on first access)",
+        "operationId": "getProfile",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseStudentProfileResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "Update my student profile (grade, guardian consent)",
+        "operationId": "updateProfile",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStudentProfileRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseStudentProfileResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/sessions/{id}/questions/{sessionQuestionId}/answer": {
+      "put": {
+        "tags": [
+          "Test Sessions"
+        ],
+        "summary": "Autosave the answer to one question",
+        "operationId": "saveAnswer",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "sessionQuestionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveAnswerRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAnswerAck"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/parents/me": {
+      "get": {
+        "tags": [
+          "Parent"
+        ],
+        "summary": "Get my parent profile (created on first access)",
+        "operationId": "getProfile_1",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseParentProfileResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Parent"
+        ],
+        "summary": "Update my parent profile (notification preference)",
+        "operationId": "updateProfile_1",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateParentProfileRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseParentProfileResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/notifications/preferences": {
+      "get": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "Get my channel preferences",
+        "operationId": "preferences",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseNotificationPreferencesResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "Update my channel preferences (partial)",
+        "operationId": "updatePreferences",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateNotificationPreferencesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseNotificationPreferencesResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/students/me/link-codes": {
+      "post": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "Generate a single-use, time-limited parent-link code to share with a parent",
+        "operationId": "generateLinkCode",
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseParentLinkCodeResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/sessions": {
+      "post": {
+        "tags": [
+          "Test Sessions"
+        ],
+        "summary": "Start a new test session (practice/custom)",
+        "operationId": "start",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartSessionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseSessionResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/sessions/{id}/submit": {
+      "post": {
+        "tags": [
+          "Test Sessions"
+        ],
+        "summary": "Submit a session (finalizes; scoring follows)",
+        "operationId": "submit",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseSessionResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/parents/me/links": {
+      "post": {
+        "tags": [
+          "Parent"
+        ],
+        "summary": "Link to a child by redeeming the code they generated",
+        "operationId": "link",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RedeemCodeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseLinkedChildResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/organizations": {
+      "post": {
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Create an organization (owner = current user)",
+        "operationId": "create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrganizationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOrganizationResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/organizations/{orgId}/invites": {
+      "post": {
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Create a fixed test + shareable invite code (owner only)",
+        "operationId": "createInvite",
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInviteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseInviteResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/organizations/invites/{code}/redeem": {
+      "post": {
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Redeem a join code: join the org + start/resume the invited test",
+        "operationId": "redeem",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseSessionResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/notifications/{id}/read": {
+      "post": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "Mark one of my notifications as read (idempotent)",
+        "operationId": "markRead",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/verification/send": {
+      "post": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Send a verification code to the account's email or phone",
+        "operationId": "sendVerification",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendVerificationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/verification/confirm": {
+      "post": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Confirm a verification code (activates the account)",
+        "operationId": "confirmVerification",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmVerificationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Register a new account (PENDING until verified)",
+        "operationId": "register",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseRegisterResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Rotate tokens using a valid refresh token",
+        "operationId": "refresh",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAuthTokensResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/password/reset": {
+      "post": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Reset the password using a code",
+        "operationId": "resetPassword",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/password/forgot": {
+      "post": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Request a password reset code",
+        "operationId": "forgotPassword",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Log out: blacklist the access token and revoke the refresh family",
+        "operationId": "logout",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LogoutRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Log in and receive access + refresh tokens",
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAuthTokensResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/questions": {
+      "get": {
+        "tags": [
+          "Admin: Questions"
+        ],
+        "summary": "List questions (paginated, filterable by subject and status)",
+        "operationId": "list",
+        "parameters": [
+          {
+            "name": "subjectId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DRAFT",
+                "PENDING_REVIEW",
+                "ACTIVE",
+                "REJECTED",
+                "ARCHIVED"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponsePageResponseQuestionSummaryResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Admin: Questions"
+        ],
+        "summary": "Create a question (starts as DRAFT)",
+        "operationId": "create_1",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateQuestionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseQuestionResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/questions/{id}/reject": {
+      "post": {
+        "tags": [
+          "Admin: Questions"
+        ],
+        "summary": "Reject a question (→ REJECTED)",
+        "operationId": "reject",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/questions/{id}/archive": {
+      "post": {
+        "tags": [
+          "Admin: Questions"
+        ],
+        "summary": "Archive a question (→ ARCHIVED)",
+        "operationId": "archive",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/questions/{id}/approve": {
+      "post": {
+        "tags": [
+          "Admin: Questions"
+        ],
+        "summary": "Approve a question (→ ACTIVE)",
+        "operationId": "approve",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/ai/generate": {
+      "post": {
+        "tags": [
+          "Admin: AI"
+        ],
+        "summary": "Trigger a generation job (runs asynchronously)",
+        "operationId": "generate",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateQuestionsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAiGenerationJobResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/subjects": {
+      "get": {
+        "tags": [
+          "Taxonomy"
+        ],
+        "summary": "List active subjects",
+        "operationId": "getSubjects",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseListSubjectResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/subjects/{code}/topics": {
+      "get": {
+        "tags": [
+          "Taxonomy"
+        ],
+        "summary": "List topics for a subject",
+        "operationId": "getTopics",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "MATH",
+                "PHYSICS",
+                "CHEM",
+                "BIO",
+                "AZ_LANG",
+                "AZ_LIT",
+                "HISTORY",
+                "GEOGRAPHY",
+                "ENGLISH",
+                "RUSSIAN",
+                "IT"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseListTopicResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{id}": {
+      "get": {
+        "tags": [
+          "Test Sessions"
+        ],
+        "summary": "Get a session to take or resume (no correct answers exposed)",
+        "operationId": "get",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseSessionResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/sessions/{id}/result": {
+      "get": {
+        "tags": [
+          "Results"
+        ],
+        "summary": "Get the result for a submitted session (score, correct answers, weak areas)",
+        "operationId": "getForSession",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseResultResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/results": {
+      "get": {
+        "tags": [
+          "Results"
+        ],
+        "summary": "List my results (paginated, newest first)",
+        "operationId": "myResults",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponsePageResponseResultSummaryResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/ping": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Liveness ping",
+        "description": "Returns service status and server time.",
+        "operationId": "ping",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponsePingResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/parents/me/children": {
+      "get": {
+        "tags": [
+          "Parent"
+        ],
+        "summary": "List the children I am linked to",
+        "operationId": "children",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseListLinkedChildResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/parents/me/children/{studentId}/sessions/{sessionId}/result": {
+      "get": {
+        "tags": [
+          "Parent"
+        ],
+        "summary": "Get a linked child's full result (score + correct answers + weak areas)",
+        "operationId": "childResult",
+        "parameters": [
+          {
+            "name": "studentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseResultResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/parents/me/children/{studentId}/results": {
+      "get": {
+        "tags": [
+          "Parent"
+        ],
+        "summary": "List a linked child's results (paginated, newest first)",
+        "operationId": "childResults",
+        "parameters": [
+          {
+            "name": "studentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponsePageResponseResultSummaryResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/organizations/{orgId}/tests/{testId}/results": {
+      "get": {
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Results dashboard for a test invited within this org (owner only, paginated)",
+        "operationId": "testResults",
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "testId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponsePageResponseTestResultSummaryResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/organizations/{orgId}/members": {
+      "get": {
+        "tags": [
+          "Organization"
+        ],
+        "summary": "List an organization's members (owner only, paginated)",
+        "operationId": "members",
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponsePageResponseMemberResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/organizations/me": {
+      "get": {
+        "tags": [
+          "Organization"
+        ],
+        "summary": "List organizations I own",
+        "operationId": "myOrganizations",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseListOrganizationResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/notifications": {
+      "get": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "List my notifications (paginated, newest first)",
+        "operationId": "list_1",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponsePageResponseNotificationResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/notifications/unread-count": {
+      "get": {
+        "tags": [
+          "Notifications"
+        ],
+        "summary": "Count my unread notifications (for the badge)",
+        "operationId": "unreadCount",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseLong"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/grades": {
+      "get": {
+        "tags": [
+          "Taxonomy"
+        ],
+        "summary": "List grades",
+        "operationId": "getGrades",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseListGradeResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/exam-definitions": {
+      "get": {
+        "tags": [
+          "Exams"
+        ],
+        "summary": "List official exam blueprints",
+        "operationId": "getExamDefinitions",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseListExamDefinitionSummaryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/exam-definitions/{code}": {
+      "get": {
+        "tags": [
+          "Exams"
+        ],
+        "summary": "Get a full exam blueprint (groups + weighted subject slots)",
+        "operationId": "getBlueprint",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "BURAXILIS",
+                "QEBUL"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseExamDefinitionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Current authenticated user",
+        "operationId": "me",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseMeResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/questions/{id}": {
+      "get": {
+        "tags": [
+          "Admin: Questions"
+        ],
+        "summary": "Get a question with options and accepted answers",
+        "operationId": "get_1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseQuestionResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/ai/jobs": {
+      "get": {
+        "tags": [
+          "Admin: AI"
+        ],
+        "summary": "List generation jobs (most recent first)",
+        "operationId": "listJobs",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponsePageResponseAiGenerationJobResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/ai/jobs/{id}": {
+      "get": {
+        "tags": [
+          "Admin: AI"
+        ],
+        "summary": "Get a generation job",
+        "operationId": "getJob",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAiGenerationJobResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/parents/me/links/{studentId}": {
+      "delete": {
+        "tags": [
+          "Parent"
+        ],
+        "summary": "Revoke my link to a child (stops all access to their data)",
+        "operationId": "revokeLink",
+        "parameters": [
+          {
+            "name": "studentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "UpdateStudentProfileRequest": {
+        "type": "object",
+        "properties": {
+          "gradeId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "guardianConsent": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ApiResponseStudentProfileResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/StudentProfileResponse"
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "StudentProfileResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "gradeId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "guardianConsent": {
+            "type": "boolean"
+          }
+        }
+      },
+      "SaveAnswerRequest": {
+        "type": "object",
+        "properties": {
+          "selectedOptionIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "maxItems": 10,
+            "minItems": 0
+          },
+          "answerText": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 0
+          }
+        }
+      },
+      "AnswerAck": {
+        "type": "object",
+        "properties": {
+          "answeredCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "answeredAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ApiResponseAnswerAck": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/AnswerAck"
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "UpdateParentProfileRequest": {
+        "type": "object",
+        "properties": {
+          "notifyOnChildResult": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ApiResponseParentProfileResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ParentProfileResponse"
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ParentProfileResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "notifyOnChildResult": {
+            "type": "boolean"
+          }
+        }
+      },
+      "UpdateNotificationPreferencesRequest": {
+        "type": "object",
+        "properties": {
+          "emailEnabled": {
+            "type": "boolean"
+          },
+          "smsEnabled": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ApiResponseNotificationPreferencesResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/NotificationPreferencesResponse"
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "NotificationPreferencesResponse": {
+        "type": "object",
+        "properties": {
+          "emailEnabled": {
+            "type": "boolean"
+          },
+          "smsEnabled": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ApiResponseParentLinkCodeResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ParentLinkCodeResponse"
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ParentLinkCodeResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "consumed": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "StartSessionRequest": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "PRACTICE",
+              "OFFICIAL_EXAM",
+              "CUSTOM"
+            ]
+          },
+          "subjectId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "topicId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "gradeId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "difficulty": {
+            "type": "string",
+            "enum": [
+              "EASY",
+              "MEDIUM",
+              "HARD"
+            ]
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32",
+            "maximum": 100,
+            "minimum": 1
+          },
+          "examCode": {
+            "type": "string",
+            "enum": [
+              "BURAXILIS",
+              "QEBUL"
+            ]
+          },
+          "examGroupCode": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "ApiResponseSessionResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/SessionResponse"
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "SessionOptionResponse": {
+        "type": "object",
+        "properties": {
+          "optionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "content": {
+            "type": "string"
+          },
+          "orderIndex": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "SessionQuestionResponse": {
+        "type": "object",
+        "properties": {
+          "sessionQuestionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orderIndex": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "subjectId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "slotIndex": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "SINGLE_CHOICE",
+              "MULTIPLE_CHOICE",
+              "SHORT_TEXT"
+            ]
+          },
+          "stem": {
+            "type": "string"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SessionOptionResponse"
+            }
+          },
+          "selectedOptionIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "answerText": {
+            "type": "string"
+          }
+        }
+      },
+      "SessionResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "PRACTICE",
+              "OFFICIAL_EXAM",
+              "CUSTOM"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "IN_PROGRESS",
+              "SUBMITTED",
+              "EXPIRED",
+              "ABANDONED"
+            ]
+          },
+          "subjectId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "topicId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "gradeId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "difficulty": {
+            "type": "string",
+            "enum": [
+              "EASY",
+              "MEDIUM",
+              "HARD"
+            ]
+          },
+          "totalQuestions": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "answeredCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "durationMinutes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "submittedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SessionQuestionResponse"
+            }
+          }
+        }
+      },
+      "RedeemCodeRequest": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "code"
+        ]
+      },
+      "ApiResponseLinkedChildResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/LinkedChildResponse"
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "LinkedChildResponse": {
+        "type": "object",
+        "properties": {
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "linkedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreateOrganizationRequest": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "COURSE",
+              "PRIVATE_TUTOR",
+              "SCHOOL"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 0
+          }
+        },
+        "required": [
+          "name",
+          "type"
+        ]
+      },
+      "ApiResponseOrganizationResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/OrganizationResponse"
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "OrganizationResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "COURSE",
+              "PRIVATE_TUTOR",
+              "SCHOOL"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "ARCHIVED"
+            ]
+          }
+        }
+      },
+      "CreateInviteRequest": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 0
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 0
+          },
+          "subjectId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "gradeId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "topicId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "difficulty": {
+            "type": "string",
+            "enum": [
+              "EASY",
+              "MEDIUM",
+              "HARD"
+            ]
+          },
+          "questionCount": {
+            "type": "integer",
+            "format": "int32",
+            "maximum": 100,
+            "minimum": 1
+          },
+          "durationMinutes": {
+            "type": "integer",
+            "format": "int32",
+            "maximum": 600,
+            "minimum": 1
+          },
+          "maxUses": {
+            "type": "integer",
+            "format": "int32",
+            "maximum": 10000,
+            "minimum": 1
+          },
+          "ttlHours": {
+            "type": "integer",
+            "format": "int32",
+            "maximum": 8760,
+            "minimum": 1
+          }
+        },
+        "required": [
+          "difficulty",
+          "questionCount",
+          "subjectId"
+        ]
+      },
+      "ApiResponseInviteResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/InviteResponse"
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "InviteResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "testId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "maxUses": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "usedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "DISABLED"
+            ]
+          }
+        }
+      },
+      "SendVerificationRequest": {
+        "type": "object",
+        "properties": {
+          "login": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "login"
+        ]
+      },
+      "ConfirmVerificationRequest": {
+        "type": "object",
+        "properties": {
+          "login": {
+            "type": "string",
+            "minLength": 1
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "code",
+          "login"
+        ]
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "maxLength": 150,
+            "minLength": 0
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 255,
+            "minLength": 0
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 32,
+            "minLength": 0,
+            "pattern": "^\\+?[0-9]{7,15}$"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 8
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "STUDENT",
+              "PARENT",
+              "COURSE",
+              "PRIVATE_TUTOR",
+              "SCHOOL_TEACHER",
+              "ADMIN"
+            ]
+          }
+        },
+        "required": [
+          "fullName",
+          "password",
+          "role"
+        ]
+      },
+      "ApiResponseRegisterResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/RegisterResponse"
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "RegisterResponse": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "RefreshRequest": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "ApiResponseAuthTokensResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/AuthTokensResponse"
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AuthTokensResponse": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "refreshToken": {
+            "type": "string"
+          },
+          "tokenType": {
+            "type": "string"
+          },
+          "expiresIn": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "refreshExpiresIn": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "ResetPasswordRequest": {
+        "type": "object",
+        "properties": {
+          "login": {
+            "type": "string",
+            "minLength": 1
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "newPassword": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 8
+          }
+        },
+        "required": [
+          "code",
+          "login",
+          "newPassword"
+        ]
+      },
+      "ForgotPasswordRequest": {
+        "type": "object",
+        "properties": {
+          "login": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "login"
+        ]
+      },
+      "LogoutRequest": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "login": {
+            "type": "string",
+            "minLength": 1
+          },
+          "password": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "login",
+          "password"
+        ]
+      },
+      "AcceptedAnswerRequest": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 0
+          },
+          "matchType": {
+            "type": "string",
+            "enum": [
+              "EXACT",
+              "NORMALIZED",
+              "NUMERIC",
+              "REGEX"
+            ]
+          },
+          "caseSensitive": {
+            "type": "boolean"
+          },
+          "orderIndex": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "required": [
+          "matchType",
+          "value"
+        ]
+      },
+      "CreateQuestionRequest": {
+        "type": "object",
+        "properties": {
+          "subjectId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "gradeId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "topicId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "difficulty": {
+            "type": "string",
+            "enum": [
+              "EASY",
+              "MEDIUM",
+              "HARD"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "SINGLE_CHOICE",
+              "MULTIPLE_CHOICE",
+              "SHORT_TEXT"
+            ]
+          },
+          "stem": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 0
+          },
+          "explanation": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 0
+          },
+          "language": {
+            "type": "string",
+            "pattern": "^[a-z]{2}$"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuestionOptionRequest"
+            },
+            "maxItems": 10,
+            "minItems": 0
+          },
+          "acceptedAnswers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AcceptedAnswerRequest"
+            },
+            "maxItems": 10,
+            "minItems": 0
+          }
+        },
+        "required": [
+          "difficulty",
+          "stem",
+          "subjectId",
+          "type"
+        ]
+      },
+      "QuestionOptionRequest": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 0
+          },
+          "correct": {
+            "type": "boolean"
+          },
+          "orderIndex": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "required": [
+          "content"
+        ]
+      },
+      "AcceptedAnswerResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "value": {
+            "type": "string"
+          },
+          "matchType": {
+            "type": "string"
+          },
+          "caseSensitive": {
+            "type": "boolean"
+          },
+          "orderIndex": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "ApiResponseQuestionResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/QuestionResponse"
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "QuestionOptionResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "content": {
+            "type": "string"
+          },
+          "correct": {
+            "type": "boolean"
+          },
+          "orderIndex": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "QuestionResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "subjectId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "gradeId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "topicId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "difficulty": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "stem": {
+            "type": "string"
+          },
+          "explanation": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "language": {
+            "type": "string"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuestionOptionResponse"
+            }
+          },
+          "acceptedAnswers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AcceptedAnswerResponse"
+            }
+          },
+          "timesUsed": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "GenerateQuestionsRequest": {
+        "type": "object",
+        "properties": {
+          "subjectId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "gradeId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "topicId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "difficulty": {
+            "type": "string",
+            "enum": [
+              "EASY",
+              "MEDIUM",
+              "HARD"
+            ]
+          },
+          "questionType": {
+            "type": "string",
+            "enum": [
+              "SINGLE_CHOICE",
+              "MULTIPLE_CHOICE",
+              "SHORT_TEXT"
+            ]
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32",
+            "maximum": 50,
+            "minimum": 1
+          }
+        },
+        "required": [
+          "difficulty",
+          "questionType",
+          "subjectId"
+        ]
+      },
+      "AiGenerationJobResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "trigger": {
+            "type": "string"
+          },
+          "subjectId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "gradeId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "topicId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "difficulty": {
+            "type": "string"
+          },
+          "questionType": {
+            "type": "string"
+          },
+          "requestedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "generatedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "status": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "errorMessage": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ApiResponseAiGenerationJobResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/AiGenerationJobResponse"
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ApiResponseListSubjectResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubjectResponse"
+            }
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "SubjectResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "code": {
+            "type": "string"
+          },
+          "nameAz": {
+            "type": "string"
+          },
+          "nameEn": {
+            "type": "string"
+          }
+        }
+      },
+      "ApiResponseListTopicResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TopicResponse"
+            }
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "TopicResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "code": {
+            "type": "string"
+          },
+          "nameAz": {
+            "type": "string"
+          },
+          "parentTopicId": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "ApiResponseResultResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ResultResponse"
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ResultDetailResponse": {
+        "type": "object",
+        "properties": {
+          "questionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "subjectId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "topicId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "slotIndex": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "orderIndex": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "questionType": {
+            "type": "string",
+            "enum": [
+              "SINGLE_CHOICE",
+              "MULTIPLE_CHOICE",
+              "SHORT_TEXT"
+            ]
+          },
+          "stem": {
+            "type": "string"
+          },
+          "correctAnswer": {
+            "type": "string"
+          },
+          "explanation": {
+            "type": "string"
+          },
+          "studentAnswer": {
+            "type": "string"
+          },
+          "correct": {
+            "type": "boolean"
+          },
+          "blank": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ResultResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "PRACTICE",
+              "OFFICIAL_EXAM",
+              "CUSTOM"
+            ]
+          },
+          "scoringMode": {
+            "type": "string",
+            "enum": [
+              "PERCENTAGE",
+              "EXAM_WEIGHTED"
+            ]
+          },
+          "totalScore": {
+            "type": "number"
+          },
+          "maxScore": {
+            "type": "number"
+          },
+          "percentage": {
+            "type": "number"
+          },
+          "totalQuestions": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "correctCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "wrongCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "blankCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "passed": {
+            "type": "boolean"
+          },
+          "durationSeconds": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "scoredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "details": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResultDetailResponse"
+            }
+          },
+          "weakAreas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WeakAreaResponse"
+            }
+          }
+        }
+      },
+      "WeakAreaResponse": {
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "string",
+            "enum": [
+              "SUBJECT",
+              "TOPIC"
+            ]
+          },
+          "subjectId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "topicId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalQuestions": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "correctCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "wrongCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "blankCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "accuracy": {
+            "type": "number"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "NONE",
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
+            ]
+          },
+          "recommendation": {
+            "type": "string"
+          },
+          "score": {
+            "type": "number"
+          },
+          "maxPoints": {
+            "type": "number"
+          }
+        }
+      },
+      "ApiResponsePageResponseResultSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PageResponseResultSummaryResponse"
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PageResponseResultSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResultSummaryResponse"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "hasNext": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ResultSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "PRACTICE",
+              "OFFICIAL_EXAM",
+              "CUSTOM"
+            ]
+          },
+          "scoringMode": {
+            "type": "string",
+            "enum": [
+              "PERCENTAGE",
+              "EXAM_WEIGHTED"
+            ]
+          },
+          "totalScore": {
+            "type": "number"
+          },
+          "maxScore": {
+            "type": "number"
+          },
+          "percentage": {
+            "type": "number"
+          },
+          "correctCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalQuestions": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "scoredAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ApiResponsePingResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PingResponse"
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PingResponse": {
+        "type": "object",
+        "properties": {
+          "service": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ApiResponseListLinkedChildResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LinkedChildResponse"
+            }
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ApiResponsePageResponseTestResultSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PageResponseTestResultSummaryResponse"
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PageResponseTestResultSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TestResultSummaryResponse"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "hasNext": {
+            "type": "boolean"
+          }
+        }
+      },
+      "TestResultSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sessionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "PRACTICE",
+              "OFFICIAL_EXAM",
+              "CUSTOM"
+            ]
+          },
+          "scoringMode": {
+            "type": "string",
+            "enum": [
+              "PERCENTAGE",
+              "EXAM_WEIGHTED"
+            ]
+          },
+          "totalScore": {
+            "type": "number"
+          },
+          "maxScore": {
+            "type": "number"
+          },
+          "percentage": {
+            "type": "number"
+          },
+          "correctCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalQuestions": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "scoredAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ApiResponsePageResponseMemberResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PageResponseMemberResponse"
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "MemberResponse": {
+        "type": "object",
+        "properties": {
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "gradeId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "REMOVED"
+            ]
+          },
+          "joinedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PageResponseMemberResponse": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MemberResponse"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "hasNext": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ApiResponseListOrganizationResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrganizationResponse"
+            }
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ApiResponsePageResponseNotificationResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PageResponseNotificationResponse"
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "NotificationResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "RESULT_READY",
+              "CHILD_TEST_COMPLETED"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "deepLink": {
+            "type": "string"
+          },
+          "readAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PageResponseNotificationResponse": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NotificationResponse"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "hasNext": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ApiResponseLong": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ApiResponseListGradeResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GradeResponse"
+            }
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "GradeResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "code": {
+            "type": "string"
+          },
+          "nameAz": {
+            "type": "string"
+          },
+          "level": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "ApiResponseListExamDefinitionSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExamDefinitionSummaryResponse"
+            }
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ExamDefinitionSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "nameAz": {
+            "type": "string"
+          },
+          "totalQuestions": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "durationMinutes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "maxScore": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "negativeMarkingDivisor": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "ApiResponseExamDefinitionResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ExamDefinitionResponse"
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ExamDefinitionResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "nameAz": {
+            "type": "string"
+          },
+          "totalQuestions": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "durationMinutes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "maxScore": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "negativeMarkingDivisor": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExamGroupResponse"
+            }
+          }
+        }
+      },
+      "ExamGroupResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "orderIndex": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "subjects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExamGroupSubjectResponse"
+            }
+          }
+        }
+      },
+      "ExamGroupSubjectResponse": {
+        "type": "object",
+        "properties": {
+          "subjectCode": {
+            "type": "string"
+          },
+          "slotIndex": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "languageChoice": {
+            "type": "boolean"
+          },
+          "questionCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "closedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "openCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "maxPoints": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "ApiResponseMeResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/MeResponse"
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "MeResponse": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          }
+        }
+      },
+      "ApiResponsePageResponseQuestionSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PageResponseQuestionSummaryResponse"
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PageResponseQuestionSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuestionSummaryResponse"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "hasNext": {
+            "type": "boolean"
+          }
+        }
+      },
+      "QuestionSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "subjectId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "topicId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "difficulty": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "stem": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ApiResponsePageResponseAiGenerationJobResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PageResponseAiGenerationJobResponse"
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PageResponseAiGenerationJobResponse": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AiGenerationJobResponse"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "hasNext": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

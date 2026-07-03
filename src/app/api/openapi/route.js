@@ -7,7 +7,7 @@ export async function GET() {
 
   return new Response(spec, {
     headers: {
-      "Content-Type": "application/yaml; charset=utf-8",
+      "Content-Type": "application/json; charset=utf-8",
       "Cache-Control": "no-store",
     },
   });

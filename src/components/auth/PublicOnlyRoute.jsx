@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 
-export default function PublicOnlyRoute({ children, redirectTo = "/", redirectDelayMs = 0 }) {
+export default function PublicOnlyRoute({ children, redirectTo = "/admin", redirectDelayMs = 0 }) {
   const { isAuthenticated, isInitialized } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();

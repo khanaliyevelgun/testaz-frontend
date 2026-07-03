@@ -1,19 +1,86 @@
-import { clearAuthState, getAccessToken, setAccessToken } from "@/stores/authStore";
+import {
+  clearAuthState,
+  getAccessToken,
+  getRefreshToken,
+  setTokens,
+} from "@/stores/authStore";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(/\/+$/, "");
+const API_PREFIX = "/api/v1";
 
 let refreshPromise = null;
 
 const isAuthEndpoint = (url) =>
-  url.endsWith("/auth/login") ||
-  url.endsWith("/auth/register") ||
-  url.endsWith("/auth/reset-password") ||
-  url.endsWith("/auth/refresh") ||
-  url.endsWith("/auth/logout");
+  url.endsWith(`${API_PREFIX}/auth/login`) ||
+  url.endsWith(`${API_PREFIX}/auth/register`) ||
+  url.endsWith(`${API_PREFIX}/auth/password/forgot`) ||
+  url.endsWith(`${API_PREFIX}/auth/password/reset`) ||
+  url.endsWith(`${API_PREFIX}/auth/refresh`);
 
 const buildUrl = (path) => {
   if (/^https?:\/\//i.test(path)) return path;
-  return `${API_BASE_URL}${path}`;
+  const normalizedPath = path.startsWith(API_PREFIX) ? path : `${API_PREFIX}${path}`;
+  return `${API_BASE_URL}${normalizedPath}`;
+};
+
+const unwrapApiResponse = (data) => {
+  if (data && typeof data === "object" && Object.prototype.hasOwnProperty.call(data, "data")) {
+    return data.data;
+  }
+
+  return data;
+};
+
+const withMessage = (response) => {
+  const data = unwrapApiResponse(response);
+  if (data && typeof data === "object" && !Array.isArray(data)) {
+    return { ...data, message: response?.message };
+  }
+
+  return data;
+};
+
+const normalizeRole = (role) => {
+  const normalizedRole = String(role || "").toLowerCase();
+  if (normalizedRole === "student") return "child";
+  return normalizedRole;
+};
+
+const normalizeUser = (user) => {
+  if (!user) return null;
+  const roles = Array.isArray(user.roles)
+    ? user.roles.map(normalizeRole)
+    : user.role
+      ? [normalizeRole(user.role)]
+      : [];
+
+  return {
+    ...user,
+    id: user.id || user.userId,
+    role: roles[0],
+    roles,
+    name: user.fullName || user.name || user.email || user.login || "Istifadeci",
+  };
+};
+
+const emptyPage = (page = 1, perPage = 10) => ({
+  data: [],
+  meta: { page, perPage, total: 0, totalPages: 1 },
+});
+
+const normalizePage = (pageResponse, page = 1, perPage = 10) => {
+  const content = pageResponse?.content || pageResponse?.data || [];
+
+  return {
+    data: Array.isArray(content) ? content : [],
+    meta: {
+      page: (pageResponse?.page ?? page - 1) + 1,
+      perPage: pageResponse?.size || perPage,
+      total: pageResponse?.totalElements || 0,
+      totalPages: pageResponse?.totalPages || 1,
+      hasNext: Boolean(pageResponse?.hasNext),
+    },
+  };
 };
 
 const parseResponse = async (response) => {
@@ -41,15 +108,24 @@ export class ApiError extends Error {
 
 export async function refreshAccessToken() {
   if (!refreshPromise) {
+    const refreshToken = getRefreshToken();
+
+    if (!refreshToken) {
+      clearAuthState();
+      throw new ApiError("Refresh token is missing", 401, null);
+    }
+
     refreshPromise = fetch(buildUrl("/auth/refresh"), {
       method: "POST",
-      credentials: "include",
       headers: {
         Accept: "application/json",
+        "Content-Type": "application/json",
       },
+      body: JSON.stringify({ refreshToken }),
     })
       .then(async (response) => {
-        const data = await parseResponse(response);
+        const responseData = await parseResponse(response);
+        const data = unwrapApiResponse(responseData);
 
         if (!response.ok) {
           throw new ApiError("Unauthorized", response.status, data);
@@ -60,7 +136,10 @@ export async function refreshAccessToken() {
           throw new ApiError("Refresh response did not include an access token", response.status, data);
         }
 
-        setAccessToken(accessToken);
+        setTokens({
+          accessToken,
+          refreshToken: data?.refreshToken || refreshToken,
+        });
         return accessToken;
       })
       .catch((error) => {
@@ -131,59 +210,132 @@ export async function apiFetch(path, options = {}) {
   return data;
 }
 
+const toQueryString = (params) => {
+  const query = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      query.set(key, String(value));
+    }
+  });
+
+  const queryString = query.toString();
+  return queryString ? `?${queryString}` : "";
+};
+
 export const login = (credentials) =>
   apiFetch("/auth/login", {
     method: "POST",
-    body: JSON.stringify(credentials),
+    body: JSON.stringify({
+      login: credentials.login || credentials.email,
+      password: credentials.password,
+    }),
+  }).then((response) => {
+    const tokens = withMessage(response);
+    setTokens(tokens);
+    return tokens;
   });
 
 export const register = (payload) =>
   apiFetch("/auth/register", {
     method: "POST",
-    body: JSON.stringify(payload),
-  });
+    body: JSON.stringify({
+      fullName: payload.fullName || payload.name,
+      email: payload.email,
+      phone: payload.phone,
+      password: payload.password,
+      role: payload.role || "STUDENT",
+    }),
+  }).then(withMessage);
 
 export const logout = () =>
   apiFetch("/auth/logout", {
     method: "POST",
+    body: JSON.stringify({ refreshToken: getRefreshToken() }),
   });
 
 export const forgotPassword = (payload) =>
-  apiFetch("/auth/forgot-password", {
+  apiFetch("/auth/password/forgot", {
     method: "POST",
-    body: JSON.stringify(payload),
+    body: JSON.stringify({ login: payload.login || payload.email }),
   });
 
 export const resetPassword = (payload) =>
-  apiFetch("/auth/reset-password", {
+  apiFetch("/auth/password/reset", {
     method: "POST",
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      login: payload.login || payload.email,
+      code: payload.code || payload.token,
+      newPassword: payload.newPassword || payload.password,
+    }),
   });
 
-export const fetchProfile = () => apiFetch("/auth/profile");
+export const fetchProfile = () => apiFetch("/auth/me").then((response) => normalizeUser(unwrapApiResponse(response)));
+
+const normalizeNotification = (notification) => ({
+  ...notification,
+  message: notification.body || notification.message || "",
+  isRead: Boolean(notification.readAt || notification.isRead),
+  href: notification.deepLink || "/admin/notifications",
+});
+
+const fetchUnreadNotificationCount = () =>
+  apiFetch("/notifications/unread-count").then((response) => Number(unwrapApiResponse(response) || 0));
 
 export const fetchNotifications = ({ page = 1, perPage = 10, unreadOnly = false } = {}) =>
-  apiFetch(`/notifications?page=${page}&perPage=${perPage}&unreadOnly=${unreadOnly}`);
+  Promise.all([
+    apiFetch(`/notifications?page=${Math.max(page - 1, 0)}&size=${perPage}`),
+    fetchUnreadNotificationCount(),
+  ]).then(([response, unreadCount]) => {
+    const pageData = normalizePage(unwrapApiResponse(response), page, perPage);
+    const notifications = pageData.data.map(normalizeNotification);
+    const filteredNotifications = unreadOnly
+      ? notifications.filter((notification) => !notification.isRead)
+      : notifications;
 
-export const markNotificationsRead = (ids) =>
-  apiFetch("/notifications/mark-read", {
-    method: "POST",
-    body: JSON.stringify({ ids }),
+    return {
+      data: filteredNotifications,
+      meta: {
+        ...pageData.meta,
+        unreadCount,
+      },
+    };
   });
 
-export const fetchUsers = ({ page = 1, perPage = 10, search = "", role = "" } = {}) => {
-  const params = new URLSearchParams({
-    page: String(page),
-    perPage: String(perPage),
+export const markNotificationsRead = (ids = []) =>
+  Promise.all(
+    ids.map((id) =>
+      apiFetch(`/notifications/${id}/read`, {
+        method: "POST",
+      })
+    )
+  ).then(() => ({ ids }));
+
+const normalizeUserRow = (user) => ({
+  ...user,
+  id: user.id || user.userId,
+  name: user.fullName || user.name || user.email || user.login || "Istifadeci",
+  role: normalizeRole(user.role || user.roles?.[0]),
+  roles: Array.isArray(user.roles) ? user.roles.map(normalizeRole) : undefined,
+});
+
+export const fetchUsers = ({ page = 1, perPage = 10, search = "", role = "" } = {}) =>
+  apiFetch(
+    `/users${toQueryString({
+      page: Math.max(page - 1, 0),
+      size: perPage,
+      search,
+      role: role ? role.toUpperCase() : "",
+    })}`
+  ).then((response) => {
+    const pageData = normalizePage(unwrapApiResponse(response), page, perPage);
+    return {
+      ...pageData,
+      data: pageData.data.map(normalizeUserRow),
+    };
   });
 
-  if (search) params.set("search", search);
-  if (role) params.set("role", role);
-
-  return apiFetch(`/users?${params.toString()}`);
-};
-
-export const fetchUser = (id) => apiFetch(`/users/${id}`);
+export const fetchUser = (id) => apiFetch(`/users/${id}`).then((response) => normalizeUserRow(unwrapApiResponse(response)));
 
 export const deleteUser = (id) =>
   apiFetch(`/users/${id}`, {
@@ -191,13 +343,29 @@ export const deleteUser = (id) =>
   });
 
 export const fetchSubjects = ({ page = 1, perPage = 10 } = {}) =>
-  apiFetch(`/subjects?page=${page}&perPage=${perPage}`);
+  apiFetch("/subjects").then((response) => {
+    const subjects = unwrapApiResponse(response) || [];
+    return {
+      data: subjects.map((subject) => ({
+        ...subject,
+        name: subject.nameAz || subject.nameEn || subject.code,
+        status: "active",
+        topicCount: subject.topicCount || 0,
+      })),
+      meta: {
+        page,
+        perPage,
+        total: subjects.length,
+        totalPages: Math.max(Math.ceil(subjects.length / perPage), 1),
+      },
+    };
+  });
 
 export const createSubject = (payload) =>
   apiFetch("/subjects", {
     method: "POST",
     body: JSON.stringify(payload),
-  });
+  }).then((response) => unwrapApiResponse(response));
 
 export const deleteSubject = (id) =>
   apiFetch(`/subjects/${id}`, {
@@ -205,15 +373,214 @@ export const deleteSubject = (id) =>
   });
 
 export const fetchTopics = (subjectId, { page = 1, perPage = 10 } = {}) =>
-  apiFetch(`/subjects/${subjectId}/topics?page=${page}&perPage=${perPage}`);
+  apiFetch(`/subjects/${subjectId}/topics`).then((response) => {
+    const topics = unwrapApiResponse(response) || [];
+    return {
+      data: topics.map((topic) => ({
+        ...topic,
+        name: topic.nameAz || topic.nameEn || topic.code,
+        status: "active",
+        questionCount: topic.questionCount || 0,
+      })),
+      meta: {
+        page,
+        perPage,
+        total: topics.length,
+        totalPages: Math.max(Math.ceil(topics.length / perPage), 1),
+      },
+    };
+  });
 
 export const createTopic = (subjectId, payload) =>
   apiFetch(`/subjects/${subjectId}/topics`, {
     method: "POST",
     body: JSON.stringify(payload),
-  });
+  }).then((response) => unwrapApiResponse(response));
 
 export const deleteTopic = (subjectId, topicId) =>
   apiFetch(`/subjects/${subjectId}/topics/${topicId}`, {
     method: "DELETE",
   });
+
+export const fetchGrades = () => apiFetch("/grades").then((response) => unwrapApiResponse(response) || []);
+
+export const fetchExamDefinitions = () =>
+  apiFetch("/exam-definitions").then((response) => unwrapApiResponse(response) || []);
+
+export const fetchExamDefinition = (code) =>
+  apiFetch(`/exam-definitions/${code}`).then((response) => unwrapApiResponse(response));
+
+export const fetchStudentProfile = () => apiFetch("/students/me").then((response) => unwrapApiResponse(response));
+
+export const updateStudentProfile = (payload) =>
+  apiFetch("/students/me", {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  }).then((response) => unwrapApiResponse(response));
+
+export const createParentLinkCode = () =>
+  apiFetch("/students/me/link-codes", {
+    method: "POST",
+  }).then((response) => unwrapApiResponse(response));
+
+export const fetchParentProfile = () => apiFetch("/parents/me").then((response) => unwrapApiResponse(response));
+
+export const updateParentProfile = (payload) =>
+  apiFetch("/parents/me", {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  }).then((response) => unwrapApiResponse(response));
+
+export const linkChild = (code) =>
+  apiFetch("/parents/me/links", {
+    method: "POST",
+    body: JSON.stringify({ code }),
+  }).then((response) => unwrapApiResponse(response));
+
+export const unlinkChild = (studentId) =>
+  apiFetch(`/parents/me/links/${studentId}`, {
+    method: "DELETE",
+  });
+
+export const fetchLinkedChildren = () =>
+  apiFetch("/parents/me/children").then((response) => unwrapApiResponse(response) || []);
+
+export const fetchChildResults = (studentId, { page = 1, perPage = 10 } = {}) =>
+  apiFetch(`/parents/me/children/${studentId}/results${toQueryString({ page: Math.max(page - 1, 0), size: perPage })}`)
+    .then((response) => normalizePage(unwrapApiResponse(response), page, perPage));
+
+export const fetchChildSessionResult = (studentId, sessionId) =>
+  apiFetch(`/parents/me/children/${studentId}/sessions/${sessionId}/result`).then((response) =>
+    unwrapApiResponse(response)
+  );
+
+export const createOrganization = (payload) =>
+  apiFetch("/organizations", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  }).then((response) => unwrapApiResponse(response));
+
+export const fetchMyOrganizations = () =>
+  apiFetch("/organizations/me").then((response) => unwrapApiResponse(response) || []);
+
+export const createOrganizationInvite = (orgId, payload) =>
+  apiFetch(`/organizations/${orgId}/invites`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  }).then((response) => unwrapApiResponse(response));
+
+export const fetchOrganizationMembers = (orgId, { page = 1, perPage = 10 } = {}) =>
+  apiFetch(`/organizations/${orgId}/members${toQueryString({ page: Math.max(page - 1, 0), size: perPage })}`)
+    .then((response) => normalizePage(unwrapApiResponse(response), page, perPage));
+
+export const fetchOrganizationTestResults = (orgId, testId, { page = 1, perPage = 10 } = {}) =>
+  apiFetch(`/organizations/${orgId}/tests/${testId}/results${toQueryString({ page: Math.max(page - 1, 0), size: perPage })}`)
+    .then((response) => normalizePage(unwrapApiResponse(response), page, perPage));
+
+export const redeemOrganizationInvite = (code) =>
+  apiFetch(`/organizations/invites/${code}/redeem`, {
+    method: "POST",
+  }).then((response) => unwrapApiResponse(response));
+
+export const startSession = (payload) =>
+  apiFetch("/sessions", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  }).then((response) => unwrapApiResponse(response));
+
+export const fetchSession = (id) => apiFetch(`/sessions/${id}`).then((response) => unwrapApiResponse(response));
+
+export const saveSessionAnswer = (sessionId, sessionQuestionId, payload) =>
+  apiFetch(`/sessions/${sessionId}/questions/${sessionQuestionId}/answer`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  }).then((response) => unwrapApiResponse(response));
+
+export const submitSession = (id) =>
+  apiFetch(`/sessions/${id}/submit`, {
+    method: "POST",
+  }).then((response) => unwrapApiResponse(response));
+
+export const fetchSessionResult = (id) =>
+  apiFetch(`/sessions/${id}/result`).then((response) => unwrapApiResponse(response));
+
+export const fetchResults = ({ page = 1, perPage = 10 } = {}) =>
+  apiFetch(`/results${toQueryString({ page: Math.max(page - 1, 0), size: perPage })}`).then((response) =>
+    normalizePage(unwrapApiResponse(response), page, perPage)
+  );
+
+export const fetchNotificationPreferences = () =>
+  apiFetch("/notifications/preferences").then((response) => unwrapApiResponse(response));
+
+export const updateNotificationPreferences = (payload) =>
+  apiFetch("/notifications/preferences", {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  }).then((response) => unwrapApiResponse(response));
+
+export const fetchAdminQuestions = ({ page = 1, perPage = 10, subjectId = "", status = "" } = {}) =>
+  apiFetch(
+    `/admin/questions${toQueryString({
+      page: Math.max(page - 1, 0),
+      size: perPage,
+      subjectId,
+      status,
+    })}`
+  ).then((response) => normalizePage(unwrapApiResponse(response), page, perPage));
+
+export const approveAdminQuestion = (id) =>
+  apiFetch(`/admin/questions/${id}/approve`, {
+    method: "POST",
+  });
+
+export const rejectAdminQuestion = (id) =>
+  apiFetch(`/admin/questions/${id}/reject`, {
+    method: "POST",
+  });
+
+export const archiveAdminQuestion = (id) =>
+  apiFetch(`/admin/questions/${id}/archive`, {
+    method: "POST",
+  });
+
+export const fetchAdminReports = ({ page = 1, perPage = 10, status = "" } = {}) =>
+  apiFetch(
+    `/admin/reports${toQueryString({
+      page: Math.max(page - 1, 0),
+      size: perPage,
+      status,
+    })}`
+  ).then((response) => normalizePage(unwrapApiResponse(response), page, perPage));
+
+export const resolveAdminReport = (id, payload = {}) =>
+  apiFetch(`/admin/reports/${id}/resolve`, {
+    method: "POST",
+    body: JSON.stringify({
+      note: payload.note || "",
+      archiveQuestion: Boolean(payload.archiveQuestion),
+    }),
+  }).then((response) => unwrapApiResponse(response));
+
+export const dismissAdminReport = (id, payload = {}) =>
+  apiFetch(`/admin/reports/${id}/dismiss`, {
+    method: "POST",
+    body: JSON.stringify({ note: payload.note || "" }),
+  }).then((response) => unwrapApiResponse(response));
+
+export const fetchAdminAiJobs = ({ page = 1, perPage = 10 } = {}) =>
+  apiFetch(`/admin/ai/jobs${toQueryString({ page: Math.max(page - 1, 0), size: perPage })}`).then((response) =>
+    normalizePage(unwrapApiResponse(response), page, perPage)
+  );
+
+export const generateAdminAiQuestions = (payload) =>
+  apiFetch("/admin/ai/generate", {
+    method: "POST",
+    body: JSON.stringify({
+      subjectId: Number(payload.subjectId),
+      gradeId: payload.gradeId ? Number(payload.gradeId) : undefined,
+      topicId: payload.topicId ? Number(payload.topicId) : undefined,
+      difficulty: payload.difficulty,
+      questionType: payload.questionType,
+      count: payload.count ? Number(payload.count) : undefined,
+    }),
+  }).then((response) => unwrapApiResponse(response));

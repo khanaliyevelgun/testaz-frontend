@@ -20,23 +20,32 @@ export function useAuth() {
 
   const login = async (credentials) => {
     const response = await loginRequest(credentials);
+    const user = await fetchProfile();
+
     setAuthState({
       accessToken: response.accessToken,
-      user: response.user,
+      refreshToken: response.refreshToken,
+      user,
       isInitialized: true,
       isLoading: false,
     });
-    return response;
+
+    return { ...response, user };
   };
 
   const register = async (payload) => {
     const response = await registerRequest(payload);
-    setAuthState({
-      accessToken: response.accessToken,
-      user: response.user,
-      isInitialized: true,
-      isLoading: false,
-    });
+
+    if (response?.accessToken) {
+      setAuthState({
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken,
+        user: response.user,
+        isInitialized: true,
+        isLoading: false,
+      });
+    }
+
     return response;
   };
 

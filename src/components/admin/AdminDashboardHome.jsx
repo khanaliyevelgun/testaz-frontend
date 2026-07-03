@@ -2,6 +2,7 @@ import OverviewChart from "@/components/admin/charts/admin/OverviewChart";
 import ReportsDonutChart from "@/components/admin/charts/admin/ReportsDonutChart";
 import ChildLearningChart from "@/components/admin/charts/child/ChildLearningChart";
 import ParentProgressChart from "@/components/admin/charts/parent/ParentProgressChart";
+import AdminDashboardNotifications from "@/components/admin/AdminDashboardNotifications";
 
 const stats = [
   ["Total Courses", "2000+", "dashbord-item1.png", "bg-main-600"],
@@ -171,6 +172,9 @@ const AdminDashboardHome = () => (
       </div>
       <div className='col-xl-6'>
         <ChildLearningChart />
+      </div>
+      <div className='col-xl-6'>
+        <AdminDashboardNotifications />
       </div>
     </div>
   </div>

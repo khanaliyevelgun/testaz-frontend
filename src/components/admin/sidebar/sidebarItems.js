@@ -2,6 +2,8 @@ export const adminSidebarItems = [
   { label: "Dashboard", href: "/admin", icon: "ph-bold ph-house" },
   { label: "Users", href: "/admin/users", icon: "ph ph-users-three" },
   { label: "Courses", href: "/admin/courses", icon: "ph ph-watch" },
+  { label: "Questions", href: "/admin/questions", icon: "ph ph-seal-question" },
+  { label: "AI Jobs", href: "/admin/ai-jobs", icon: "ph ph-sparkle" },
   { label: "Messages", href: "/admin/messages", icon: "ph ph-chat-dots" },
   { label: "Notifications", href: "/admin/notifications", icon: "ph ph-bell-ringing" },
   { label: "Reports", href: "/admin/reports", icon: "ph ph-chart-bar" },
@@ -26,4 +28,14 @@ export const childSidebarItems = [
   { label: "Notifications", href: "/admin/notifications", icon: "ph ph-bell-ringing" },
   { label: "Wishlist", href: "/admin/wishlist", icon: "ph ph-bookmark-simple" },
   { label: "Profile", href: "/admin/profile", icon: "ph ph-user-circle" },
+];
+
+export const organizationSidebarItems = [
+  { label: "Dashboard", href: "/admin", icon: "ph-bold ph-house" },
+  { label: "Organizations", href: "/admin/organizations", icon: "ph ph-buildings" },
+  { label: "Members", href: "/admin/members", icon: "ph ph-users-three" },
+  { label: "Invites", href: "/admin/invites", icon: "ph ph-ticket" },
+  { label: "Messages", href: "/admin/messages", icon: "ph ph-chat-dots" },
+  { label: "Notifications", href: "/admin/notifications", icon: "ph ph-bell-ringing" },
+  { label: "Settings", href: "/admin/settings", icon: "ph ph-gear" },
 ];

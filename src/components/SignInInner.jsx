@@ -40,7 +40,7 @@ const SignInInner = () => {
       setMessage(response?.message || "Uğurla daxil oldunuz.");
       const next = searchParams.get("next");
       window.setTimeout(() => {
-        router.replace(next?.startsWith("/") ? next : "/");
+        router.replace(next?.startsWith("/") ? next : "/admin");
       }, 800);
     } catch {
       setError("Email və ya şifrə yanlışdır.");

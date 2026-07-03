@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import AdminRefreshButton from "@/components/admin/AdminRefreshButton";
 import { deleteUser, fetchUsers } from "@/lib/api";
 
 const roleLabels = {
@@ -137,6 +138,7 @@ const AdminUsersPage = () => {
             <h4 className='fw-semibold text-neutral-500 text-20 mb-4'>Istifadeciler</h4>
             <p className='text-14 text-neutral-400 mb-0'>Sistemdeki istifadeci hesablari</p>
           </div>
+          <AdminRefreshButton isLoading={isLoading} onClick={() => loadUsers({ page: meta.page })} />
         </div>
 
         <div className='d-flex flex-wrap align-items-center gap-12 mb-24'>
