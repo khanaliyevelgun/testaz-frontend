@@ -23,7 +23,7 @@ const AdminRowActions = ({ items }) => {
       <button
         type='button'
         className='w-36 h-36 rounded-circle border border-neutral-30 text-neutral-500 flex-center bg-white'
-        aria-label='Row actions'
+        aria-label='Sətir əməliyyatları'
         aria-expanded={isOpen}
         onClick={() => setIsOpen((value) => !value)}
       >

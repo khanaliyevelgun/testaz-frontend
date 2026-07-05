@@ -625,6 +625,11 @@ export const approveAllAdminQuestions = () =>
     method: "POST",
   }).then((response) => Number(unwrapApiResponse(response)?.approvedCount || 0));
 
+export const approveAdminQuestion = (id) =>
+  apiFetch(`/admin/questions/${id}/approve`, {
+    method: "POST",
+  });
+
 export const rejectAdminQuestion = (id) =>
   apiFetch(`/admin/questions/${id}/reject`, {
     method: "POST",

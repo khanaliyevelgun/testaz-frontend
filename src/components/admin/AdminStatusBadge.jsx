@@ -16,11 +16,11 @@ const statusClasses = {
   PENDING: "bg-warning-50 text-warning-700",
 };
 
-const AdminStatusBadge = ({ status }) => {
+const AdminStatusBadge = ({ status, label }) => {
   const value = status || "-";
   return (
     <span className={`px-12 py-4 rounded-pill text-12 fw-medium ${statusClasses[value] || "bg-main-25 text-main-600"}`}>
-      {String(value).replaceAll("_", " ")}
+      {label || String(value).replaceAll("_", " ")}
     </span>
   );
 };
