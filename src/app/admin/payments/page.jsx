@@ -1,5 +1,5 @@
-import AdminPlaceholderPage from "@/components/admin/AdminPlaceholderPage";
+import AdminPaymentsPage from "@/components/admin/AdminPaymentsPage";
 
 export default function Page() {
-  return <AdminPlaceholderPage title='Payments' description='Parent rolü için ödeme geçmişi burada gösterilecek.' />;
+  return <AdminPaymentsPage />;
 }

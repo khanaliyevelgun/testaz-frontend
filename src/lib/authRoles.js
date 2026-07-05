@@ -35,6 +35,7 @@ const routeRoles = [
   { pattern: /^\/admin\/users(?:\/|$)/, roles: ["admin"] },
   { pattern: /^\/admin\/courses(?:\/|$)/, roles: ["admin"] },
   { pattern: /^\/admin\/reports(?:\/|$)/, roles: ["admin"] },
+  { pattern: /^\/admin\/audit(?:\/|$)/, roles: ["admin"] },
   { pattern: /^\/admin\/organizations(?:\/|$)/, roles: ["organization"] },
   { pattern: /^\/admin\/members(?:\/|$)/, roles: ["organization"] },
   { pattern: /^\/admin\/invites(?:\/|$)/, roles: ["organization"] },

@@ -1,10 +1,5 @@
-import AdminPlaceholderPage from "@/components/admin/AdminPlaceholderPage";
+import AdminUserFormPage from "@/components/admin/AdminUserFormPage";
 
 export default function Page({ params }) {
-  return (
-    <AdminPlaceholderPage
-      title='İstifadəçini redaktə et'
-      description={`İstifadəçi redaktə formu burada hazırlanacaq. ID: ${params.id}`}
-    />
-  );
+  return <AdminUserFormPage userId={params.id} />;
 }

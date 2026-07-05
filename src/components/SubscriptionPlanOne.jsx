@@ -1,338 +1,114 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { fetchSubscriptionPlans, startPaymentCheckout } from "@/lib/api";
 
-const YEARLY_DISCOUNT_PERCENT = 25;
-const PREMIUM_MONTHLY_PRICE = 19.9;
-const MAXIMUM_MONTHLY_PRICE = 44.9;
+const fallbackPlans = [
+  { id: "trial", code: "TRIAL", nameAz: "Sinaq", priceAmount: 0, currency: "AZN", periodDays: 30, coversLinkedChildren: false },
+];
 
-const getPlanPrice = (monthlyPrice, isYearly) => {
-  if (!isYearly) {
-    return monthlyPrice;
-  }
-
-  return monthlyPrice * 12 * (1 - YEARLY_DISCOUNT_PERCENT / 100);
-};
-
-const formatPrice = (price) =>
-  price.toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1");
+const formatPrice = (amount, currency = "AZN") =>
+  `${Number(amount || 0).toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1")} ${currency}`;
 
 const SubscriptionPlanOne = ({ className = "" }) => {
-  const [isYearly, setIsYearly] = useState(false);
-  const billingSuffix = isYearly ? "/İL" : "/AY";
+  const [plans, setPlans] = useState(fallbackPlans);
+  const [isLoading, setIsLoading] = useState(true);
+  const [checkoutCode, setCheckoutCode] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    fetchSubscriptionPlans()
+      .then((response) => {
+        if (isMounted && response.length) setPlans(response);
+      })
+      .catch(() => {
+        if (isMounted) setError("Planlar yuklenmedi.");
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleCheckout = async (planCode) => {
+    setCheckoutCode(planCode);
+    setError("");
+
+    try {
+      const checkout = await startPaymentCheckout(planCode);
+      if (checkout?.redirectUrl) {
+        window.location.assign(checkout.redirectUrl);
+      }
+    } catch {
+      setError("Odenis basladila bilmedi. Daxil olub yeniden yoxlayin.");
+    } finally {
+      setCheckoutCode("");
+    }
+  };
 
   return (
     <section className={`favorite-course py-96 ${className}`}>
       <div className='container'>
         <div className='section-heading text-center'>
           <div className='flex-align d-inline-flex gap-8 mb-16'>
-            <span className='text-main-600 text-2xl d-flex'>
-              <i className='ph-bold ph-book-open' />
-            </span>
-            <h5 className='text-main-600 mb-0'>Planlarımız</h5>
+            <span className='text-main-600 text-2xl d-flex'><i className='ph-bold ph-book-open' /></span>
+            <h5 className='text-main-600 mb-0'>Planlarimiz</h5>
           </div>
-          <h2 className='mb-24'>Hər valideyn və tələbə üçün uyğun plan</h2>
-          <p className=''>
-            Biz innovasiyanı və yaradıcılığı müsbət dəyişikliklər üçün 
-            irəliyə yönəlmiş tədqiqatları və tədris metodologiyalarını irəli aparırıq
-          </p>
+          <h2 className='mb-24'>Her valideyn ve telebe ucun uygun plan</h2>
+          <p className=''>Aktiv abunelik planlarini secin ve odemeye kecin.</p>
         </div>
-        <div className='mb-40 d-flex align-items-center gap-24 justify-content-center'>
-          <span className='text-neutral-700 fw-semibold'>Aylıq</span>
-          <div className='form-check form-switch cursor-pointer'>
-            <input
-              className='form-check-input shadow-none py-10 px-24 '
-              type='checkbox'
-              role='switch'
-              checked={isYearly}
-              onChange={(event) => setIsYearly(event.target.checked)}
-            />
-          </div>
-          <span className='text-neutral-700 fw-semibold'>
-            İllik{" "}
-            <span className='text-main-600'>
-              ({YEARLY_DISCOUNT_PERCENT}% endirim)
-            </span>{" "}
-          </span>
-        </div>
-        <div className='row gy-4'>
-          <div
-            className='col-xl-4 col-md-6 aos-init'
-            data-aos='fade-up'
-            data-aos-duration={600}
-          >
-            <div className='bg-white border border-neutral-30 animation-item rounded-16 p-12'>
-              <div className='bg-main-25 p-32 rounded-16 transition-2 border border-neutral-30 overflow-hidden position-relative'>
-                <span className='positioned-rotation text-main-600 fw-bold text-lg bg-white d-block text-center p-6'>
-                  Sınaq
-                </span>
-                <div className='w-84 h-84 bg-white p-16 box-shadow-md rounded-circle mx-auto d-inline-flex align-items-center justify-content-center position-relative text-main-600 text-44  border border-neutral-30'>
-                  <i className='ph ph-house' />
-                </div>
-                <h1 className='display-4 fw-bold mb-0 mt-32 text-neutral-700 transition-2'>
-                  {formatPrice(getPlanPrice(0, isYearly))}₼
-                  <span className='text-sm fw-normal'></span>{" "}
-                </h1>
-                <span className='d-block border border-neutral-30 my-24 border-dashed' />
-                <ul className='d-flex flex-column gap-16'>
-                  <li
-                    className='flex-align gap-12 aos-init aos-animate text-neutral-700'
-                    data-aos='fade-left'
-                    data-aos-duration={200}
-                  >
-                    <img src='assets/images/icons/check.png' alt='' />
-                    <span className='text-neutral-500 text-md fw-medium'>
-                      Max uşaq sayı <span className="badge text-sm fw-normal bg-main-100 text-main-600">1</span>
-                    </span>
-                  </li>
-                  <li
-                    className='flex-align gap-12 aos-init aos-animate text-neutral-700'
-                    data-aos='fade-left'
-                    data-aos-duration={400}
-                  >
-                    <img src='assets/images/icons/check.png' alt='' />
-                    <span className='text-neutral-500 text-md fw-medium'>
-                      Aylıq İmtahan Sayı <span className="badge text-sm fw-normal bg-main-100 text-main-600">2</span>
-                    </span>
-                  </li>
-                  <li
-                    className='flex-align gap-12 aos-init aos-animate text-neutral-700'
-                    data-aos='fade-left'
-                    data-aos-duration={600}
-                  >
-                    <img src='assets/images/icons/check.png' alt='' />
-                    <span className='text-neutral-500 text-md fw-medium'>
-                      Nəticələrinin analizi
-                    </span>
-                  </li>
-                  <li
-                    className='flex-align gap-12 aos-init aos-animate text-neutral-700'
-                    data-aos='fade-left'
-                    data-aos-duration={800}
-                  >
-                    <img src='assets/images/icons/check.png' alt='' />
-                    <span className='text-neutral-500 text-md fw-medium'>
-                      Sual bazasından istifadə
-                    </span>
-                  </li>
-                  <li
-                    className='flex-align gap-12 aos-init aos-animate text-neutral-700'
-                    data-aos='fade-left'
-                    data-aos-duration={800}
-                  >
-                    <i className='text-danger-600 ph-bold ph-x' />
-                    <span className='text-neutral-500 text-md fw-medium'>
-                      24/7 texniki dəsdək
-                    </span>
-                  </li>
-                  <li
-                    className='flex-align gap-12 aos-init aos-animate text-neutral-700'
-                    data-aos='fade-left'
-                    data-aos-duration={800}
-                  >
-                    <i className='text-danger-600 ph-bold ph-x' />
-                    <span className='text-neutral-500 text-md fw-medium'>
-                      Pro funksiyalar
-                    </span>
-                  </li>
-                </ul>
-                <div className='mt-40'>
-                  <Link
-                    href='/sign-in'
-                    className='btn btn-main rounded-pill flex-align gap-8'
-                  >
-                    Qeydiyyatdan keç
-                    <i className='ph-bold ph-arrow-up-right d-flex text-lg' />
-                  </Link>
+
+        {error ? <p className='text-danger text-center mb-24'>{error}</p> : null}
+        {isLoading ? <p className='text-center text-neutral-400 mb-0'>Loading plans...</p> : null}
+
+        <div className='row gy-4 justify-content-center'>
+          {plans.map((plan, index) => (
+            <div className='col-xl-4 col-md-6 aos-init' data-aos='fade-up' data-aos-duration={600 + index * 200} key={plan.id || plan.code}>
+              <div className='bg-white border border-neutral-30 animation-item rounded-16 p-12 h-100'>
+                <div className='bg-main-25 p-32 rounded-16 transition-2 border border-neutral-30 overflow-hidden position-relative h-100 d-flex flex-column'>
+                  <span className='positioned-rotation text-main-600 fw-bold text-lg bg-white d-block text-center p-6'>{plan.code}</span>
+                  <div className='w-84 h-84 bg-white p-16 box-shadow-md rounded-circle mx-auto d-inline-flex align-items-center justify-content-center position-relative text-main-600 text-44 border border-neutral-30'>
+                    <i className='ph-bold ph-tag' />
+                  </div>
+                  <h3 className='fw-bold mb-12 mt-32 text-neutral-700 transition-2'>{plan.nameAz || plan.code}</h3>
+                  <h1 className='display-5 fw-bold mb-0 text-neutral-700 transition-2'>
+                    {formatPrice(plan.priceAmount, plan.currency)}
+                  </h1>
+                  <span className='text-sm text-neutral-500 mt-8'>{plan.periodDays} gun</span>
+                  <span className='d-block border border-neutral-30 my-24 border-dashed' />
+                  <ul className='d-flex flex-column gap-16 flex-grow-1'>
+                    <li className='flex-align gap-12 text-neutral-700'>
+                      <img src='assets/images/icons/check.png' alt='' />
+                      <span className='text-neutral-500 text-md fw-medium'>Aktiv test ve netice funksiyalari</span>
+                    </li>
+                    <li className='flex-align gap-12 text-neutral-700'>
+                      {plan.coversLinkedChildren ? <img src='assets/images/icons/check.png' alt='' /> : <i className='text-danger-600 ph-bold ph-x' />}
+                      <span className='text-neutral-500 text-md fw-medium'>Bagli usaqlari ehate edir</span>
+                    </li>
+                  </ul>
+                  <div className='mt-40'>
+                    {Number(plan.priceAmount || 0) > 0 ? (
+                      <button type='button' className='btn btn-main rounded-pill flex-align gap-8 w-100 justify-content-center' disabled={checkoutCode === plan.code} onClick={() => handleCheckout(plan.code)}>
+                        {checkoutCode === plan.code ? "Basladilir..." : "Odenise kec"}
+                        <i className='ph-bold ph-arrow-up-right d-flex text-lg' />
+                      </button>
+                    ) : (
+                      <Link href='/sign-in' className='btn btn-main rounded-pill flex-align gap-8 w-100 justify-content-center'>
+                        Basla
+                        <i className='ph-bold ph-arrow-up-right d-flex text-lg' />
+                      </Link>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div
-            className='col-xl-4 col-md-6 aos-init'
-            data-aos='fade-up'
-            data-aos-duration={800}
-          >
-            <div className='bg-white border border-neutral-30 animation-item rounded-16 p-12'>
-              <div className='bg-main-25 p-32 rounded-16 transition-2 border border-neutral-30 overflow-hidden position-relative'>
-                <span className='positioned-rotation text-main-600 fw-bold text-lg bg-white d-block text-center p-6'>
-                  Premium Plan
-                </span>
-                <div className='w-84 h-84 bg-white p-16 box-shadow-md rounded-circle mx-auto d-inline-flex align-items-center justify-content-center position-relative text-main-600 text-44  border border-neutral-30'>
-                  <i className='ph-bold ph-tag' />
-                </div>
-                <h1 className='display-4 fw-bold mb-0 mt-32 text-neutral-700 transition-2'>
-                  {formatPrice(getPlanPrice(PREMIUM_MONTHLY_PRICE, isYearly))}₼
-                  <span className='text-sm fw-normal'>{billingSuffix}</span>{" "}
-                </h1>
-                <span className='d-block border border-neutral-30 my-24 border-dashed' />
-                <ul className='d-flex flex-column gap-16'>
-                  <li
-                    className='flex-align gap-12 aos-init aos-animate text-neutral-700'
-                    data-aos='fade-left'
-                    data-aos-duration={200}
-                  >
-                    <img src='assets/images/icons/check.png' alt='' />
-                    <span className='text-neutral-500 text-md fw-medium'>
-                      Max uşaq sayı <span className="badge text-sm fw-normal bg-main-100 text-main-600">3</span>
-                    </span>
-                  </li>
-                  <li
-                    className='flex-align gap-12 aos-init aos-animate text-neutral-700'
-                    data-aos='fade-left'
-                    data-aos-duration={400}
-                  >
-                    <img src='assets/images/icons/check.png' alt='' />
-                    <span className='text-neutral-500 text-md fw-medium'>
-                      Aylıq sınaq sayı <span className="badge text-sm fw-normal bg-main-100 text-main-600">20</span>
-                    </span>
-                  </li>
-                  <li
-                    className='flex-align gap-12 aos-init aos-animate text-neutral-700'
-                    data-aos='fade-left'
-                    data-aos-duration={600}
-                  >
-                    <img src='assets/images/icons/check.png' alt='' />
-                    <span className='text-neutral-500 text-md fw-medium'>
-                      Sual bazası yaratma
-                    </span>
-                  </li>
-                  <li
-                    className='flex-align gap-12 aos-init aos-animate text-neutral-700'
-                    data-aos='fade-left'
-                    data-aos-duration={800}
-                  >
-                    <img src='assets/images/icons/check.png' alt='' />
-                    <span className='text-neutral-500 text-md fw-medium'>
-                      Aylıq və həftəlik statistikalar
-                    </span>
-                  </li>
-                  <li
-                    className='flex-align gap-12 aos-init aos-animate text-neutral-700'
-                    data-aos='fade-left'
-                    data-aos-duration={800}
-                  >
-                    <img src='assets/images/icons/check.png' alt='' />
-                    <span className='text-neutral-500 text-md fw-medium'>
-                      24/7 texniki dəstək
-                    </span>
-                  </li>
-                  <li
-                    className='flex-align gap-12 aos-init aos-animate text-neutral-700'
-                    data-aos='fade-left'
-                    data-aos-duration={800}
-                  >
-                    <i className='text-danger-600 ph-bold ph-x' />
-                    <span className='text-neutral-500 text-md fw-medium'>
-                      Maksimum plan funksiyaları
-                    </span>
-                  </li>
-                </ul>
-                <div className='mt-40'>
-                  <Link
-                    href='/sign-in'
-                    className='btn btn-main rounded-pill flex-align gap-8'
-                  >
-                    Qeydiyyatdan keç
-                    <i className='ph-bold ph-arrow-up-right d-flex text-lg' />
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div
-            className='col-xl-4 col-md-6 aos-init'
-            data-aos='fade-up'
-            data-aos-duration={1000}
-          >
-            <div className='bg-white border border-neutral-30 animation-item rounded-16 p-12'>
-              <div className='bg-main-25 p-32 rounded-16 transition-2 border border-neutral-30 overflow-hidden position-relative'>
-                <span className='positioned-rotation text-main-600 fw-bold text-lg bg-white d-block text-center p-6'>
-                  Maksimum Plan
-                </span>
-                <div className='w-84 h-84 bg-white p-16 box-shadow-md rounded-circle mx-auto d-inline-flex align-items-center justify-content-center position-relative text-main-600 text-44  border border-neutral-30'>
-                  <i className='ph-bold ph-piggy-bank' />
-                </div>
-                <h1 className='display-4 fw-bold mb-0 mt-32 text-neutral-700 transition-2'>
-                  {formatPrice(getPlanPrice(MAXIMUM_MONTHLY_PRICE, isYearly))}₼
-                  <span className='text-sm fw-normal'>{billingSuffix}</span>{" "}
-                </h1>
-                <span className='d-block border border-neutral-30 my-24 border-dashed' />
-                <ul className='d-flex flex-column gap-16'>
-                  <li
-                    className='flex-align gap-12 aos-init aos-animate text-neutral-700'
-                    data-aos='fade-left'
-                    data-aos-duration={200}
-                  >
-                    <img src='assets/images/icons/check.png' alt='' />
-                    <span className='text-neutral-500 text-md fw-medium'>
-                      Max uşaq sayı <span className="badge text-sm fw-normal bg-main-100 text-main-600">Limitsiz</span>
-                    </span>
-                  </li>
-                  <li
-                    className='flex-align gap-12 aos-init aos-animate text-neutral-700'
-                    data-aos='fade-left'
-                    data-aos-duration={400}
-                  >
-                    <img src='assets/images/icons/check.png' alt='' />
-                    <span className='text-neutral-500 text-md fw-medium'>
-                      Aylıq sınaq sayı <span className="badge text-sm fw-normal bg-main-100 text-main-600">Limitsiz</span>
-                    </span>
-                  </li>
-                  <li
-                    className='flex-align gap-12 aos-init aos-animate text-neutral-700'
-                    data-aos='fade-left'
-                    data-aos-duration={600}
-                  >
-                    <img src='assets/images/icons/check.png' alt='' />
-                    <span className='text-neutral-500 text-md fw-medium'>
-                      Bütün Premium özəlliklər
-                    </span>
-                  </li>
-                  <li
-                    className='flex-align gap-12 aos-init aos-animate text-neutral-700'
-                    data-aos='fade-left'
-                    data-aos-duration={800}
-                  >
-                    <img src='assets/images/icons/check.png' alt='' />
-                    <span className='text-neutral-500 text-md fw-medium'>
-                      PDF-dən sual kəsmə
-                    </span>
-                  </li>
-                  <li
-                    className='flex-align gap-12 aos-init aos-animate text-neutral-700'
-                    data-aos='fade-left'
-                    data-aos-duration={800}
-                  >
-                    <img src='assets/images/icons/check.png' alt='' />
-                    <span className='text-neutral-500 text-md fw-medium'>
-                      Xüsusi imtahan müddəti
-                    </span>
-                  </li>
-                  <li
-                    className='flex-align gap-12 aos-init aos-animate text-neutral-700'
-                    data-aos='fade-left'
-                    data-aos-duration={800}
-                  >
-                    <img src='assets/images/icons/check.png' alt='' />
-                    <span className='text-neutral-500 text-md fw-medium'>
-                      Mətn / Dinləmə sualları
-                    </span>
-                  </li>
-                </ul>
-                <div className='mt-40'>
-                  <Link
-                    href='/pricing-plan'
-                    className='btn btn-main rounded-pill flex-align gap-8'
-                  >
-                    Tezliklə
-                    <i className='ph-bold ph-arrow-up-right d-flex text-lg' />
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </section>

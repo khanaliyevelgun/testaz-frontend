@@ -10,6 +10,10 @@ const statusClasses = {
   REJECTED: "bg-danger-50 text-danger-600",
   FAILED: "bg-danger-50 text-danger-600",
   ARCHIVED: "bg-neutral-30 text-neutral-500",
+  INACTIVE: "bg-neutral-30 text-neutral-500",
+  SUSPENDED: "bg-warning-50 text-warning-700",
+  DELETED: "bg-danger-50 text-danger-600",
+  PENDING: "bg-warning-50 text-warning-700",
 };
 
 const AdminStatusBadge = ({ status }) => {

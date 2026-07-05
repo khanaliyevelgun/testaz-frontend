@@ -19,3 +19,29 @@
 @import "~/public/assets/css/editor-quill.css";
 
 @import "/public/assets/sass/main.scss";
+
+.question-html-content {
+  word-break: break-word;
+
+  p,
+  ul,
+  ol {
+    margin-block-end: 8px;
+  }
+
+  p:last-child,
+  ul:last-child,
+  ol:last-child {
+    margin-block-end: 0;
+  }
+
+  img {
+    display: block;
+    max-width: 320px;
+    width: 100%;
+    height: auto;
+    margin-block: 8px;
+    border: 1px solid var(--neutral-30);
+    border-radius: 12px;
+  }
+}

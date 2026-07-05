@@ -1,12 +1,13 @@
 export const adminSidebarItems = [
   { label: "Dashboard", href: "/admin", icon: "ph-bold ph-house" },
   { label: "Users", href: "/admin/users", icon: "ph ph-users-three" },
-  { label: "Courses", href: "/admin/courses", icon: "ph ph-watch" },
+  { label: "Subjects", href: "/admin/subjects", icon: "ph ph-book-open" },
   { label: "Questions", href: "/admin/questions", icon: "ph ph-seal-question" },
   { label: "AI Jobs", href: "/admin/ai-jobs", icon: "ph ph-sparkle" },
   { label: "Messages", href: "/admin/messages", icon: "ph ph-chat-dots" },
   { label: "Notifications", href: "/admin/notifications", icon: "ph ph-bell-ringing" },
   { label: "Reports", href: "/admin/reports", icon: "ph ph-chart-bar" },
+  { label: "Audit Log", href: "/admin/audit", icon: "ph ph-clipboard-text" },
   { label: "Settings", href: "/admin/settings", icon: "ph ph-gear" },
 ];
 

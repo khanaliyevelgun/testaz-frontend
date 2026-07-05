@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import AdminGradeSelect from "@/components/admin/AdminGradeSelect";
 import AdminRefreshButton from "@/components/admin/AdminRefreshButton";
+import AdminSearchSelect from "@/components/admin/AdminSearchSelect";
 import AdminStatusBadge from "@/components/admin/AdminStatusBadge";
-import { fetchAdminAiJobs, generateAdminAiQuestions } from "@/lib/api";
+import { fetchAdminAiJobs, fetchSubjects, fetchTopics, generateAdminAiQuestions } from "@/lib/api";
 
 const AdminAiJobsPage = () => {
   const [jobs, setJobs] = useState([]);
@@ -16,6 +18,8 @@ const AdminAiJobsPage = () => {
     questionType: "SINGLE_CHOICE",
     count: 10,
   });
+  const [subjectLabel, setSubjectLabel] = useState("");
+  const [topicLabel, setTopicLabel] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -40,9 +44,43 @@ const AdminAiJobsPage = () => {
     loadJobs();
   }, []);
 
+  const subjectOptions = useCallback((search) =>
+    fetchSubjects({ page: 1, perPage: 20, search, active: "true" }).then((response) =>
+      (response.data || []).map((subject) => ({
+        value: subject.id,
+        label: `${subject.name || subject.code} (${subject.code})`,
+      }))
+    ), []);
+
+  const topicOptions = useCallback((search) => {
+    if (!form.subjectId) return Promise.resolve([]);
+    return fetchTopics(form.subjectId, { page: 1, perPage: 20, search, gradeId: form.gradeId, active: "true" }).then((response) =>
+      (response.data || []).map((topic) => ({
+        value: topic.id,
+        label: `${topic.name || topic.code}${topic.code ? ` (${topic.code})` : ""}`,
+      }))
+    );
+  }, [form.gradeId, form.subjectId]);
+
   const handleChange = (event) => {
     const { name, value } = event.target;
     setForm((current) => ({ ...current, [name]: value }));
+  };
+
+  const setSubject = (value, label) => {
+    setForm((current) => ({ ...current, subjectId: value, topicId: "" }));
+    setSubjectLabel(label);
+    setTopicLabel("");
+  };
+
+  const setGrade = (value) => {
+    setForm((current) => ({ ...current, gradeId: value, topicId: "" }));
+    setTopicLabel("");
+  };
+
+  const setTopic = (value, label) => {
+    setForm((current) => ({ ...current, topicId: value }));
+    setTopicLabel(label);
   };
 
   const handleSubmit = async (event) => {
@@ -74,9 +112,25 @@ const AdminAiJobsPage = () => {
         </div>
 
         <form className='d-flex flex-wrap align-items-center gap-12 mb-24' onSubmit={handleSubmit}>
-          <input name='subjectId' type='number' className='common-input rounded-pill min-w-160-px' placeholder='Subject ID' value={form.subjectId} onChange={handleChange} required />
-          <input name='gradeId' type='number' className='common-input rounded-pill min-w-140-px' placeholder='Grade ID' value={form.gradeId} onChange={handleChange} />
-          <input name='topicId' type='number' className='common-input rounded-pill min-w-140-px' placeholder='Topic ID' value={form.topicId} onChange={handleChange} />
+          <AdminSearchSelect
+            value={form.subjectId}
+            selectedLabel={subjectLabel}
+            placeholder='Search subjects...'
+            required
+            loadOptions={subjectOptions}
+            onChange={setSubject}
+            minWidthClass='min-w-220-px'
+          />
+          <AdminGradeSelect value={form.gradeId} onChange={setGrade} minWidthClass='min-w-140-px' />
+          <AdminSearchSelect
+            value={form.topicId}
+            selectedLabel={topicLabel}
+            placeholder={form.subjectId ? "Search topics..." : "Select subject first"}
+            disabled={!form.subjectId}
+            loadOptions={topicOptions}
+            onChange={setTopic}
+            minWidthClass='min-w-220-px'
+          />
           <select name='difficulty' className='form-select rounded-pill border-neutral-40 text-14 py-11 px-16 w-auto min-w-160-px' value={form.difficulty} onChange={handleChange}>
             <option value='EASY'>EASY</option>
             <option value='MEDIUM'>MEDIUM</option>
