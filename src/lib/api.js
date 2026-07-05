@@ -455,6 +455,41 @@ export const fetchExamDefinitions = () =>
 export const fetchExamDefinition = (code) =>
   apiFetch(`/exam-definitions/${code}`).then((response) => unwrapApiResponse(response));
 
+export const createExam = (payload) =>
+  apiFetch("/exams", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  }).then((response) => unwrapApiResponse(response));
+
+export const fetchExams = ({ page = 1, perPage = 10 } = {}) =>
+  apiFetch(`/exams${toQueryString({ page: Math.max(page - 1, 0), size: perPage })}`).then((response) =>
+    normalizePage(unwrapApiResponse(response), page, perPage)
+  );
+
+export const fetchExam = (id) => apiFetch(`/exams/${id}`).then((response) => unwrapApiResponse(response));
+
+export const fetchExamStatistics = (id) =>
+  apiFetch(`/exams/${id}/statistics`).then((response) => unwrapApiResponse(response));
+
+export const fetchExamAttempts = (id, { page = 1, perPage = 10 } = {}) =>
+  apiFetch(`/exams/${id}/attempts${toQueryString({ page: Math.max(page - 1, 0), size: perPage })}`).then((response) =>
+    normalizePage(unwrapApiResponse(response), page, perPage)
+  );
+
+export const fetchExamTemplates = ({ page = 1, perPage = 10 } = {}) =>
+  apiFetch(`/exams/templates${toQueryString({ page: Math.max(page - 1, 0), size: perPage })}`).then((response) =>
+    normalizePage(unwrapApiResponse(response), page, perPage)
+  );
+
+export const fetchExamTemplate = (id) =>
+  apiFetch(`/exams/templates/${id}`).then((response) => unwrapApiResponse(response));
+
+export const saveExamTemplate = (payload) =>
+  apiFetch("/exams/templates", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  }).then((response) => unwrapApiResponse(response));
+
 export const fetchStudentProfile = () => apiFetch("/students/me").then((response) => unwrapApiResponse(response));
 
 export const updateStudentProfile = (payload) =>

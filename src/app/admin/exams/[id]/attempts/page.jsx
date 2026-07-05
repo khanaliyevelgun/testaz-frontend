@@ -1,10 +1,10 @@
-import AdminExamFormPage from "@/components/admin/AdminExamFormPage";
+import AdminExamAttemptsPage from "@/components/admin/AdminExamAttemptsPage";
 import RoleProtectedRoute from "@/components/auth/RoleProtectedRoute";
 
-export default function Page() {
+export default function Page({ params }) {
   return (
     <RoleProtectedRoute allowedRoles={["admin", "parent"]}>
-      <AdminExamFormPage />
+      <AdminExamAttemptsPage examId={params.id} />
     </RoleProtectedRoute>
   );
 }
