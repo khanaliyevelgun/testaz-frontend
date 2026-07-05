@@ -5,7 +5,7 @@ const getMaxGrade = () => {
   return Number.isFinite(configured) && configured > 0 ? Math.floor(configured) : 11;
 };
 
-const AdminGradeSelect = ({ label = "Grade", value, onChange, required = false, minWidthClass = "" }) => {
+const AdminGradeSelect = ({ label = "Grade", placeholder = "Grade", value, onChange, required = false, minWidthClass = "" }) => {
   const grades = Array.from({ length: getMaxGrade() }, (_, index) => index + 1);
 
   return (
@@ -17,7 +17,7 @@ const AdminGradeSelect = ({ label = "Grade", value, onChange, required = false, 
         onChange={(event) => onChange?.(event.target.value)}
         required={required}
       >
-        <option value=''>Grade</option>
+        <option value=''>{placeholder}</option>
         {grades.map((grade) => (
           <option value={grade} key={grade}>{grade}</option>
         ))}

@@ -1,15 +1,32 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import AdminGradeSelect from "@/components/admin/AdminGradeSelect";
+import AdminRichTextEditor from "@/components/admin/AdminRichTextEditor";
 import AdminSearchSelect from "@/components/admin/AdminSearchSelect";
 import { createAdminQuestion, fetchAdminQuestion, fetchSubject, fetchSubjects, fetchTopic, fetchTopics, getApiAssetUrl, updateAdminQuestion, uploadAdminMedia } from "@/lib/api";
-import { insertHtmlAtSelection, renderQuestionHtml } from "@/lib/questionContent";
+import { getQuestionImageSrc, isImageOnlyQuestionHtml } from "@/lib/questionContent";
 
 const difficulties = ["EASY", "MEDIUM", "HARD"];
 const questionTypes = ["SINGLE_CHOICE", "MULTIPLE_CHOICE", "SHORT_TEXT"];
 const matchTypes = ["EXACT", "NORMALIZED", "NUMERIC", "REGEX"];
+const questionTypeLabels = {
+  SINGLE_CHOICE: "Tək seçim",
+  MULTIPLE_CHOICE: "Çox seçim",
+  SHORT_TEXT: "Qısa cavab",
+};
+const difficultyLabels = {
+  EASY: "Asan",
+  MEDIUM: "Orta",
+  HARD: "Çətin",
+};
+const matchTypeLabels = {
+  EXACT: "Dəqiq",
+  NORMALIZED: "Normallaşdırılmış",
+  NUMERIC: "Rəqəm",
+  REGEX: "Regex",
+};
 
 const emptyForm = {
   subjectId: "",
@@ -24,7 +41,7 @@ const emptyForm = {
   mediaType: "",
 };
 
-const emptyOption = (orderIndex = 0) => ({ content: "", correct: false, orderIndex });
+const emptyOption = (orderIndex = 0) => ({ content: "", correct: false, orderIndex, mode: "text" });
 const emptyAcceptedAnswer = (orderIndex = 0) => ({
   value: "",
   matchType: "EXACT",
@@ -45,10 +62,15 @@ const AdminQuestionFormPage = ({ questionId }) => {
   const [isLoading, setIsLoading] = useState(isEdit);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadingField, setUploadingField] = useState("");
-  const [error, setError] = useState("");
-  const stemRef = useRef(null);
+  const [, setError] = useState("");
 
   const usesOptions = useMemo(() => form.type === "SINGLE_CHOICE" || form.type === "MULTIPLE_CHOICE", [form.type]);
+  const canSubmit = useMemo(() => {
+    if (!form.stem.trim()) return false;
+    if (!isEdit && !form.subjectId) return false;
+    if (usesOptions) return options.some((option) => option.content.trim() && option.correct);
+    return acceptedAnswers.some((answer) => answer.value.trim());
+  }, [acceptedAnswers, form.stem, form.subjectId, isEdit, options, usesOptions]);
 
   const subjectOptions = useCallback((search) =>
     fetchSubjects({ page: 1, perPage: 20, search, active: "true" }).then((response) =>
@@ -114,6 +136,7 @@ const AdminQuestionFormPage = ({ questionId }) => {
                 content: option.content || "",
                 correct: Boolean(option.correct),
                 orderIndex: option.orderIndex ?? index,
+                mode: isImageOnlyQuestionHtml(option.content) ? "image" : "text",
               }))
             : [emptyOption(0), emptyOption(1)]
         );
@@ -143,6 +166,12 @@ const AdminQuestionFormPage = ({ questionId }) => {
   const handleChange = (event) => {
     const { name, value } = event.target;
     setForm((current) => ({ ...current, [name]: value }));
+    if (name === "type" && value === "SINGLE_CHOICE") {
+      setOptions((current) => {
+        const firstCorrectIndex = current.findIndex((option) => option.correct);
+        return current.map((option, index) => ({ ...option, correct: index === firstCorrectIndex }));
+      });
+    }
   };
 
   const setSubject = (value, label) => {
@@ -165,10 +194,23 @@ const AdminQuestionFormPage = ({ questionId }) => {
     setOptions((current) => current.map((option, optionIndex) => (optionIndex === index ? { ...option, ...patch } : option)));
   };
 
+  const setCorrectOption = (index, checked) => {
+    setOptions((current) =>
+      current.map((option, optionIndex) => ({
+        ...option,
+        correct: form.type === "SINGLE_CHOICE" ? optionIndex === index : optionIndex === index ? checked : option.correct,
+      }))
+    );
+  };
+
+  const setOptionMode = (index, mode) => {
+    updateOption(index, { mode, content: "" });
+  };
+
   const uploadMediaFile = async (file, fieldLabel) => {
     if (!file) return null;
     if (!file.type.startsWith("image/")) {
-      setError("Only image files can be uploaded here.");
+      setError("Burada yalnız şəkil faylı yükləmək olar.");
       return null;
     }
 
@@ -177,7 +219,7 @@ const AdminQuestionFormPage = ({ questionId }) => {
     try {
       return await uploadAdminMedia(file);
     } catch (requestError) {
-      setError(requestError?.message || "Image could not be uploaded.");
+      setError(requestError?.message || "Şəkil yüklənmədi.");
       return null;
     } finally {
       setUploadingField("");
@@ -205,13 +247,15 @@ const AdminQuestionFormPage = ({ questionId }) => {
 
     const imageHtml = `<img src="${getApiAssetUrl(uploaded.path)}" alt="Option ${index + 1}" />`;
     updateOption(index, {
-      content: `${options[index]?.content || ""}${options[index]?.content ? "\n" : ""}${imageHtml}`,
+      content: imageHtml,
+      mode: "image",
     });
   };
 
-  const insertIntoStem = (wrap) => {
-    const nextStem = insertHtmlAtSelection(stemRef.current, form.stem, wrap);
-    setForm((current) => ({ ...current, stem: nextStem }));
+  const handleStemImageUpload = async (file) => {
+    const uploaded = await uploadMediaFile(file, "stem");
+    if (!uploaded?.path) throw new Error("Şəkil yüklənmədi.");
+    return getApiAssetUrl(uploaded.path);
   };
 
   const updateAcceptedAnswer = (index, patch) => {
@@ -266,13 +310,13 @@ const AdminQuestionFormPage = ({ questionId }) => {
   };
 
   const validate = () => {
-    if (!form.stem.trim()) return "Stem is required.";
-    if (!isEdit && !form.subjectId) return "Subject ID is required.";
+    if (!form.stem.trim()) return "Sual mətni tələb olunur.";
+    if (!isEdit && !form.subjectId) return "Fənn seçilməlidir.";
     if (usesOptions && !options.some((option) => option.content.trim() && option.correct)) {
-      return "At least one correct option is required.";
+      return "Ən azı bir doğru variant seçilməlidir.";
     }
     if (!usesOptions && !acceptedAnswers.some((answer) => answer.value.trim())) {
-      return "At least one accepted answer is required.";
+      return "Ən azı bir qəbul edilən cavab yazılmalıdır.";
     }
     return "";
   };
@@ -296,7 +340,7 @@ const AdminQuestionFormPage = ({ questionId }) => {
       router.push("/admin/questions");
       router.refresh();
     } catch (requestError) {
-      setError(requestError?.message || (isEdit ? "Question could not be updated." : "Question could not be created."));
+      setError(requestError?.message || (isEdit ? "Sual yenilənmədi." : "Sual yaradılmadı."));
     } finally {
       setIsSubmitting(false);
     }
@@ -306,116 +350,130 @@ const AdminQuestionFormPage = ({ questionId }) => {
     <div className='px-24 py-24'>
       <div className='bg-white rounded-10 px-24 py-24'>
         <div className='mb-24'>
-          <h4 className='fw-semibold text-neutral-500 text-20 mb-4'>{isEdit ? "Edit Question" : "Create Question"}</h4>
-          <p className='text-14 text-neutral-400 mb-0'>{isEdit ? "Update content, metadata, options, and accepted answers." : "Create a draft question."}</p>
+          <h4 className='fw-semibold text-neutral-500 text-20 mb-4'>{isEdit ? "Sualı Redaktə Et" : "Sual Yarat"}</h4>
+          <p className='text-14 text-neutral-400 mb-0'>{isEdit ? "Məzmunu, məlumatları, variantları və qəbul edilən cavabları yenilə." : "Yeni qaralama sual yarat."}</p>
         </div>
 
-        {error ? <p className='text-danger mb-16'>{error}</p> : null}
         {isLoading ? (
-          <p className='text-14 text-neutral-400 mb-0'>Loading...</p>
+          <p className='text-14 text-neutral-400 mb-0'>Yüklənir...</p>
         ) : (
-          <form className='row gy-4' onSubmit={handleSubmit}>
+          <form className='row gy-4' onSubmit={handleSubmit} noValidate>
             <div className='col-md-3'>
               <AdminSearchSelect
-                label='Subject'
+                label='Fənn'
                 value={form.subjectId}
                 selectedLabel={subjectLabel}
-                placeholder='Search subjects...'
+                placeholder='Fənn axtar...'
                 disabled={isEdit}
                 required={!isEdit}
                 loadOptions={subjectOptions}
+                loadingText='Yüklənir...'
+                emptyText='Nəticə tapılmadı.'
                 onChange={setSubject}
               />
             </div>
             <div className='col-md-3'>
-              <AdminGradeSelect label='Grade' value={form.gradeId} onChange={setGrade} />
+              <AdminGradeSelect label='Sinif' value={form.gradeId} onChange={setGrade} placeholder='Sinif' />
             </div>
             <div className='col-md-3'>
               <AdminSearchSelect
-                label='Topic'
+                label='Mövzu'
                 value={form.topicId}
                 selectedLabel={topicLabel}
-                placeholder={form.subjectId ? "Search topics..." : "Select subject first"}
+                placeholder={form.subjectId ? "Mövzu axtar..." : "Əvvəl fənn seç"}
                 disabled={!form.subjectId}
                 loadOptions={topicOptions}
+                loadingText='Yüklənir...'
+                emptyText='Nəticə tapılmadı.'
                 onChange={setTopic}
               />
             </div>
             <div className='col-md-3'>
-              <label className='text-14 text-neutral-500 fw-medium mb-8'>Language</label>
-              <input name='language' className='common-input rounded-pill' maxLength='2' pattern='[a-z]{2}' value={form.language} onChange={handleChange} />
+              <label className='text-14 text-neutral-500 fw-medium mb-8'>Dil</label>
+              <input name='language' className='common-input rounded-pill' maxLength='2' value={form.language} onChange={handleChange} />
             </div>
 
             <div className='col-md-4'>
-              <label className='text-14 text-neutral-500 fw-medium mb-8'>Difficulty</label>
+              <label className='text-14 text-neutral-500 fw-medium mb-8'>Çətinlik</label>
               <select name='difficulty' className='form-select rounded-pill border-neutral-40 text-14 py-11 px-16' value={form.difficulty} onChange={handleChange}>
-                {difficulties.map((difficulty) => <option value={difficulty} key={difficulty}>{difficulty}</option>)}
+                {difficulties.map((difficulty) => <option value={difficulty} key={difficulty}>{difficultyLabels[difficulty]}</option>)}
               </select>
             </div>
             <div className='col-md-4'>
-              <label className='text-14 text-neutral-500 fw-medium mb-8'>Type</label>
+              <label className='text-14 text-neutral-500 fw-medium mb-8'>Sual növü</label>
               <select name='type' className='form-select rounded-pill border-neutral-40 text-14 py-11 px-16' value={form.type} onChange={handleChange} disabled={isEdit}>
-                {questionTypes.map((type) => <option value={type} key={type}>{type.replaceAll("_", " ")}</option>)}
+                {questionTypes.map((type) => <option value={type} key={type}>{questionTypeLabels[type]}</option>)}
               </select>
             </div>
             <div className='col-12'>
-              <div className='d-flex flex-wrap align-items-center justify-content-between gap-12 mb-8'>
-                <label className='text-14 text-neutral-500 fw-medium mb-0'>Stem</label>
-                <div className='d-flex flex-wrap align-items-center gap-8'>
-                  <button type='button' className='px-12 py-6 border border-neutral-40 rounded-8 text-14 text-neutral-500 bg-white' onClick={() => insertIntoStem((text) => `<strong>${text || "bold text"}</strong>`)}>B</button>
-                  <button type='button' className='px-12 py-6 border border-neutral-40 rounded-8 text-14 text-neutral-500 bg-white fst-italic' onClick={() => insertIntoStem((text) => `<em>${text || "italic text"}</em>`)}>I</button>
-                  <button type='button' className='px-12 py-6 border border-neutral-40 rounded-8 text-14 text-neutral-500 bg-white text-decoration-underline' onClick={() => insertIntoStem((text) => `<u>${text || "underlined text"}</u>`)}>U</button>
-                  <button type='button' className='px-12 py-6 border border-neutral-40 rounded-8 text-14 text-neutral-500 bg-white' onClick={() => insertIntoStem((text) => `<sup>${text || "2"}</sup>`)}>x²</button>
-                  <button type='button' className='px-12 py-6 border border-neutral-40 rounded-8 text-14 text-neutral-500 bg-white' onClick={() => insertIntoStem((text) => `<sub>${text || "2"}</sub>`)}>x₂</button>
-                </div>
-              </div>
-              <textarea ref={stemRef} name='stem' className='common-input rounded-12' rows='5' maxLength='8000' value={form.stem} onChange={handleChange} required />
-              {form.stem ? (
-                <div className='border border-neutral-30 rounded-12 p-16 mt-12 bg-main-25 question-html-content' dangerouslySetInnerHTML={renderQuestionHtml(form.stem)} />
-              ) : null}
+              <label className='text-14 text-neutral-500 fw-medium mb-8'>Sual mətni</label>
+              <AdminRichTextEditor value={form.stem} onChange={(stem) => setForm((current) => ({ ...current, stem }))} onUpload={handleStemImageUpload} />
+              {uploadingField === "stem" ? <p className='text-14 text-neutral-400 mt-8 mb-0'>Şəkil yüklənir...</p> : null}
             </div>
             <div className='col-12'>
-              <label className='text-14 text-neutral-500 fw-medium mb-8'>Question image</label>
+              <label className='text-14 text-neutral-500 fw-medium mb-8'>Sual şəkli</label>
               <div className='d-flex flex-wrap align-items-center gap-12'>
                 <input type='file' accept='image/*' className='common-input rounded-pill flex-grow-1 min-w-240-px' onChange={handleQuestionImageUpload} disabled={Boolean(uploadingField)} />
-                {form.mediaPath ? <button type='button' className='px-14 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={() => setForm((current) => ({ ...current, mediaPath: "", mediaType: "" }))}>Remove image</button> : null}
+                {form.mediaPath ? <button type='button' className='px-14 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={() => setForm((current) => ({ ...current, mediaPath: "", mediaType: "" }))}>Şəkli sil</button> : null}
               </div>
-              {uploadingField === "question" ? <p className='text-14 text-neutral-400 mt-8 mb-0'>Uploading image...</p> : null}
+              {uploadingField === "question" ? <p className='text-14 text-neutral-400 mt-8 mb-0'>Şəkil yüklənir...</p> : null}
               {form.mediaPath ? (
                 <div className='mt-12'>
-                  <img src={getApiAssetUrl(form.mediaPath)} alt='Question media preview' className='max-w-320-px w-100 rounded-12 border border-neutral-30' />
+                  <img src={getApiAssetUrl(form.mediaPath)} alt='Sual şəkli' className='max-w-320-px w-100 rounded-12 border border-neutral-30' />
                 </div>
               ) : null}
             </div>
             <div className='col-12'>
-              <label className='text-14 text-neutral-500 fw-medium mb-8'>Explanation</label>
+              <label className='text-14 text-neutral-500 fw-medium mb-8'>İzah</label>
               <textarea name='explanation' className='common-input rounded-12' rows='4' maxLength='4000' value={form.explanation} onChange={handleChange} />
             </div>
 
             {usesOptions ? (
               <div className='col-12'>
                 <div className='d-flex align-items-center justify-content-between gap-12 mb-12'>
-                  <h5 className='text-16 fw-semibold text-neutral-500 mb-0'>Options</h5>
-                  <button type='button' className='px-14 py-8 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={addOption} disabled={options.length >= 10}>Add option</button>
+                  <h5 className='text-16 fw-semibold text-neutral-500 mb-0'>Variantlar</h5>
+                  <button type='button' className='px-14 py-8 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={addOption} disabled={options.length >= 10}>Variant əlavə et</button>
                 </div>
                 <div className='d-flex flex-column gap-12'>
                   {options.map((option, index) => (
-                    <div className='border border-neutral-30 rounded-12 p-12' key={index}>
-                      <div className='d-flex flex-wrap align-items-center gap-12'>
-                        <textarea className='common-input rounded-12 flex-grow-1 min-w-240-px' rows='2' maxLength='2000' placeholder={`Option ${index + 1}`} value={option.content} onChange={(event) => updateOption(index, { content: event.target.value })} />
-                        <label className='d-flex align-items-center gap-8 text-14 text-neutral-500 mb-0'>
-                          <input type='checkbox' checked={option.correct} onChange={(event) => updateOption(index, { correct: event.target.checked })} />
-                          Correct
-                        </label>
-                        <label className='px-12 py-8 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white mb-0'>
-                          {uploadingField === `option-${index}` ? "Uploading..." : "Add image"}
-                          <input type='file' accept='image/*' className='d-none' disabled={Boolean(uploadingField)} onChange={(event) => handleOptionImageUpload(index, event)} />
-                        </label>
-                        <button type='button' className='px-12 py-8 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={() => setOptions((current) => current.filter((_, optionIndex) => optionIndex !== index))} disabled={options.length <= 1}>Remove</button>
+                    <div className='option-editor-row border border-neutral-30 rounded-12 p-12' key={index}>
+                      <label className='option-correct-control text-14 text-neutral-500 mb-0'>
+                        <input
+                          type={form.type === "SINGLE_CHOICE" ? "radio" : "checkbox"}
+                          name='correctOption'
+                          checked={option.correct}
+                          onChange={(event) => setCorrectOption(index, event.target.checked)}
+                        />
+                        Doğru
+                      </label>
+                      <div className='option-editor-body'>
+                        <div className='d-flex flex-wrap align-items-center justify-content-between gap-12 mb-12'>
+                          <span className='text-14 fw-medium text-neutral-500'>Variant {index + 1}</span>
+                          <div className='d-flex flex-wrap align-items-center gap-8'>
+                            <button type='button' className={`px-12 py-8 border rounded-pill text-14 ${option.mode !== "image" ? "btn-main text-white" : "border-neutral-40 text-neutral-500 bg-white"}`} onClick={() => setOptionMode(index, "text")}>Mətn</button>
+                            <button type='button' className={`px-12 py-8 border rounded-pill text-14 ${option.mode === "image" ? "btn-main text-white" : "border-neutral-40 text-neutral-500 bg-white"}`} onClick={() => setOptionMode(index, "image")}>Şəkil</button>
+                            <button type='button' className='px-12 py-8 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={() => setOptions((current) => current.filter((_, optionIndex) => optionIndex !== index))} disabled={options.length <= 1}>Sil</button>
+                          </div>
+                        </div>
+
+                        {option.mode === "image" ? (
+                          <div className='option-image-editor'>
+                            {getQuestionImageSrc(option.content) ? (
+                              <div className='d-flex flex-wrap align-items-center gap-12'>
+                                <img src={getQuestionImageSrc(option.content)} alt={`Variant ${index + 1}`} className='option-image-preview' />
+                                <button type='button' className='px-12 py-8 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={() => updateOption(index, { content: "" })}>Şəkli sil</button>
+                              </div>
+                            ) : (
+                              <label className='option-image-drop border border-neutral-40 rounded-12 text-14 text-neutral-500 mb-0'>
+                                {uploadingField === `option-${index}` ? "Yüklənir..." : "Şəkil seç"}
+                                <input type='file' accept='image/*' className='d-none' disabled={Boolean(uploadingField)} onChange={(event) => handleOptionImageUpload(index, event)} />
+                              </label>
+                            )}
+                          </div>
+                        ) : (
+                          <textarea className='common-input rounded-12 w-100' rows='2' maxLength='2000' placeholder={`Variant ${index + 1}`} value={option.content} onChange={(event) => updateOption(index, { content: event.target.value })} />
+                        )}
                       </div>
-                      {option.content ? (
-                        <div className='question-html-content text-14 text-neutral-500 mt-12' dangerouslySetInnerHTML={renderQuestionHtml(option.content)} />
-                      ) : null}
                     </div>
                   ))}
                 </div>
@@ -423,21 +481,21 @@ const AdminQuestionFormPage = ({ questionId }) => {
             ) : (
               <div className='col-12'>
                 <div className='d-flex align-items-center justify-content-between gap-12 mb-12'>
-                  <h5 className='text-16 fw-semibold text-neutral-500 mb-0'>Accepted Answers</h5>
-                  <button type='button' className='px-14 py-8 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={addAcceptedAnswer} disabled={acceptedAnswers.length >= 10}>Add answer</button>
+                  <h5 className='text-16 fw-semibold text-neutral-500 mb-0'>Qəbul edilən cavablar</h5>
+                  <button type='button' className='px-14 py-8 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={addAcceptedAnswer} disabled={acceptedAnswers.length >= 10}>Cavab əlavə et</button>
                 </div>
                 <div className='d-flex flex-column gap-12'>
                   {acceptedAnswers.map((answer, index) => (
                     <div className='d-flex flex-wrap align-items-center gap-12' key={index}>
-                      <input className='common-input rounded-pill flex-grow-1 min-w-240-px' placeholder={`Answer ${index + 1}`} value={answer.value} onChange={(event) => updateAcceptedAnswer(index, { value: event.target.value })} />
+                      <input className='common-input rounded-pill flex-grow-1 min-w-240-px' placeholder={`Cavab ${index + 1}`} value={answer.value} onChange={(event) => updateAcceptedAnswer(index, { value: event.target.value })} />
                       <select className='form-select rounded-pill border-neutral-40 text-14 py-11 px-16 w-auto min-w-170-px' value={answer.matchType} onChange={(event) => updateAcceptedAnswer(index, { matchType: event.target.value })}>
-                        {matchTypes.map((matchType) => <option value={matchType} key={matchType}>{matchType}</option>)}
+                        {matchTypes.map((matchType) => <option value={matchType} key={matchType}>{matchTypeLabels[matchType]}</option>)}
                       </select>
                       <label className='d-flex align-items-center gap-8 text-14 text-neutral-500 mb-0'>
                         <input type='checkbox' checked={answer.caseSensitive} onChange={(event) => updateAcceptedAnswer(index, { caseSensitive: event.target.checked })} />
-                        Case sensitive
+                        Böyük/kiçik hərfə həssas
                       </label>
-                      <button type='button' className='px-12 py-8 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={() => setAcceptedAnswers((current) => current.filter((_, answerIndex) => answerIndex !== index))} disabled={acceptedAnswers.length <= 1}>Remove</button>
+                      <button type='button' className='px-12 py-8 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={() => setAcceptedAnswers((current) => current.filter((_, answerIndex) => answerIndex !== index))} disabled={acceptedAnswers.length <= 1}>Sil</button>
                     </div>
                   ))}
                 </div>
@@ -445,8 +503,8 @@ const AdminQuestionFormPage = ({ questionId }) => {
             )}
 
             <div className='col-12 d-flex align-items-center gap-12 mt-24'>
-              <button type='submit' className='btn btn-main rounded-pill px-24' disabled={isSubmitting}>{isSubmitting ? "Saving..." : "Save"}</button>
-              <button type='button' className='px-18 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={() => router.push("/admin/questions")}>Cancel</button>
+              <button type='submit' className='btn btn-main rounded-pill px-24' disabled={isSubmitting || Boolean(uploadingField) || !canSubmit}>{isSubmitting ? "Yadda saxlanır..." : "Yadda saxla"}</button>
+              <button type='button' className='px-18 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={() => router.push("/admin/questions")}>Ləğv et</button>
             </div>
           </form>
         )}

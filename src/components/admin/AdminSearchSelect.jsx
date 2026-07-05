@@ -7,6 +7,8 @@ const AdminSearchSelect = ({
   value,
   selectedLabel = "",
   placeholder = "Search...",
+  loadingText = "Loading...",
+  emptyText = "No results found.",
   disabled = false,
   required = false,
   loadOptions,
@@ -93,8 +95,8 @@ const AdminSearchSelect = ({
                 Clear selection
               </button>
             ) : null}
-            {isLoading ? <div className='px-12 py-8 text-14 text-neutral-400'>Loading...</div> : null}
-            {!isLoading && !options.length ? <div className='px-12 py-8 text-14 text-neutral-400'>No results found.</div> : null}
+            {isLoading ? <div className='px-12 py-8 text-14 text-neutral-400'>{loadingText}</div> : null}
+            {!isLoading && !options.length ? <div className='px-12 py-8 text-14 text-neutral-400'>{emptyText}</div> : null}
             {options.map((option) => (
               <button
                 type='button'

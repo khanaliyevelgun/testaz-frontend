@@ -166,8 +166,6 @@ const AdminQuestionsPage = () => {
           </select>
         </div>
 
-        {error ? <p className='text-danger mb-16'>{error}</p> : null}
-
         <div className='table-responsive admin-users-table'>
           <table className='table mb-0'>
             <thead>

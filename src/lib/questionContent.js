@@ -44,11 +44,11 @@ export const questionHtmlToText = (value = "") =>
     .replace(/\s+/g, " ")
     .trim();
 
-export const insertHtmlAtSelection = (element, currentValue, snippet) => {
-  if (!element) return `${currentValue}${snippet}`;
+export const getQuestionImageSrc = (value = "") =>
+  String(value).match(/<\s*img\b[^>]*\bsrc\s*=\s*["']([^"']+)["'][^>]*>/i)?.[1] || "";
 
-  const start = element.selectionStart ?? currentValue.length;
-  const end = element.selectionEnd ?? currentValue.length;
-  const selected = currentValue.slice(start, end);
-  return `${currentValue.slice(0, start)}${snippet(selected)}${currentValue.slice(end)}`;
+export const isImageOnlyQuestionHtml = (value = "") => {
+  const html = String(value).trim();
+  if (!html) return false;
+  return Boolean(getQuestionImageSrc(html)) && !html.replace(/<\s*img\b[^>]*>/gi, "").trim();
 };
