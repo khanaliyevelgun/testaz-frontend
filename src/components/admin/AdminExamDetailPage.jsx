@@ -10,11 +10,18 @@ const formatDate = (value) => {
   return new Intl.DateTimeFormat("az-AZ", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
 };
 
-const formatShareLink = (shareLink) => {
-  if (!shareLink) return "";
-  if (/^https?:\/\//i.test(shareLink)) return shareLink;
-  if (typeof window === "undefined") return shareLink;
-  return `${window.location.origin}${shareLink.startsWith("/") ? "" : "/"}${shareLink}`;
+const getExamCode = (exam) => exam?.examCode || exam?.shareToken || exam?.code || "";
+
+const getPreviewPath = (exam) => {
+  const code = getExamCode(exam);
+  return code ? `/exam/${encodeURIComponent(code)}` : "";
+};
+
+const getPreviewUrl = (exam) => {
+  const path = getPreviewPath(exam);
+  if (!path) return "";
+  if (typeof window === "undefined") return path;
+  return `${window.location.origin}${path}`;
 };
 
 const AdminExamDetailPage = ({ examId }) => {
@@ -44,13 +51,13 @@ const AdminExamDetailPage = ({ examId }) => {
   }, [examId]);
 
   const copyLink = async () => {
-    const link = formatShareLink(exam?.shareLink);
-    if (!link) return;
+    const code = getExamCode(exam);
+    if (!code) return;
     try {
-      await navigator.clipboard.writeText(link);
+      await navigator.clipboard.writeText(code);
       setCopyStatus("Copied");
     } catch {
-      setCopyStatus("Select the link and copy manually");
+      setCopyStatus("Select the code and copy manually");
     }
   };
 
@@ -92,12 +99,21 @@ const AdminExamDetailPage = ({ examId }) => {
             </div>
 
             <div className='mb-24'>
-              <label className='text-14 text-neutral-500 fw-medium mb-8'>Share link</label>
+              <label className='text-14 text-neutral-500 fw-medium mb-8'>Exam code</label>
               <div className='d-flex flex-wrap align-items-center gap-10'>
-                <input className='common-input rounded-pill flex-grow-1 min-w-240-px' readOnly value={formatShareLink(exam.shareLink)} onFocus={(event) => event.target.select()} />
+                <input className='common-input rounded-pill flex-grow-1 min-w-240-px' readOnly value={getExamCode(exam)} onFocus={(event) => event.target.select()} />
                 <button type='button' className='btn btn-main rounded-pill px-20' onClick={copyLink}>Copy</button>
               </div>
               {copyStatus ? <p className='text-14 text-neutral-400 mt-8 mb-0'>{copyStatus}</p> : null}
+              {getPreviewUrl(exam) ? (
+                <div className='mt-16'>
+                  <label className='text-14 text-neutral-500 fw-medium mb-8'>Preview link</label>
+                  <div className='d-flex flex-wrap align-items-center gap-10'>
+                    <input className='common-input rounded-pill flex-grow-1 min-w-240-px' readOnly value={getPreviewUrl(exam)} onFocus={(event) => event.target.select()} />
+                    <Link className='btn btn-main rounded-pill px-20' href={getPreviewPath(exam)}>Preview</Link>
+                  </div>
+                </div>
+              ) : null}
             </div>
 
             <h5 className='text-16 fw-semibold text-neutral-500 mb-12'>Sections</h5>

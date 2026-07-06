@@ -1,15 +1,15 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 
 const FooterOne = () => {
   return (
     <footer className='footer bg-main-25 position-relative z-1'>
       <img
-        src='assets/images/shapes/shape2.png'
+        src='/assets/images/shapes/shape2.png'
         alt=''
         className='shape five animation-scalation'
       />
       <img
-        src='assets/images/shapes/shape6.png'
+        src='/assets/images/shapes/shape6.png'
         alt=''
         className='shape one animation-scalation'
       />
@@ -21,7 +21,7 @@ const FooterOne = () => {
                 <div className='footer-item__logo'>
                   <Link href='/'>
                     {" "}
-                    <img src='assets/images/logo/logo.png' alt='' />
+                    <img src='/assets/images/logo/logo.png' alt='' />
                   </Link>
                 </div>
                 <p className='my-32'>
@@ -73,7 +73,7 @@ const FooterOne = () => {
                       href='/about'
                       className='text-neutral-500 hover-text-main-600 hover-text-decoration-underline'
                     >
-                      Haqqımızda
+                      Haqq?m?zda
                     </Link>
                   </li>
                   <li className='mb-16'>
@@ -152,7 +152,7 @@ const FooterOne = () => {
             </div>
             <div className='col' data-aos='fade-up' data-aos-duration={800}>
               <div className='footer-item'>
-                <h4 className='footer-item__title mb-32'>Əlaqə</h4>
+                <h4 className='footer-item__title mb-32'>?laq?</h4>
                 <div className='flex-align gap-20 mb-24'>
                   <span className='icon d-flex text-32 text-main-600'>
                     <i className='ph ph-phone' />
@@ -187,7 +187,7 @@ const FooterOne = () => {
                   </span>
                   <div className=''>
                     <span className='text-neutral-500 d-block mb-4'>
-                      Bakı şəh., Suraxanı ray.   
+                      Bak? ??h., Suraxan? ray.
                     </span>
                     
                   </div>
@@ -196,9 +196,9 @@ const FooterOne = () => {
             </div>
             <div className='col' data-aos='fade-up' data-aos-duration={1000}>
               <div className='footer-item'>
-                <h4 className='footer-item__title mb-32'>Abunə ol</h4>
+                <h4 className='footer-item__title mb-32'>Abun? ol</h4>
                 <p className='text-neutral-500'>
-                  Email ünvanınızı yazaraq yeniliklərdən ilk siz xəbərdar olun
+                  Email ?nvan?n?z? yazaraq yenilikl?rd?n ilk siz x?b?rdar olun
                 </p>
                 <form action='#' className='mt-24 position-relative'>
                   <input
@@ -225,15 +225,15 @@ const FooterOne = () => {
             <div className='bottom-footer__inner flex-between gap-3 flex-wrap'>
               <p className='bottom-footer__text'>
                 {" "}
-                Copyright © 2025 <span className='fw-semibold'>EduSınaq &nbsp; </span>
-                Bütün hquqları qorunur. 
+                Copyright ? 2025 <span className='fw-semibold'>EduS?naq &nbsp; </span>
+                B?t?n h?quqlar? qorunur.
               </p>
               <div className='footer-links'>
                 <Link
                   href='#'
                   className='text-neutral-500 hover-text-main-600 hover-text-decoration-underline'
                 >
-                  İstifadə qaydaları
+                  ?stifad? qaydalar?
                 </Link>
                 
               </div>

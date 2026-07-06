@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import $ from "jquery";
@@ -77,7 +77,7 @@ const HeaderOne = () => {
               {/* Logo Start */}
               <div className='logo'>
                 <Link href='/' className='link'>
-                  <img src='assets/images/logo/edulogo.png' alt='Logo' />
+                  <img src='/assets/images/logo/edulogo.png' alt='Logo' />
                 </Link>
               </div>
               {/* Logo End  */}
@@ -159,7 +159,7 @@ const HeaderOne = () => {
         </button>
         <div className='mobile-menu__inner'>
           <Link href='/' className='mobile-menu__logo'>
-            <img src='assets/images/logo/edulogo.png' alt='Logo' />
+            <img src='/assets/images/logo/edulogo.png' alt='Logo' />
           </Link>
           <div className='mobile-menu__menu'>
             <ul className='nav-menu flex-align nav-menu--mobile'>

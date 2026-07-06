@@ -1,10 +1,10 @@
-import ChildAssignmentsPage from "@/components/admin/ChildAssignmentsPage";
+import ExamSessionPage from "@/components/admin/ExamSessionPage";
 import RoleProtectedRoute from "@/components/auth/RoleProtectedRoute";
 
-export default function Page() {
+export default function Page({ params }) {
   return (
     <RoleProtectedRoute allowedRoles={["child"]}>
-      <ChildAssignmentsPage />
+      <ExamSessionPage sessionId={params.id} />
     </RoleProtectedRoute>
   );
 }

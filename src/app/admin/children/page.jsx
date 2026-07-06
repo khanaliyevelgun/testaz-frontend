@@ -1,5 +1,10 @@
-import AdminPlaceholderPage from "@/components/admin/AdminPlaceholderPage";
+import ParentChildrenPage from "@/components/admin/ParentChildrenPage";
+import RoleProtectedRoute from "@/components/auth/RoleProtectedRoute";
 
 export default function Page() {
-  return <AdminPlaceholderPage title='Children' description='Parent rolü için bağlı öğrenci listesi burada gösterilecek.' />;
+  return (
+    <RoleProtectedRoute allowedRoles={["parent", "child"]}>
+      <ParentChildrenPage />
+    </RoleProtectedRoute>
+  );
 }

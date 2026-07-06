@@ -468,6 +468,49 @@ export const fetchExams = ({ page = 1, perPage = 10 } = {}) =>
 
 export const fetchExam = (id) => apiFetch(`/exams/${id}`).then((response) => unwrapApiResponse(response));
 
+const normalizeSessionQuestion = (question = {}) => ({
+  ...question,
+  selectedOptionIds: Array.isArray(question.selectedOptionIds) ? question.selectedOptionIds : [],
+  answerText: question.answerText || "",
+  options: [...(question.options || [])].sort((first, second) => (first.orderIndex ?? 0) - (second.orderIndex ?? 0)),
+});
+
+const normalizeSession = (session) => {
+  if (!session) return session;
+  const questions = [...(session.questions || [])]
+    .map(normalizeSessionQuestion)
+    .sort((first, second) => (first.orderIndex ?? 0) - (second.orderIndex ?? 0));
+
+  return {
+    ...session,
+    id: session.id || session.sessionId,
+    questions,
+    totalQuestions: session.totalQuestions ?? questions.length,
+    answeredCount: session.answeredCount ?? questions.filter((question) =>
+      Boolean(question.selectedOptionIds.length || String(question.answerText || "").trim())
+    ).length,
+  };
+};
+
+const normalizeSessionProgress = (progress) => {
+  if (!progress) return progress;
+  return {
+    ...progress,
+    questions: [...(progress.questions || [])].sort((first, second) => (first.orderIndex ?? 0) - (second.orderIndex ?? 0)),
+  };
+};
+
+export const fetchExamPreview = (code) =>
+  apiFetch(`/exams/${code}/preview`).then((response) => unwrapApiResponse(response));
+
+export const fetchMyAssignedExams = () =>
+  apiFetch("/exams/mine").then((response) => unwrapApiResponse(response) || []);
+
+export const startExamByCode = (code) =>
+  apiFetch(`/exams/${code}/start`, {
+    method: "POST",
+  }).then((response) => normalizeSession(unwrapApiResponse(response)));
+
 export const fetchExamStatistics = (id) =>
   apiFetch(`/exams/${id}/statistics`).then((response) => unwrapApiResponse(response));
 
@@ -511,6 +554,31 @@ export const updateParentProfile = (payload) =>
     body: JSON.stringify(payload),
   }).then((response) => unwrapApiResponse(response));
 
+export const becomeParent = () =>
+  apiFetch("/parents/me/activate", {
+    method: "POST",
+  }).then((response) => unwrapApiResponse(response));
+
+export const searchLearners = (query) =>
+  apiFetch(`/parents/me/learners/search${toQueryString({ query })}`).then((response) => unwrapApiResponse(response) || []);
+
+export const sendParentInvitation = (payload) =>
+  apiFetch("/parents/me/invitations", {
+    method: "POST",
+    body: JSON.stringify({
+      learnerId: payload.learnerId,
+      message: payload.message || "",
+    }),
+  }).then((response) => unwrapApiResponse(response));
+
+export const fetchParentInvitations = (status = "PENDING") =>
+  apiFetch(`/parents/me/invitations${toQueryString({ status })}`).then((response) => unwrapApiResponse(response) || []);
+
+export const cancelParentInvitation = (invitationId) =>
+  apiFetch(`/parents/me/invitations/${invitationId}`, {
+    method: "DELETE",
+  });
+
 export const linkChild = (code) =>
   apiFetch("/parents/me/links", {
     method: "POST",
@@ -524,6 +592,18 @@ export const unlinkChild = (studentId) =>
 
 export const fetchLinkedChildren = () =>
   apiFetch("/parents/me/children").then((response) => unwrapApiResponse(response) || []);
+
+export const fetchParentDashboard = () =>
+  apiFetch("/parents/me/dashboard").then((response) => unwrapApiResponse(response));
+
+export const fetchStudentInvitations = (status = "PENDING") =>
+  apiFetch(`/students/me/invitations${toQueryString({ status })}`).then((response) => unwrapApiResponse(response) || []);
+
+export const respondStudentInvitation = (invitationId, approved) =>
+  apiFetch(`/students/me/invitations/${invitationId}/respond`, {
+    method: "POST",
+    body: JSON.stringify({ accept: approved }),
+  }).then((response) => unwrapApiResponse(response));
 
 export const fetchChildResults = (studentId, { page = 1, perPage = 10 } = {}) =>
   apiFetch(`/parents/me/children/${studentId}/results${toQueryString({ page: Math.max(page - 1, 0), size: perPage })}`)
@@ -566,9 +646,12 @@ export const startSession = (payload) =>
   apiFetch("/sessions", {
     method: "POST",
     body: JSON.stringify(payload),
-  }).then((response) => unwrapApiResponse(response));
+  }).then((response) => normalizeSession(unwrapApiResponse(response)));
 
-export const fetchSession = (id) => apiFetch(`/sessions/${id}`).then((response) => unwrapApiResponse(response));
+export const fetchSession = (id) => apiFetch(`/sessions/${id}`).then((response) => normalizeSession(unwrapApiResponse(response)));
+
+export const fetchSessionProgress = (id) =>
+  apiFetch(`/sessions/${id}/progress`).then((response) => normalizeSessionProgress(unwrapApiResponse(response)));
 
 export const saveSessionAnswer = (sessionId, sessionQuestionId, payload) =>
   apiFetch(`/sessions/${sessionId}/questions/${sessionQuestionId}/answer`, {

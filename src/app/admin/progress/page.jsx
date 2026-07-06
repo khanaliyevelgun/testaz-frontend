@@ -1,5 +1,10 @@
-import AdminPlaceholderPage from "@/components/admin/AdminPlaceholderPage";
+import ParentChildrenPage from "@/components/admin/ParentChildrenPage";
+import RoleProtectedRoute from "@/components/auth/RoleProtectedRoute";
 
 export default function Page() {
-  return <AdminPlaceholderPage title='Progress' description='Parent rolü için gelişim takibi burada gösterilecek.' />;
+  return (
+    <RoleProtectedRoute allowedRoles={["parent"]}>
+      <ParentChildrenPage />
+    </RoleProtectedRoute>
+  );
 }

@@ -1,9 +1,10 @@
-"use client";
+﻿"use client";
 
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import AdminSearchSelect from "@/components/admin/AdminSearchSelect";
-import { createExam, fetchExamTemplate, fetchSubjects, fetchTopics, saveExamTemplate } from "@/lib/api";
+import { createExam, fetchExamTemplate, fetchLinkedChildren, fetchSubjects, fetchTopics, fetchUsers, saveExamTemplate } from "@/lib/api";
+import { useAuth } from "@/hooks/useAuth";
 
 const visibilityOptions = [
   { value: "PRIVATE", label: "Private" },
@@ -69,15 +70,24 @@ const normalizeNonNegativeNumber = (value) => {
   return Number.isFinite(numberValue) && numberValue >= 0 ? numberValue : 0;
 };
 
-const formatShareLink = (shareLink) => {
-  if (!shareLink) return "";
-  if (/^https?:\/\//i.test(shareLink)) return shareLink;
-  if (typeof window === "undefined") return shareLink;
-  return `${window.location.origin}${shareLink.startsWith("/") ? "" : "/"}${shareLink}`;
+const getExamCode = (exam) => exam?.examCode || exam?.shareToken || exam?.code || "";
+
+const getPreviewPath = (exam) => {
+  const code = getExamCode(exam);
+  return code ? `/exam/${encodeURIComponent(code)}` : "";
+};
+
+const getPreviewUrl = (exam) => {
+  const path = getPreviewPath(exam);
+  if (!path) return "";
+  if (typeof window === "undefined") return path;
+  return `${window.location.origin}${path}`;
 };
 
 const AdminExamFormPage = () => {
   const searchParams = useSearchParams();
+  const { user } = useAuth();
+  const isParent = Boolean(user?.roles?.includes("parent") || user?.role === "parent");
   const templateId = searchParams.get("templateId");
   const [form, setForm] = useState({
     title: "",
@@ -91,6 +101,12 @@ const AdminExamFormPage = () => {
   const [templateName, setTemplateName] = useState("");
   const [templateNotice, setTemplateNotice] = useState("");
   const [error, setError] = useState("");
+  const [children, setChildren] = useState([]);
+  const [childrenError, setChildrenError] = useState("");
+  const [assignedUsers, setAssignedUsers] = useState([]);
+  const [userSearch, setUserSearch] = useState("");
+  const [userSearchResults, setUserSearchResults] = useState([]);
+  const [isSearchingUsers, setIsSearchingUsers] = useState(false);
   const [isLoadingTemplate, setIsLoadingTemplate] = useState(Boolean(templateId));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createdExam, setCreatedExam] = useState(null);
@@ -116,6 +132,30 @@ const AdminExamFormPage = () => {
     ), []);
 
   useEffect(() => {
+    if (!isParent) return;
+
+    let isMounted = true;
+    setChildrenError("");
+    fetchLinkedChildren()
+      .then((response) => {
+        if (!isMounted) return;
+        const linkedChildren = Array.isArray(response) ? response : [];
+        setChildren(linkedChildren);
+        if (linkedChildren.length === 1) {
+          const onlyChildId = linkedChildren[0].studentId || linkedChildren[0].learnerId;
+          setForm((current) => ({ ...current, visibility: "ASSIGNED", assignedUserIds: onlyChildId || "" }));
+        }
+      })
+      .catch((requestError) => {
+        if (isMounted) setChildrenError(requestError?.message || "Linked children could not be loaded.");
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isParent]);
+
+  useEffect(() => {
     if (!templateId) return;
 
     let isMounted = true;
@@ -132,6 +172,11 @@ const AdminExamFormPage = () => {
           visibility: config.visibility || "PUBLIC",
           assignedUserIds: Array.isArray(config.assignedUserIds) ? config.assignedUserIds.join("\n") : "",
         });
+        setAssignedUsers(
+          Array.isArray(config.assignedUserIds)
+            ? config.assignedUserIds.map((id) => ({ id: String(id), name: `#${id}`, contact: "" }))
+            : []
+        );
         setSections(config.sections?.length ? config.sections.map(sectionFromConfig) : [emptySection()]);
         setTemplateName(template?.name ? `${template.name} copy` : "");
         setTemplateNotice(template?.name ? `Template loaded: ${template.name}` : "Template loaded.");
@@ -225,11 +270,60 @@ const AdminExamFormPage = () => {
     );
   };
 
-  const parseAssignedUserIds = () =>
-    form.assignedUserIds
+  const parseAssignedUserIds = () => {
+    if (!isParent && assignedUsers.length) {
+      return assignedUsers.map((item) => item.id);
+    }
+
+    return form.assignedUserIds
       .split(/[\s,;]+/)
       .map((item) => item.trim())
       .filter(Boolean);
+  };
+
+  const searchAssignableUsers = async (event) => {
+    event.preventDefault();
+    const query = userSearch.trim();
+    if (query.length < 2) {
+      setError("User search needs at least 2 characters.");
+      return;
+    }
+
+    setIsSearchingUsers(true);
+    setError("");
+    try {
+      const response = await fetchUsers({ page: 1, perPage: 10, search: query });
+      setUserSearchResults(response.data || []);
+    } catch (requestError) {
+      setError(requestError?.message || "Users could not be searched.");
+      setUserSearchResults([]);
+    } finally {
+      setIsSearchingUsers(false);
+    }
+  };
+
+  const addAssignedUser = (userRow) => {
+    const id = String(userRow.id || userRow.userId || "").trim();
+    if (!id) return;
+    setAssignedUsers((current) =>
+      current.some((item) => item.id === id)
+        ? current
+        : [
+            ...current,
+            {
+              id,
+              name: userRow.name || userRow.fullName || userRow.email || id,
+              contact: userRow.email || userRow.phone || "",
+            },
+          ]
+    );
+    setUserSearch("");
+    setUserSearchResults([]);
+  };
+
+  const removeAssignedUser = (id) => {
+    setAssignedUsers((current) => current.filter((item) => item.id !== id));
+  };
 
   const validate = () => {
     if (!sections.length) return "At least one section is required.";
@@ -246,8 +340,8 @@ const AdminExamFormPage = () => {
       }
     }
 
-    if (form.visibility === "ASSIGNED" && !parseAssignedUserIds().length) {
-      return "Assigned visibility requires at least one user id.";
+    if ((isParent || form.visibility === "ASSIGNED") && !parseAssignedUserIds().length) {
+      return isParent ? "Select the child who will receive this exam." : "Assigned visibility requires at least one user id.";
     }
 
     return "";
@@ -257,8 +351,9 @@ const AdminExamFormPage = () => {
     title: form.title.trim(),
     description: form.description.trim(),
     durationMinutes: normalizePositiveInt(form.durationMinutes) || undefined,
-    visibility: form.visibility,
-    assignedUserIds: form.visibility === "ASSIGNED" ? parseAssignedUserIds() : [],
+    visibility: isParent ? "ASSIGNED" : form.visibility,
+    assignedUserIds: !isParent && form.visibility === "ASSIGNED" ? parseAssignedUserIds() : [],
+    assignedLearnerId: isParent ? parseAssignedUserIds()[0] : undefined,
     sections: sections.map((section, sectionIndex) => ({
       title: section.title.trim() || section.subjectLabel || `Section ${sectionIndex + 1}`,
       subjectId: Number(section.subjectId),
@@ -306,14 +401,14 @@ const AdminExamFormPage = () => {
   };
 
   const copyLink = async () => {
-    const link = formatShareLink(createdExam?.shareLink);
-    if (!link) return;
+    const code = getExamCode(createdExam);
+    if (!code) return;
 
     try {
-      await navigator.clipboard.writeText(link);
+      await navigator.clipboard.writeText(code);
       setCopyStatus("Copied");
     } catch {
-      setCopyStatus("Select the link and copy manually");
+      setCopyStatus("Select the code and copy manually");
     }
   };
 
@@ -323,10 +418,10 @@ const AdminExamFormPage = () => {
         <div className='d-flex flex-wrap align-items-start justify-content-between gap-16 mb-24'>
           <div>
             <h4 className='fw-semibold text-neutral-500 text-20 mb-4'>Yeni imtahan yarat</h4>
-            <p className='text-14 text-neutral-400 mb-0'>Bölmələri, sual saylarını və paylaşım linkini burada hazırla.</p>
+            <p className='text-14 text-neutral-400 mb-0'>B?lm?l?ri, sual saylar?n? v? imtahan kodunu burada haz?rla.</p>
           </div>
           <div className='px-16 py-10 rounded-12 bg-main-25 text-14 text-neutral-500'>
-            Ümumi sual: <span className='fw-semibold'>{totalQuestionCount}</span>
+            ?mumi sual: <span className='fw-semibold'>{totalQuestionCount}</span>
           </div>
         </div>
 
@@ -338,18 +433,18 @@ const AdminExamFormPage = () => {
         ) : (
         <form className='row gy-4' onSubmit={handleSubmit} noValidate>
           <div className='col-md-6'>
-            <label className='text-14 text-neutral-500 fw-medium mb-8'>Başlıq</label>
+            <label className='text-14 text-neutral-500 fw-medium mb-8'>Ba?l?q</label>
             <input
               name='title'
               className='common-input rounded-pill'
               maxLength='200'
               value={form.title}
               onChange={updateForm}
-              placeholder='Məsələn: 9-cu sinif sınaq imtahanı'
+              placeholder='M?s?l?n: 9-cu sinif s?naq imtahan?'
             />
           </div>
           <div className='col-md-3'>
-            <label className='text-14 text-neutral-500 fw-medium mb-8'>Müddət (dəqiqə)</label>
+            <label className='text-14 text-neutral-500 fw-medium mb-8'>M?dd?t (d?qiq?)</label>
             <input
               name='durationMinutes'
               type='number'
@@ -360,8 +455,9 @@ const AdminExamFormPage = () => {
               onChange={updateForm}
             />
           </div>
+          {!isParent ? (
           <div className='col-md-3'>
-            <label className='text-14 text-neutral-500 fw-medium mb-8'>Görünürlük</label>
+            <label className='text-14 text-neutral-500 fw-medium mb-8'>G?r?n?rl?k</label>
             <select
               name='visibility'
               className='form-select rounded-pill border-neutral-40 text-14 py-11 px-16'
@@ -373,8 +469,9 @@ const AdminExamFormPage = () => {
               ))}
             </select>
           </div>
+          ) : null}
           <div className='col-12'>
-            <label className='text-14 text-neutral-500 fw-medium mb-8'>Açıqlama</label>
+            <label className='text-14 text-neutral-500 fw-medium mb-8'>A??qlama</label>
             <textarea
               name='description'
               className='common-input rounded-12'
@@ -385,25 +482,92 @@ const AdminExamFormPage = () => {
             />
           </div>
 
-          {form.visibility === "ASSIGNED" ? (
+          {isParent ? (
             <div className='col-12'>
-              <label className='text-14 text-neutral-500 fw-medium mb-8'>Assigned user IDs</label>
-              <textarea
+              <label className='text-14 text-neutral-500 fw-medium mb-8'>U?aq</label>
+              {childrenError ? <p className='text-danger text-13 mb-8'>{childrenError}</p> : null}
+              <select
                 name='assignedUserIds'
-                className='common-input rounded-12'
-                rows='3'
+                className='form-select rounded-pill border-neutral-40 text-14 py-11 px-16'
                 value={form.assignedUserIds}
                 onChange={updateForm}
-                placeholder='UUID dəyərlərini vergül, boşluq və ya yeni sətirlə ayır'
-              />
+              >
+                <option value=''>U?aq se?</option>
+                {children.map((child) => {
+                  const childId = child.studentId || child.learnerId;
+                  return (
+                    <option value={childId} key={childId}>
+                      {child.name || child.displayName || childId}
+                    </option>
+                  );
+                })}
+              </select>
+              <p className='text-13 text-neutral-400 mt-8 mb-0'>Parent imtahan yaratd?qda se?il?n u?a?a bildiri? gedir.</p>
+            </div>
+          ) : form.visibility === "ASSIGNED" ? (
+            <div className='col-12'>
+              <label className='text-14 text-neutral-500 fw-medium mb-8'>Assigned users</label>
+              <div className='border border-neutral-30 rounded-12 p-16'>
+                <div className='d-flex flex-wrap gap-10 align-items-center mb-12'>
+                  <input
+                    className='common-input rounded-pill flex-grow-1 min-w-240-px'
+                    value={userSearch}
+                    onChange={(event) => setUserSearch(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") searchAssignableUsers(event);
+                    }}
+                    placeholder='Name, surname, email or ID'
+                  />
+                  <button type='button' className='btn btn-main rounded-pill px-20' onClick={searchAssignableUsers} disabled={isSearchingUsers}>
+                    {isSearchingUsers ? "Searching..." : "Search"}
+                  </button>
+                </div>
+
+                {userSearchResults.length ? (
+                  <div className='border border-neutral-30 rounded-8 overflow-hidden mb-12'>
+                    {userSearchResults.map((userRow) => (
+                      <button
+                        type='button'
+                        className='w-100 bg-white text-start px-14 py-10 border-0 border-bottom border-neutral-30 d-flex justify-content-between gap-12'
+                        key={userRow.id}
+                        onClick={() => addAssignedUser(userRow)}
+                      >
+                        <span>
+                          <span className='d-block text-14 fw-medium text-neutral-500'>{userRow.name || userRow.fullName || userRow.email || userRow.id}</span>
+                          <span className='d-block text-12 text-neutral-400'>{userRow.email || userRow.phone || userRow.id}</span>
+                        </span>
+                        <span className='text-main-600 text-13 fw-medium'>Add</span>
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+
+                <div className='d-flex flex-column gap-8'>
+                  {assignedUsers.length ? (
+                    assignedUsers.map((assignedUser) => (
+                      <div className='d-flex flex-wrap align-items-center justify-content-between gap-10 border border-neutral-30 rounded-8 px-14 py-10' key={assignedUser.id}>
+                        <span>
+                          <span className='d-block text-14 fw-medium text-neutral-500'>{assignedUser.name}</span>
+                          <span className='d-block text-12 text-neutral-400'>{assignedUser.contact || assignedUser.id}</span>
+                        </span>
+                        <button type='button' className='px-10 py-6 border border-neutral-40 rounded-pill bg-white text-13 text-neutral-500' onClick={() => removeAssignedUser(assignedUser.id)}>
+                          X
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <p className='text-13 text-neutral-400 mb-0'>No users selected.</p>
+                  )}
+                </div>
+              </div>
             </div>
           ) : null}
 
           <div className='col-12 mt-16'>
             <div className='d-flex align-items-center justify-content-between gap-12 mb-12'>
-              <h5 className='text-16 fw-semibold text-neutral-500 mb-0'>Bölmələr</h5>
+              <h5 className='text-16 fw-semibold text-neutral-500 mb-0'>B?lm?l?r</h5>
               <button type='button' className='px-14 py-8 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={addSection} disabled={sections.length >= 20}>
-                Bölmə əlavə et
+                B?lm? ?lav? et
               </button>
             </div>
 
@@ -411,7 +575,7 @@ const AdminExamFormPage = () => {
               {sections.map((section, sectionIndex) => (
                 <div className='border border-neutral-30 rounded-12 p-16' key={sectionIndex}>
                   <div className='d-flex flex-wrap align-items-center justify-content-between gap-12 mb-16'>
-                    <h6 className='text-15 fw-semibold text-neutral-500 mb-0'>Bölmə {sectionIndex + 1}</h6>
+                    <h6 className='text-15 fw-semibold text-neutral-500 mb-0'>B?lm? {sectionIndex + 1}</h6>
                     <button
                       type='button'
                       className='px-12 py-8 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white'
@@ -424,7 +588,7 @@ const AdminExamFormPage = () => {
 
                   <div className='row gy-3'>
                     <div className='col-md-4'>
-                      <label className='text-14 text-neutral-500 fw-medium mb-8'>Bölmə adı</label>
+                      <label className='text-14 text-neutral-500 fw-medium mb-8'>B?lm? ad?</label>
                       <input
                         className='common-input rounded-pill'
                         maxLength='200'
@@ -435,19 +599,19 @@ const AdminExamFormPage = () => {
                     </div>
                     <div className='col-md-4'>
                       <AdminSearchSelect
-                        label='Fənn'
+                        label='F?nn'
                         value={section.subjectId}
                         selectedLabel={section.subjectLabel}
-                        placeholder='Fənn axtar...'
+                        placeholder='F?nn axtar...'
                         required
                         loadOptions={subjectOptions}
-                        loadingText='Yüklənir...'
-                        emptyText='Nəticə tapılmadı.'
+                        loadingText='Y?kl?nir...'
+                        emptyText='N?tic? tap?lmad?.'
                         onChange={(value, label) => setSubject(sectionIndex, value, label)}
                       />
                     </div>
                     <div className='col-md-2'>
-                      <label className='text-14 text-neutral-500 fw-medium mb-8'>Sual növü</label>
+                      <label className='text-14 text-neutral-500 fw-medium mb-8'>Sual n?v?</label>
                       <select
                         className='form-select rounded-pill border-neutral-40 text-14 py-11 px-16'
                         value={section.typeFilter}
@@ -459,7 +623,7 @@ const AdminExamFormPage = () => {
                       </select>
                     </div>
                     <div className='col-md-2'>
-                      <label className='text-14 text-neutral-500 fw-medium mb-8'>Çətinlik</label>
+                      <label className='text-14 text-neutral-500 fw-medium mb-8'>??tinlik</label>
                       <select
                         className='form-select rounded-pill border-neutral-40 text-14 py-11 px-16'
                         value={section.difficultyFilter}
@@ -471,7 +635,7 @@ const AdminExamFormPage = () => {
                       </select>
                     </div>
                     <div className='col-md-2'>
-                      <label className='text-14 text-neutral-500 fw-medium mb-8'>Doğru balı</label>
+                      <label className='text-14 text-neutral-500 fw-medium mb-8'>Do?ru bal?</label>
                       <input
                         type='number'
                         min='0'
@@ -482,7 +646,7 @@ const AdminExamFormPage = () => {
                       />
                     </div>
                     <div className='col-md-2'>
-                      <label className='text-14 text-neutral-500 fw-medium mb-8'>Səhv cəriməsi</label>
+                      <label className='text-14 text-neutral-500 fw-medium mb-8'>S?hv c?rim?si</label>
                       <input
                         type='number'
                         min='0'
@@ -503,7 +667,7 @@ const AdminExamFormPage = () => {
                         onClick={() => addTopic(sectionIndex)}
                         disabled={section.topics.length >= 50}
                       >
-                        Topic əlavə et
+                        Topic ?lav? et
                       </button>
                     </div>
                     <div className='d-flex flex-column gap-12'>
@@ -511,19 +675,19 @@ const AdminExamFormPage = () => {
                         <div className='row gy-2 align-items-end' key={topicIndex}>
                           <div className='col-md-8'>
                             <AdminSearchSelect
-                              label={topicIndex === 0 ? "Mövzu" : ""}
+                              label={topicIndex === 0 ? "M?vzu" : ""}
                               value={topic.topicId}
                               selectedLabel={topic.topicLabel}
-                              placeholder={section.subjectId ? "Mövzu axtar... boş saxla = bütün mövzular" : "Əvvəl fənn seç"}
+                              placeholder={section.subjectId ? "M?vzu axtar... bo? saxla = b?t?n m?vzular" : "?vv?l f?nn se?"}
                               disabled={!section.subjectId}
                               loadOptions={buildTopicOptions(sectionIndex)}
-                              loadingText='Yüklənir...'
-                              emptyText='Nəticə tapılmadı.'
+                              loadingText='Y?kl?nir...'
+                              emptyText='N?tic? tap?lmad?.'
                               onChange={(value, label) => updateTopic(sectionIndex, topicIndex, { topicId: value, topicLabel: label })}
                             />
                           </div>
                           <div className='col-md-2'>
-                            <label className='text-14 text-neutral-500 fw-medium mb-8'>{topicIndex === 0 ? "Sual sayı" : ""}</label>
+                            <label className='text-14 text-neutral-500 fw-medium mb-8'>{topicIndex === 0 ? "Sual say?" : ""}</label>
                             <input
                               type='number'
                               min='1'
@@ -560,7 +724,7 @@ const AdminExamFormPage = () => {
                   checked={saveAsTemplate}
                   onChange={(event) => setSaveAsTemplate(event.target.checked)}
                 />
-                Şablon kimi saxla
+                ?ablon kimi saxla
               </label>
               {saveAsTemplate ? (
                 <input
@@ -568,7 +732,7 @@ const AdminExamFormPage = () => {
                   maxLength='200'
                   value={templateName}
                   onChange={(event) => setTemplateName(event.target.value)}
-                  placeholder='Şablon adı'
+                  placeholder='?ablon ad?'
                 />
               ) : null}
             </div>
@@ -576,7 +740,7 @@ const AdminExamFormPage = () => {
 
           <div className='col-12 d-flex align-items-center gap-12 mt-24'>
             <button type='submit' className='btn btn-main rounded-pill px-24' disabled={isSubmitting}>
-              {isSubmitting ? "Yaradılır..." : "İmtahan yarat"}
+              {isSubmitting ? "Yarad?l?r..." : "?mtahan yarat"}
             </button>
           </div>
         </form>
@@ -589,8 +753,8 @@ const AdminExamFormPage = () => {
             <div className='modal-content rounded-12 border-0'>
               <div className='modal-header border-neutral-30'>
                 <div>
-                  <h5 className='modal-title text-18 fw-semibold text-neutral-500'>İmtahan yaradıldı</h5>
-                  <p className='text-14 text-neutral-400 mb-0'>Nəticələr və paylaşım linki aşağıdadır.</p>
+                  <h5 className='modal-title text-18 fw-semibold text-neutral-500'>?mtahan yarad?ld?</h5>
+                  <p className='text-14 text-neutral-400 mb-0'>Frontend yaln?z imtahan kodunu g?st?rir.</p>
                 </div>
                 <button type='button' className='btn-close' aria-label='Close' onClick={() => setCreatedExam(null)}></button>
               </div>
@@ -598,13 +762,13 @@ const AdminExamFormPage = () => {
                 <div className='row gy-3 mb-20'>
                   <div className='col-md-6'>
                     <div className='border border-neutral-30 rounded-12 p-14'>
-                      <span className='text-13 text-neutral-400 d-block mb-4'>Başlıq</span>
+                      <span className='text-13 text-neutral-400 d-block mb-4'>Ba?l?q</span>
                       <strong className='text-15 text-neutral-500'>{createdExam.title || "-"}</strong>
                     </div>
                   </div>
                   <div className='col-md-3'>
                     <div className='border border-neutral-30 rounded-12 p-14'>
-                      <span className='text-13 text-neutral-400 d-block mb-4'>Bölmə</span>
+                      <span className='text-13 text-neutral-400 d-block mb-4'>B?lm?</span>
                       <strong className='text-15 text-neutral-500'>{createdExam.sectionCount ?? "-"}</strong>
                     </div>
                   </div>
@@ -622,31 +786,42 @@ const AdminExamFormPage = () => {
                   </div>
                   <div className='col-md-4'>
                     <div className='border border-neutral-30 rounded-12 p-14'>
-                      <span className='text-13 text-neutral-400 d-block mb-4'>Müddət</span>
-                      <strong className='text-15 text-neutral-500'>{createdExam.durationMinutes ? `${createdExam.durationMinutes} dəq.` : "Limitsiz"}</strong>
+                      <span className='text-13 text-neutral-400 d-block mb-4'>M?dd?t</span>
+                      <strong className='text-15 text-neutral-500'>{createdExam.durationMinutes ? `${createdExam.durationMinutes} d?q.` : "Limitsiz"}</strong>
                     </div>
                   </div>
                   <div className='col-md-4'>
                     <div className='border border-neutral-30 rounded-12 p-14'>
-                      <span className='text-13 text-neutral-400 d-block mb-4'>Görünürlük</span>
+                      <span className='text-13 text-neutral-400 d-block mb-4'>G?r?n?rl?k</span>
                       <strong className='text-15 text-neutral-500'>{createdExam.visibility || "-"}</strong>
                     </div>
                   </div>
                 </div>
 
-                <label className='text-14 text-neutral-500 fw-medium mb-8'>Paylaşım linki</label>
+                <label className='text-14 text-neutral-500 fw-medium mb-8'>?mtahan kodu</label>
                 <div className='d-flex flex-wrap align-items-center gap-10'>
-                  <input className='common-input rounded-pill flex-grow-1 min-w-240-px' readOnly value={formatShareLink(createdExam.shareLink)} onFocus={(event) => event.target.select()} />
+                  <input className='common-input rounded-pill flex-grow-1 min-w-240-px' readOnly value={getExamCode(createdExam)} onFocus={(event) => event.target.select()} />
                   <button type='button' className='btn btn-main rounded-pill px-20' onClick={copyLink}>
                     Kopyala
                   </button>
                 </div>
                 {copyStatus ? <p className='text-14 text-neutral-400 mt-8 mb-0'>{copyStatus}</p> : null}
+                {getPreviewUrl(createdExam) ? (
+                  <div className='mt-16'>
+                    <label className='text-14 text-neutral-500 fw-medium mb-8'>Preview linki</label>
+                    <div className='d-flex flex-wrap align-items-center gap-10'>
+                      <input className='common-input rounded-pill flex-grow-1 min-w-240-px' readOnly value={getPreviewUrl(createdExam)} onFocus={(event) => event.target.select()} />
+                      <a className='btn btn-main rounded-pill px-20' href={getPreviewPath(createdExam)}>
+                        Preview
+                      </a>
+                    </div>
+                  </div>
+                ) : null}
                 <p className='text-13 text-neutral-400 mt-12 mb-0'>Exam ID: {createdExam.examId || "-"}</p>
               </div>
               <div className='modal-footer border-neutral-30'>
                 <button type='button' className='px-18 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={() => setCreatedExam(null)}>
-                  Bağla
+                  Ba?la
                 </button>
               </div>
             </div>
@@ -658,3 +833,4 @@ const AdminExamFormPage = () => {
 };
 
 export default AdminExamFormPage;
+

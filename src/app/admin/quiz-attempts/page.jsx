@@ -1,5 +1,10 @@
-import AdminPlaceholderPage from "@/components/admin/AdminPlaceholderPage";
+import ChildResultsPage from "@/components/admin/ChildResultsPage";
+import RoleProtectedRoute from "@/components/auth/RoleProtectedRoute";
 
 export default function Page() {
-  return <AdminPlaceholderPage title='Quiz Attempts' description='Child rolü için quiz denemeleri burada gösterilecek.' />;
+  return (
+    <RoleProtectedRoute allowedRoles={["child"]}>
+      <ChildResultsPage />
+    </RoleProtectedRoute>
+  );
 }
