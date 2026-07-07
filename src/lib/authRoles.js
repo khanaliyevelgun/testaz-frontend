@@ -42,6 +42,7 @@ const routeRoles = [
   { pattern: /^\/admin\/children(?:\/|$)/, roles: ["parent"] },
   { pattern: /^\/admin\/progress(?:\/|$)/, roles: ["parent"] },
   { pattern: /^\/admin\/payments(?:\/|$)/, roles: ["parent"] },
+  { pattern: /^\/admin\/subscriptions(?:\/|$)/, roles: ["parent", "child"] },
   { pattern: /^\/admin\/parent(?:\/|$)/, roles: ["parent"] },
   { pattern: /^\/admin\/exams(?:\/|$)/, roles: ["admin", "parent"] },
   { pattern: /^\/admin\/my-courses(?:\/|$)/, roles: ["child"] },

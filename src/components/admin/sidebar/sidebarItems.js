@@ -19,7 +19,7 @@ export const parentSidebarItems = [
   { label: "Exams", href: "/admin/exams", icon: "ph ph-clipboard-text" },
   { label: "Messages", href: "/admin/messages", icon: "ph ph-chat-dots" },
   { label: "Notifications", href: "/admin/notifications", icon: "ph ph-bell-ringing" },
-  { label: "Payments", href: "/admin/payments", icon: "ph ph-credit-card" },
+  { label: "Subscriptions", href: "/admin/subscriptions", icon: "ph ph-credit-card" },
   { label: "Settings", href: "/admin/settings", icon: "ph ph-gear" },
 ];
 
@@ -29,6 +29,7 @@ export const childSidebarItems = [
   { label: "My Courses", href: "/admin/my-courses", icon: "ph ph-book-open" },
   { label: "Assignments", href: "/admin/assignments", icon: "ph ph-clipboard-text" },
   { label: "Quiz Attempts", href: "/admin/quiz-attempts", icon: "ph ph-seal-question" },
+  { label: "Subscription", href: "/admin/subscriptions", icon: "ph ph-credit-card" },
   { label: "Notifications", href: "/admin/notifications", icon: "ph ph-bell-ringing" },
   { label: "Wishlist", href: "/admin/wishlist", icon: "ph ph-bookmark-simple" },
   { label: "Profile", href: "/admin/profile", icon: "ph ph-user-circle" },

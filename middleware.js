@@ -22,8 +22,15 @@ const getRoles = (user) => {
 };
 
 const fetchJson = async (url, options) => {
+  const headers = new Headers(options?.headers || {});
+
+  if (url.includes(".ngrok-free.")) {
+    headers.set("ngrok-skip-browser-warning", "true");
+  }
+
   const response = await fetch(url, {
     ...options,
+    headers,
     cache: "no-store",
   });
 

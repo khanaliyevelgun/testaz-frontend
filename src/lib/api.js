@@ -166,6 +166,10 @@ export async function apiFetch(path, options = {}) {
     headers.set("Accept", "application/json");
   }
 
+  if (url.includes(".ngrok-free.")) {
+    headers.set("ngrok-skip-browser-warning", "true");
+  }
+
   if (fetchOptions.body && !(fetchOptions.body instanceof FormData) && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
@@ -800,14 +804,33 @@ export const generateAdminAiQuestions = (payload) =>
     }),
   }).then((response) => unwrapApiResponse(response));
 
+const normalizeSubscriptionPlan = (plan = {}) => ({
+  ...plan,
+  id: plan.id ?? plan.code,
+  code: plan.code || "",
+  name: plan.nameAz || plan.name || plan.code || "Plan",
+  nameAz: plan.nameAz || plan.name || plan.code || "Plan",
+  priceAmount: Number(plan.priceAmount ?? plan.price ?? 0),
+  currency: plan.currency || "AZN",
+  periodDays: Number(plan.periodDays ?? plan.durationDays ?? 0),
+  coversLinkedChildren: Boolean(plan.coversLinkedChildren),
+});
+
+const normalizeSubscription = (subscription = {}) => ({
+  ...subscription,
+  id: subscription.id || subscription.subscriptionId,
+  planLabel: subscription.planCode || subscription.planId || "-",
+  status: subscription.status || "PENDING",
+});
+
 export const fetchSubscriptionPlans = () =>
-  apiFetch("/subscriptions/plans").then((response) => unwrapApiResponse(response) || []);
+  apiFetch("/subscriptions/plans").then((response) => (unwrapApiResponse(response) || []).map(normalizeSubscriptionPlan));
 
 export const fetchMySubscriptions = () =>
-  apiFetch("/subscriptions/me").then((response) => unwrapApiResponse(response) || []);
+  apiFetch("/subscriptions/me").then((response) => (unwrapApiResponse(response) || []).map(normalizeSubscription));
 
 export const fetchSubscriptionEntitlement = () =>
-  apiFetch("/subscriptions/me/entitlement").then((response) => unwrapApiResponse(response));
+  apiFetch("/subscriptions/me/entitlement").then((response) => unwrapApiResponse(response) || { entitled: false });
 
 export const startPaymentCheckout = (planCode) =>
   apiFetch("/payments/checkout", {
