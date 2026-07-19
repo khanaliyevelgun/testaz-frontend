@@ -8,7 +8,6 @@ import AdminRowActions from "@/components/admin/AdminRowActions";
 import AdminSearchSelect from "@/components/admin/AdminSearchSelect";
 import AdminStatusBadge from "@/components/admin/AdminStatusBadge";
 import {
-  approveAdminQuestion,
   approveAllAdminQuestions,
   archiveAdminQuestion,
   fetchAdminQuestions,
@@ -40,7 +39,6 @@ const typeLabels = {
   MULTIPLE_CHOICE: "Multiple choice",
   SHORT_TEXT: "Short text",
 };
-const approvableStatuses = new Set(["DRAFT", "PENDING_REVIEW"]);
 
 const initialFilters = {
   search: "",
@@ -216,10 +214,6 @@ const AdminQuestionsPage = () => {
 
   const actionsFor = (question) => {
     const items = [{ label: "Edit", href: `/admin/questions/${question.id}/edit`, icon: "ph ph-pencil-simple" }];
-
-    if (approvableStatuses.has(question.status)) {
-      items.push({ label: "Approve", icon: "ph ph-check", onClick: () => runAction(question, approveAdminQuestion) });
-    }
 
     items.push(
       { label: "Reject", icon: "ph ph-x", danger: true, onClick: () => runAction(question, rejectAdminQuestion) },

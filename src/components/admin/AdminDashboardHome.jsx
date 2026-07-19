@@ -1,183 +1,459 @@
-import OverviewChart from "@/components/admin/charts/admin/OverviewChart";
-import ReportsDonutChart from "@/components/admin/charts/admin/ReportsDonutChart";
-import ChildLearningChart from "@/components/admin/charts/child/ChildLearningChart";
-import ParentProgressChart from "@/components/admin/charts/parent/ParentProgressChart";
-import AdminDashboardNotifications from "@/components/admin/AdminDashboardNotifications";
+"use client";
 
-const stats = [
-  ["Total Courses", "2000+", "dashbord-item1.png", "bg-main-600"],
-  ["Enrolled Courses", "900+", "dashbord-item2.png", "bg-success-600"],
-  ["Active Courses", "100+", "dashbord-item3.png", "bg-warning-600"],
-  ["Completed Courses", "1000+", "dashbord-item4.png", "bg-warning-600"],
-  ["Total Students", "88,000+", "dashbord-item5.png", "bg-main-600"],
-  ["Total Earnings", "$956,542.00", "dashbord-item6.png", "bg-success-600"],
-];
+import Link from "next/link";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import AdminRefreshButton from "@/components/admin/AdminRefreshButton";
+import AdminStatusBadge from "@/components/admin/AdminStatusBadge";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  fetchAdminDashboard,
+  fetchMyOrganizations,
+  fetchParentDashboard,
+  fetchResults,
+  fetchResultTrends,
+} from "@/lib/api";
+import { getPrimaryRole } from "@/lib/authRoles";
 
-const popularInstructors = [
-  ["Jerome Bell", "Web Design", "4.8(55K+ Students)"],
-  ["Courtney Henry", "Python", "4.8(55K+ Students)"],
-  ["Wade Warren", "Marketing", "4.8(55K+ Students)"],
-  ["Esther Howard", "UX Design", "4.8(55K+ Students)"],
-];
+const roleLabels = {
+  admin: "Administration overview",
+  parent: "Family learning overview",
+  child: "My learning overview",
+  organization: "Organization overview",
+};
 
-const recentCourses = [
-  ["dashboard-img1.png", "Vuejs Courses", "12h 30m", "24 Lesson", "280"],
-  ["dashboard-img2.png", "Swift Courses", "10h 20m", "18 Lesson", "180"],
-  ["dashboard-img3.png", "Objective C Courses", "14h 10m", "26 Lesson", "320"],
-  ["dashboard-img4.png", "NodeJS Courses", "08h 45m", "16 Lesson", "150"],
-  ["dashboard-img5.png", "CSS3 Courses", "06h 50m", "12 Lesson", "210"],
-];
+const roleDescriptions = {
+  admin: "Live account, content, session and billing totals.",
+  parent: "Linked children, invitations and recent learning performance.",
+  child: "Recent results and subject performance from your completed tests.",
+  organization: "Organizations you own and their current status.",
+};
+
+const emptyDashboard = {
+  stats: [],
+  rows: [],
+  tableTitle: "",
+  columns: [],
+  quickLinks: [],
+};
+
+const numberValue = (value) => new Intl.NumberFormat("az-AZ").format(Number(value || 0));
+
+const percentageValue = (value) =>
+  value == null || Number.isNaN(Number(value)) ? "-" : `${Math.round(Number(value))}%`;
+
+const formatDate = (value) => {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+  return new Intl.DateTimeFormat("az-AZ", { dateStyle: "medium" }).format(date);
+};
+
+const sumObjectValues = (value) =>
+  Object.values(value || {}).reduce((total, item) => total + Number(item || 0), 0);
+
+const getChildDashboard = (resultsResponse, trendsResponse) => {
+  const results = Array.isArray(resultsResponse?.data) ? resultsResponse.data : [];
+  const trends = Array.isArray(trendsResponse) ? trendsResponse : [];
+  const scoredResults = results.filter((result) => result.percentage != null);
+  const recentAverage = scoredResults.length
+    ? scoredResults.reduce((total, result) => total + Number(result.percentage || 0), 0) / scoredResults.length
+    : null;
+  const bestRecent = scoredResults.length
+    ? Math.max(...scoredResults.map((result) => Number(result.percentage || 0)))
+    : null;
+  const weakestSubject = [...trends]
+    .filter((trend) => trend.accuracy != null)
+    .sort((left, right) => Number(left.accuracy) - Number(right.accuracy))[0];
+
+  return {
+    stats: [
+      {
+        label: "Completed tests",
+        value: numberValue(resultsResponse?.meta?.total ?? results.length),
+        icon: "ph ph-check-square-offset",
+        tone: "bg-main-600",
+        href: "/admin/quiz-attempts",
+      },
+      {
+        label: "Recent average",
+        value: percentageValue(recentAverage),
+        icon: "ph ph-chart-line-up",
+        tone: "bg-success-600",
+        href: "/admin/quiz-attempts",
+      },
+      {
+        label: "Best recent score",
+        value: percentageValue(bestRecent),
+        icon: "ph ph-medal",
+        tone: "bg-warning-600",
+        href: "/admin/quiz-attempts",
+      },
+      {
+        label: "Focus subject",
+        value: weakestSubject?.subjectName || "-",
+        icon: "ph ph-target",
+        tone: "bg-danger-600",
+        href: "/admin/assignments",
+      },
+    ],
+    rows: trends.slice(0, 6),
+    tableTitle: "Subject trends",
+    columns: [
+      { label: "Subject", render: (row) => row.subjectName || "-" },
+      { label: "Accuracy", render: (row) => percentageValue(row.accuracy) },
+      { label: "Tests", render: (row) => numberValue(row.testsCount) },
+      {
+        label: "Trend",
+        render: (row) => <AdminStatusBadge status={row.trend} />,
+      },
+    ],
+    emptyText: "Complete a test to see subject trends here.",
+    quickLinks: [
+      { label: "Assignments", href: "/admin/assignments", icon: "ph ph-clipboard-text" },
+      { label: "Results", href: "/admin/quiz-attempts", icon: "ph ph-chart-bar" },
+      { label: "Subscription", href: "/admin/subscriptions", icon: "ph ph-credit-card" },
+      { label: "Profile", href: "/admin/profile", icon: "ph ph-user-circle" },
+    ],
+    secondaryRows: results.slice(0, 5),
+  };
+};
+
+const getParentDashboard = (dashboard = {}) => {
+  const learners = Array.isArray(dashboard.learners) ? dashboard.learners : [];
+  const averages = learners
+    .map((learner) => Number(learner.averagePercentage))
+    .filter((value) => Number.isFinite(value));
+  const familyAverage = averages.length
+    ? averages.reduce((total, value) => total + value, 0) / averages.length
+    : null;
+
+  return {
+    stats: [
+      {
+        label: "Linked children",
+        value: numberValue(dashboard.linkedLearnerCount ?? learners.length),
+        icon: "ph ph-student",
+        tone: "bg-main-600",
+        href: "/admin/children",
+      },
+      {
+        label: "Pending invitations",
+        value: numberValue(dashboard.pendingInvitationCount),
+        icon: "ph ph-envelope-simple",
+        tone: "bg-warning-600",
+        href: "/admin/children",
+      },
+      {
+        label: "Family average",
+        value: percentageValue(familyAverage),
+        icon: "ph ph-chart-line-up",
+        tone: "bg-success-600",
+        href: "/admin/progress",
+      },
+      {
+        label: "Recent results",
+        value: numberValue(
+          learners.reduce((total, learner) => total + Number(learner.recentResultCount || 0), 0)
+        ),
+        icon: "ph ph-exam",
+        tone: "bg-main-600",
+        href: "/admin/progress",
+      },
+    ],
+    rows: learners,
+    tableTitle: "Children performance",
+    columns: [
+      { label: "Child", render: (row) => row.name || row.learnerId || "-" },
+      { label: "Average", render: (row) => percentageValue(row.averagePercentage) },
+      {
+        label: "Latest result",
+        render: (row) => percentageValue(row.latestResult?.percentage),
+      },
+      {
+        label: "Last activity",
+        render: (row) => formatDate(row.latestResult?.scoredAt),
+      },
+    ],
+    emptyText: "No linked children yet.",
+    quickLinks: [
+      { label: "Children", href: "/admin/children", icon: "ph ph-student" },
+      { label: "Progress", href: "/admin/progress", icon: "ph ph-chart-line-up" },
+      { label: "Exams", href: "/admin/exams", icon: "ph ph-clipboard-text" },
+      { label: "Subscriptions", href: "/admin/subscriptions", icon: "ph ph-credit-card" },
+    ],
+  };
+};
+
+const getAdminDashboard = (dashboard = {}) => ({
+  stats: [
+    {
+      label: "Total users",
+      value: numberValue(sumObjectValues(dashboard.usersByStatus)),
+      icon: "ph ph-users-three",
+      tone: "bg-main-600",
+      href: "/admin/users",
+    },
+    {
+      label: "Pending questions",
+      value: numberValue(dashboard.pendingQuestionReview),
+      icon: "ph ph-seal-question",
+      tone: "bg-warning-600",
+      href: "/admin/questions",
+    },
+    {
+      label: "All sessions",
+      value: numberValue(dashboard.totalSessions),
+      icon: "ph ph-play-circle",
+      tone: "bg-success-600",
+      href: "/admin/exams",
+    },
+    {
+      label: "Sessions this month",
+      value: numberValue(dashboard.sessionsThisMonth),
+      icon: "ph ph-calendar-check",
+      tone: "bg-main-600",
+      href: "/admin/exams",
+    },
+    {
+      label: "Active subscriptions",
+      value: numberValue(dashboard.activeSubscriptions),
+      icon: "ph ph-credit-card",
+      tone: "bg-success-600",
+      href: "/admin/subscriptions",
+    },
+    {
+      label: "Open reports",
+      value: numberValue(dashboard.openReports),
+      icon: "ph ph-warning-circle",
+      tone: "bg-danger-600",
+      href: "/admin/reports",
+    },
+  ],
+  rows: Object.entries(dashboard.usersByRole || {})
+    .map(([role, count]) => ({ role, count }))
+    .sort((left, right) => Number(right.count) - Number(left.count)),
+  tableTitle: "Users by role",
+  columns: [
+    { label: "Role", render: (row) => String(row.role).replaceAll("_", " ") },
+    { label: "Users", render: (row) => numberValue(row.count) },
+  ],
+  emptyText: "No role totals are available.",
+  quickLinks: [
+    { label: "Users", href: "/admin/users", icon: "ph ph-users-three" },
+    { label: "Subscription plans", href: "/admin/subscription-plans", icon: "ph ph-cards" },
+    { label: "Subscriptions", href: "/admin/subscriptions", icon: "ph ph-credit-card" },
+    { label: "Payments", href: "/admin/payments", icon: "ph ph-receipt" },
+  ],
+});
+
+const getOrganizationDashboard = (organizationsResponse) => {
+  const organizations = Array.isArray(organizationsResponse) ? organizationsResponse : [];
+
+  return {
+    stats: [
+      {
+        label: "Organizations",
+        value: numberValue(organizations.length),
+        icon: "ph ph-buildings",
+        tone: "bg-main-600",
+        href: "/admin/organizations",
+      },
+      {
+        label: "Active",
+        value: numberValue(organizations.filter((organization) => organization.status === "ACTIVE").length),
+        icon: "ph ph-check-circle",
+        tone: "bg-success-600",
+        href: "/admin/organizations",
+      },
+      {
+        label: "Courses",
+        value: numberValue(organizations.filter((organization) => organization.type === "COURSE").length),
+        icon: "ph ph-books",
+        tone: "bg-warning-600",
+        href: "/admin/organizations",
+      },
+      {
+        label: "Schools & tutors",
+        value: numberValue(
+          organizations.filter((organization) => organization.type !== "COURSE").length
+        ),
+        icon: "ph ph-chalkboard-teacher",
+        tone: "bg-main-600",
+        href: "/admin/organizations",
+      },
+    ],
+    rows: organizations,
+    tableTitle: "My organizations",
+    columns: [
+      { label: "Name", render: (row) => row.name || "-" },
+      { label: "Type", render: (row) => String(row.type || "-").replaceAll("_", " ") },
+      { label: "Status", render: (row) => <AdminStatusBadge status={row.status} /> },
+      {
+        label: "Completion alerts",
+        render: (row) => (row.notifyOnMemberCompletion ? "Enabled" : "Disabled"),
+      },
+    ],
+    emptyText: "No organizations found.",
+    quickLinks: [
+      { label: "Organizations", href: "/admin/organizations", icon: "ph ph-buildings" },
+      { label: "Members", href: "/admin/members", icon: "ph ph-users-three" },
+      { label: "Invites", href: "/admin/invites", icon: "ph ph-ticket" },
+      { label: "Notifications", href: "/admin/notifications", icon: "ph ph-bell-ringing" },
+    ],
+  };
+};
 
 const StatCard = ({ stat }) => (
   <div className='col-xl-4 col-sm-6'>
-    <div className='px-20 py-20 bg-white rounded-10'>
+    <div className='px-20 py-20 bg-white rounded-10 h-100'>
       <div className='d-flex gap-16 justify-content-between mb-12'>
-        <div>
-          <span className='fw-normal text-14 text-neutral-400 mb-4'>{stat[0]}</span>
-          <h6 className='text-18 fw-semibold text-neutral-500 mb-0'>{stat[1]}</h6>
+        <div className='min-w-0'>
+          <span className='fw-normal text-14 text-neutral-400 mb-4 d-block'>{stat.label}</span>
+          <h6 className='text-20 fw-semibold text-neutral-500 mb-0 text-break'>{stat.value}</h6>
         </div>
-        <span className={`w-44 h-44 ${stat[3]} rounded-circle justify-content-center align-items-center d-flex`}>
-          <img src={`/assets/images/icons/${stat[2]}`} alt='' />
+        <span
+          className={`w-44 h-44 ${stat.tone} text-white rounded-circle justify-content-center align-items-center d-flex flex-shrink-0`}
+        >
+          <i className={`${stat.icon} text-xl`} />
         </span>
       </div>
-      <a href='#' className='text-12 fw-medium text-main-600 text-decoration-underline transition-03'>
-        View all
-      </a>
+      <Link href={stat.href} className='text-12 fw-medium text-main-600 text-decoration-underline'>
+        View details
+      </Link>
     </div>
   </div>
 );
 
-const AdminDashboardHome = () => (
-  <div className='px-24 py-24'>
-    <h4 className='fw-semibold text-neutral-500 text-20'>Dashboard</h4>
-    <div className='row gy-4'>
-      {stats.map((stat) => (
-        <StatCard key={stat[0]} stat={stat} />
-      ))}
+const AdminDashboardHome = () => {
+  const { user } = useAuth();
+  const role = getPrimaryRole(user);
+  const [dashboard, setDashboard] = useState(emptyDashboard);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
-      <div className='col-xl-8'>
-        <div className='bg-white px-20 py-20 rounded-10 z-n1'>
-          <div className='d-flex align-items-center justify-content-between gap-24'>
-            <span className='text-16 fw-medium text-neutral-400'>Overview Information</span>
-            <select className='form-select text-12 w-auto pe-26 border-neutral-40 border bg-main-25 px-16 py-8 fw-normal'>
-              <option>Last 2 years</option>
-              <option>Last 3 years</option>
-              <option>Last 4 years</option>
-            </select>
-          </div>
-          <span className='mt-20 mb-20 border-bottom-solid d-inline-block w-100'></span>
-          <OverviewChart />
-          <div className='d-flex justify-content-center text-center'>
-            <ul className='d-flex align-items-center gap-24'>
-              <li className='text-14 fw-normal d-flex align-items-center gap-8 text-neutral-500'>
-                <span className='w-6 h-6 bg-main-600 rounded-circle z-1 flex-shrink-0'></span>
-                Total Students
-              </li>
-              <li className='text-14 fw-normal d-flex align-items-center gap-8 text-neutral-500'>
-                <span className='w-6 h-6 bg-warning-600 rounded-circle z-1 flex-shrink-0'></span>
-                Total Courses
-              </li>
-            </ul>
-          </div>
+  const loadDashboard = useCallback(async () => {
+    if (!role) return;
+
+    setIsLoading(true);
+    setError("");
+
+    try {
+      if (role === "admin") {
+        setDashboard(getAdminDashboard(await fetchAdminDashboard()));
+      } else if (role === "parent") {
+        setDashboard(getParentDashboard(await fetchParentDashboard()));
+      } else if (role === "child") {
+        const [results, trends] = await Promise.all([
+          fetchResults({ page: 1, perPage: 5 }),
+          fetchResultTrends(),
+        ]);
+        setDashboard(getChildDashboard(results, trends));
+      } else if (role === "organization") {
+        setDashboard(getOrganizationDashboard(await fetchMyOrganizations()));
+      }
+    } catch (requestError) {
+      setDashboard(emptyDashboard);
+      setError(requestError?.message || "Dashboard data could not be loaded.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [role]);
+
+  useEffect(() => {
+    loadDashboard();
+  }, [loadDashboard]);
+
+  const title = useMemo(() => roleLabels[role] || "Dashboard", [role]);
+
+  return (
+    <div className='px-24 py-24'>
+      <div className='d-flex flex-wrap align-items-center justify-content-between gap-16 mb-24'>
+        <div>
+          <h4 className='fw-semibold text-neutral-500 text-20 mb-4'>{title}</h4>
+          <p className='text-14 text-neutral-400 mb-0'>{roleDescriptions[role] || ""}</p>
         </div>
+        <AdminRefreshButton isLoading={isLoading} onClick={loadDashboard} />
       </div>
 
-      <div className='col-xl-4'>
-        <div className='px-20 py-20 bg-white rounded-10 z-n1'>
-          <div className='d-flex align-items-center justify-content-between gap-24'>
-            <span className='text-14 fw-normal text-neutral-500'>Reports</span>
-            <select className='form-select w-auto pe-26 border-neutral-40 border text-12 bg-main-25 px-16 py-8'>
-              <option>Weekly</option>
-              <option>Monthly</option>
-              <option>Yearly</option>
-            </select>
-          </div>
-          <span className='mt-20 mb-20 border-bottom-solid d-inline-block w-100'></span>
-          <ReportsDonutChart />
-        </div>
-      </div>
+      {error ? <div className='alert alert-danger text-14 py-10 mb-24'>{error}</div> : null}
 
-      <div className='col-xl-6'>
-        <div className='px-24 py-24 bg-white rounded-10'>
-          <div className='d-flex align-items-center justify-content-between mb-24'>
-            <h6 className='mb-0 fw-medium text-16 text-neutral-500'>Popular Instructor</h6>
-            <a href='#' className='text-12 fw-medium text-main-600 hover-underline transition-03'>
-              View all
-            </a>
+      {isLoading ? (
+        <div className='bg-white rounded-10 px-24 py-24 text-neutral-400'>Loading dashboard...</div>
+      ) : (
+        <>
+          <div className='row gy-4 mb-24'>
+            {dashboard.stats.map((stat) => (
+              <StatCard key={stat.label} stat={stat} />
+            ))}
           </div>
-          <div className='table-responsive'>
-            <table className='table mb-0'>
-              <thead>
-                <tr>
-                  <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Instructor</th>
-                  <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Course</th>
-                  <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Students</th>
-                </tr>
-              </thead>
-              <tbody>
-                {popularInstructors.map((row) => (
-                  <tr key={row[0]}>
-                    <td className='py-16 px-20 text-14 text-neutral-500'>{row[0]}</td>
-                    <td className='py-16 px-20 text-14 text-neutral-500'>{row[1]}</td>
-                    <td className='py-16 px-20 text-14 text-neutral-500'>{row[2]}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
 
-      <div className='col-xl-6'>
-        <div className='px-24 py-24 bg-white rounded-10'>
-          <div className='d-flex align-items-center justify-content-between mb-24'>
-            <h6 className='mb-0 fw-medium text-16 text-neutral-500'>Recent Course</h6>
-            <a href='#' className='text-12 fw-medium text-main-600 hover-underline transition-03'>
-              View all
-            </a>
-          </div>
-          <div className='table-responsive'>
-            <table className='table mb-0'>
-              <thead>
-                <tr>
-                  <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Course Title | Hours</th>
-                  <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Total Lesson</th>
-                  <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Students</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentCourses.map((row) => (
-                  <tr key={row[1]}>
-                    <td className='py-16 px-20'>
-                      <div className='d-flex align-items-center gap-12'>
-                        <img src={`/assets/images/thumbs/${row[0]}`} alt='' className='w-48 h-32 rounded-4' />
-                        <div>
-                          <h6 className='fw-medium text-14 mb-0 text-neutral-500'>{row[1]}</h6>
-                          <span className='text-12 text-neutral-400'>{row[2]}</span>
-                        </div>
-                      </div>
-                    </td>
-                    <td className='py-16 px-20 text-14 text-neutral-500'>{row[3]}</td>
-                    <td className='py-16 px-20 text-14 text-neutral-500'>{row[4]}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+          <div className='row gy-4'>
+            <div className='col-xl-8'>
+              <div className='bg-white rounded-10 px-24 py-24 h-100'>
+                <div className='d-flex align-items-center justify-content-between gap-16 mb-20'>
+                  <h5 className='text-16 fw-semibold text-neutral-500 mb-0'>{dashboard.tableTitle}</h5>
+                  <span className='text-12 text-neutral-400'>{dashboard.rows.length} shown</span>
+                </div>
+                <div className='table-responsive admin-users-table'>
+                  <table className='table mb-0'>
+                    <thead>
+                      <tr>
+                        {dashboard.columns.map((column) => (
+                          <th className='text-12 fw-medium text-neutral-500 py-16 px-20' key={column.label}>
+                            {column.label}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {dashboard.rows.length ? (
+                        dashboard.rows.map((row, rowIndex) => (
+                          <tr key={row.id || row.learnerId || row.subjectId || row.role || rowIndex}>
+                            {dashboard.columns.map((column) => (
+                              <td className='py-16 px-20 text-14 text-neutral-500' key={column.label}>
+                                {column.render(row)}
+                              </td>
+                            ))}
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td className='py-24 px-20 text-neutral-400' colSpan={Math.max(dashboard.columns.length, 1)}>
+                            {dashboard.emptyText || "No dashboard data found."}
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
 
-      <div className='col-xl-6'>
-        <ParentProgressChart />
-      </div>
-      <div className='col-xl-6'>
-        <ChildLearningChart />
-      </div>
-      <div className='col-xl-6'>
-        <AdminDashboardNotifications />
-      </div>
+            <div className='col-xl-4'>
+              <div className='bg-white rounded-10 px-24 py-24 h-100'>
+                <h5 className='text-16 fw-semibold text-neutral-500 mb-20'>Quick access</h5>
+                <div className='d-flex flex-column gap-12'>
+                  {dashboard.quickLinks.map((item) => (
+                    <Link
+                      href={item.href}
+                      className='d-flex align-items-center justify-content-between gap-12 border border-neutral-30 rounded-8 px-16 py-14 text-neutral-500 hover-text-main-600'
+                      key={item.href}
+                    >
+                      <span className='d-flex align-items-center gap-10 text-14 fw-medium'>
+                        <i className={`${item.icon} text-main-600 text-lg`} />
+                        {item.label}
+                      </span>
+                      <i className='ph ph-arrow-right' />
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
-  </div>
-);
+  );
+};
 
 export default AdminDashboardHome;

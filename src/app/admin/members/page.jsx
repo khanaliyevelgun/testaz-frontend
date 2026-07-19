@@ -1,10 +1,10 @@
-import AdminPlaceholderPage from "@/components/admin/AdminPlaceholderPage";
+import OrganizationMembersPage from "@/components/admin/OrganizationMembersPage";
+import RoleProtectedRoute from "@/components/auth/RoleProtectedRoute";
 
 export default function Page() {
   return (
-    <AdminPlaceholderPage
-      title='Members'
-      description='Organization members will be loaded from /api/v1/organizations/{orgId}/members.'
-    />
+    <RoleProtectedRoute allowedRoles={["organization"]}>
+      <OrganizationMembersPage />
+    </RoleProtectedRoute>
   );
 }

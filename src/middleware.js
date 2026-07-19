@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAllowedRolesForPath, normalizeRole, ORGANIZATION_ROLES } from "./src/lib/authRoles";
+import { getAllowedRolesForPath, normalizeRole, ORGANIZATION_ROLES } from "./lib/authRoles";
 
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(/\/+$/, "");
 const API_PREFIX = "/api/v1";
@@ -28,11 +28,16 @@ const fetchJson = async (url, options) => {
     headers.set("ngrok-skip-browser-warning", "true");
   }
 
-  const response = await fetch(url, {
-    ...options,
-    headers,
-    cache: "no-store",
-  });
+  let response;
+  try {
+    response = await fetch(url, {
+      ...options,
+      headers,
+      cache: "no-store",
+    });
+  } catch {
+    return null;
+  }
 
   if (!response.ok) return null;
   if (response.status === 204) return null;
@@ -121,7 +126,9 @@ export async function middleware(request) {
     const dashboardRoles = ["admin", "parent", "child", ...ORGANIZATION_ROLES];
     const hasDashboardRole = roles.some((role) => dashboardRoles.includes(role));
     const target = hasDashboardRole && request.nextUrl.pathname !== "/admin" ? "/admin" : "/";
-    return NextResponse.redirect(new URL(target, request.url));
+    const redirectResponse = NextResponse.redirect(new URL(target, request.url));
+    response.cookies.getAll().forEach((cookie) => redirectResponse.cookies.set(cookie));
+    return redirectResponse;
   }
 
   return response;

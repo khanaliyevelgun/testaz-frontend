@@ -3,7 +3,17 @@
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import AdminSearchSelect from "@/components/admin/AdminSearchSelect";
-import { createExam, fetchExamTemplate, fetchLinkedChildren, fetchSubjects, fetchTopics, fetchUsers, saveExamTemplate } from "@/lib/api";
+import {
+  createExam,
+  fetchExamTemplate,
+  fetchLinkedChildren,
+  fetchPublicSubjects,
+  fetchPublicTopics,
+  fetchSubjects,
+  fetchTopics,
+  fetchUsers,
+  saveExamTemplate,
+} from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 
 const visibilityOptions = [
@@ -93,6 +103,8 @@ const AdminExamFormPage = () => {
     title: "",
     description: "",
     durationMinutes: 60,
+    passMark: 50,
+    allowRetakes: false,
     visibility: "PUBLIC",
     assignedUserIds: "",
   });
@@ -123,13 +135,32 @@ const AdminExamFormPage = () => {
     [sections]
   );
 
-  const subjectOptions = useCallback((search) =>
-    fetchSubjects({ page: 1, perPage: 20, search, active: "true" }).then((response) =>
+  const subjectOptions = useCallback((search) => {
+    if (isParent) {
+      const normalizedSearch = String(search || "").trim().toLocaleLowerCase("az");
+      return fetchPublicSubjects().then((subjects) =>
+        (subjects || [])
+          .filter((subject) =>
+            !normalizedSearch ||
+            `${subject.nameAz || ""} ${subject.nameEn || ""} ${subject.code || ""}`
+              .toLocaleLowerCase("az")
+              .includes(normalizedSearch)
+          )
+          .slice(0, 20)
+          .map((subject) => ({
+            value: subject.id,
+            label: `${subject.nameAz || subject.nameEn || subject.code} (${subject.code})`,
+          }))
+      );
+    }
+
+    return fetchSubjects({ page: 1, perPage: 20, search, active: "true" }).then((response) =>
       (response.data || []).map((subject) => ({
         value: subject.id,
         label: `${subject.name || subject.code} (${subject.code})`,
       }))
-    ), []);
+    );
+  }, [isParent]);
 
   useEffect(() => {
     if (!isParent) return;
@@ -169,6 +200,8 @@ const AdminExamFormPage = () => {
           title: config.title || "",
           description: config.description || "",
           durationMinutes: config.durationMinutes || "",
+          passMark: config.passMark ?? 50,
+          allowRetakes: Boolean(config.allowRetakes),
           visibility: config.visibility || "PUBLIC",
           assignedUserIds: Array.isArray(config.assignedUserIds) ? config.assignedUserIds.join("\n") : "",
         });
@@ -198,6 +231,25 @@ const AdminExamFormPage = () => {
       const section = sections[sectionIndex];
       if (!section?.subjectId) return Promise.resolve([]);
 
+      if (isParent) {
+        const normalizedSearch = String(search || "").trim().toLocaleLowerCase("az");
+        return fetchPublicSubjects()
+          .then((subjects) => subjects.find((subject) => String(subject.id) === String(section.subjectId))?.code)
+          .then((subjectCode) => (subjectCode ? fetchPublicTopics(subjectCode) : []))
+          .then((topics) =>
+            (topics || [])
+              .filter((topic) =>
+                !normalizedSearch ||
+                `${topic.nameAz || ""} ${topic.code || ""}`.toLocaleLowerCase("az").includes(normalizedSearch)
+              )
+              .slice(0, 20)
+              .map((topic) => ({
+                value: topic.id,
+                label: `${topic.nameAz || topic.code}${topic.code ? ` (${topic.code})` : ""}`,
+              }))
+          );
+      }
+
       return fetchTopics(section.subjectId, { page: 1, perPage: 20, search, active: "true" }).then((response) =>
         (response.data || []).map((topic) => ({
           value: topic.id,
@@ -205,7 +257,7 @@ const AdminExamFormPage = () => {
         }))
       );
     },
-    [sections]
+    [isParent, sections]
   );
 
   const updateForm = (event) => {
@@ -330,6 +382,9 @@ const AdminExamFormPage = () => {
     if (form.durationMinutes && normalizePositiveInt(form.durationMinutes) > 600) {
       return "Duration cannot be more than 600 minutes.";
     }
+    if (form.passMark !== "" && (Number(form.passMark) < 0 || Number(form.passMark) > 100)) {
+      return "Pass mark must be between 0 and 100.";
+    }
 
     for (let sectionIndex = 0; sectionIndex < sections.length; sectionIndex += 1) {
       const section = sections[sectionIndex];
@@ -351,6 +406,8 @@ const AdminExamFormPage = () => {
     title: form.title.trim(),
     description: form.description.trim(),
     durationMinutes: normalizePositiveInt(form.durationMinutes) || undefined,
+    passMark: form.passMark === "" ? undefined : Number(form.passMark),
+    allowRetakes: Boolean(form.allowRetakes),
     visibility: isParent ? "ASSIGNED" : form.visibility,
     assignedUserIds: !isParent && form.visibility === "ASSIGNED" ? parseAssignedUserIds() : [],
     assignedLearnerId: isParent ? parseAssignedUserIds()[0] : undefined,
@@ -480,6 +537,29 @@ const AdminExamFormPage = () => {
               value={form.description}
               onChange={updateForm}
             />
+          </div>
+          <div className='col-md-4'>
+            <label className='text-14 text-neutral-500 fw-medium mb-8'>Pass mark (%)</label>
+            <input
+              name='passMark'
+              type='number'
+              min='0'
+              max='100'
+              step='0.01'
+              className='common-input rounded-pill'
+              value={form.passMark}
+              onChange={updateForm}
+            />
+          </div>
+          <div className='col-md-8 d-flex align-items-end'>
+            <label className='d-flex align-items-center gap-10 py-11 mb-0 text-14 text-neutral-500'>
+              <input
+                type='checkbox'
+                checked={Boolean(form.allowRetakes)}
+                onChange={(event) => setForm((current) => ({ ...current, allowRetakes: event.target.checked }))}
+              />
+              Allow learners to retake the exam after submission
+            </label>
           </div>
 
           {isParent ? (
@@ -833,4 +913,3 @@ const AdminExamFormPage = () => {
 };
 
 export default AdminExamFormPage;
-

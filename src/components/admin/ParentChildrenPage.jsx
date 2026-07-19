@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import AdminRefreshButton from "@/components/admin/AdminRefreshButton";
 import {
   becomeParent,
+  cancelParentInvitation,
   fetchParentDashboard,
   fetchParentInvitations,
   searchLearners,
@@ -101,6 +102,19 @@ const ParentChildrenPage = () => {
       await load();
     } catch (requestError) {
       setError(requestError?.message || "Child could not be unlinked.");
+    }
+  };
+
+  const cancelInvitation = async (invitationId) => {
+    if (!window.confirm("Cancel this pending invitation?")) return;
+    setError("");
+    setNotice("");
+    try {
+      await cancelParentInvitation(invitationId);
+      setNotice("Invitation cancelled.");
+      await load();
+    } catch (requestError) {
+      setError(requestError?.message || "Invitation could not be cancelled.");
     }
   };
 
@@ -215,9 +229,14 @@ const ParentChildrenPage = () => {
             <h5 className='text-16 fw-semibold text-neutral-500 mt-24 mb-12'>Pending invitations</h5>
             <div className='d-flex flex-column gap-10'>
               {invitations.map((invitation) => (
-                <div className='border border-neutral-30 rounded-8 px-16 py-12 d-flex justify-content-between gap-12' key={invitation.invitationId}>
-                  <span className='text-14 text-neutral-500'>{invitation.counterpartName || invitation.learnerId}</span>
-                  <span className='text-13 text-neutral-400'>{formatDate(invitation.createdAt)}</span>
+                <div className='border border-neutral-30 rounded-8 px-16 py-12 d-flex flex-wrap align-items-center justify-content-between gap-12' key={invitation.invitationId}>
+                  <div>
+                    <span className='text-14 text-neutral-500 d-block'>{invitation.counterpartName || invitation.learnerId}</span>
+                    <span className='text-13 text-neutral-400'>{formatDate(invitation.createdAt)}</span>
+                  </div>
+                  <button type='button' className='px-14 py-8 border border-neutral-40 rounded-pill text-13 text-danger bg-white' onClick={() => cancelInvitation(invitation.invitationId)}>
+                    Cancel
+                  </button>
                 </div>
               ))}
             </div>

@@ -24,7 +24,7 @@ const ForgotPasswordInner = () => {
 
     try {
       const response = await forgotPassword({ email });
-      setMessage(response?.message || "Əgər hesab mövcuddursa, şifrə yeniləmə linki göndərildi.");
+      setMessage(response?.message || "Əgər hesab mövcuddursa, şifrə yeniləmə kodu göndərildi.");
     } catch {
       setError("Şifrə yeniləmə sorğusu alınmadı.");
     } finally {
@@ -60,7 +60,14 @@ const ForgotPasswordInner = () => {
                     onChange={(event) => setEmail(event.target.value)}
                   />
                 </div>
-                {message ? <p className='text-success-600 mb-0'>{message}</p> : null}
+                {message ? (
+                  <div>
+                    <p className='text-success-600 mb-8'>{message}</p>
+                    <Link href={`/reset-password?email=${encodeURIComponent(email)}`} className='fw-semibold text-main-600'>
+                      Kodu daxil edin
+                    </Link>
+                  </div>
+                ) : null}
                 {error ? <p className='text-danger mb-0'>{error}</p> : null}
                 <div className='mb-16 mt-24'>
                   <p className='text-neutral-500'>

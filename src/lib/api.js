@@ -13,6 +13,8 @@ let refreshPromise = null;
 const isAuthEndpoint = (url) =>
   url.endsWith(`${API_PREFIX}/auth/login`) ||
   url.endsWith(`${API_PREFIX}/auth/register`) ||
+  url.endsWith(`${API_PREFIX}/auth/verification/send`) ||
+  url.endsWith(`${API_PREFIX}/auth/verification/confirm`) ||
   url.endsWith(`${API_PREFIX}/auth/password/forgot`) ||
   url.endsWith(`${API_PREFIX}/auth/password/reset`) ||
   url.endsWith(`${API_PREFIX}/auth/refresh`);
@@ -252,6 +254,23 @@ export const register = (payload) =>
     }),
   }).then(withMessage);
 
+export const sendVerification = (payload) =>
+  apiFetch("/auth/verification/send", {
+    method: "POST",
+    body: JSON.stringify({
+      login: payload.login || payload.email,
+    }),
+  });
+
+export const confirmVerification = (payload) =>
+  apiFetch("/auth/verification/confirm", {
+    method: "POST",
+    body: JSON.stringify({
+      login: payload.login || payload.email,
+      code: payload.code,
+    }),
+  });
+
 export const logout = () =>
   apiFetch("/auth/logout", {
     method: "POST",
@@ -453,6 +472,12 @@ export const deactivateTopic = (id) =>
 
 export const fetchGrades = () => apiFetch("/grades").then((response) => unwrapApiResponse(response) || []);
 
+export const fetchPublicSubjects = () =>
+  apiFetch("/subjects").then((response) => unwrapApiResponse(response) || []);
+
+export const fetchPublicTopics = (subjectCode) =>
+  apiFetch(`/subjects/${subjectCode}/topics`).then((response) => unwrapApiResponse(response) || []);
+
 export const fetchExamDefinitions = () =>
   apiFetch("/exam-definitions").then((response) => unwrapApiResponse(response) || []);
 
@@ -471,6 +496,37 @@ export const fetchExams = ({ page = 1, perPage = 10 } = {}) =>
   );
 
 export const fetchExam = (id) => apiFetch(`/exams/${id}`).then((response) => unwrapApiResponse(response));
+
+export const deleteExam = (id) =>
+  apiFetch(`/exams/${id}`, {
+    method: "DELETE",
+  });
+
+export const archiveExam = (id) =>
+  apiFetch(`/exams/${id}/archive`, {
+    method: "POST",
+  }).then((response) => unwrapApiResponse(response));
+
+export const unarchiveExam = (id) =>
+  apiFetch(`/exams/${id}/unarchive`, {
+    method: "POST",
+  }).then((response) => unwrapApiResponse(response));
+
+export const regenerateExamShareToken = (id) =>
+  apiFetch(`/exams/${id}/share-token/regenerate`, {
+    method: "POST",
+  }).then((response) => unwrapApiResponse(response));
+
+export const addExamAssignments = (id, userIds) =>
+  apiFetch(`/exams/${id}/assignments`, {
+    method: "PUT",
+    body: JSON.stringify({ userIds }),
+  }).then((response) => unwrapApiResponse(response));
+
+export const revokeExamAssignment = (examId, userId) =>
+  apiFetch(`/exams/${examId}/assignments/${userId}`, {
+    method: "DELETE",
+  }).then((response) => unwrapApiResponse(response));
 
 const normalizeSessionQuestion = (question = {}) => ({
   ...question,
@@ -545,10 +601,13 @@ export const updateStudentProfile = (payload) =>
     body: JSON.stringify(payload),
   }).then((response) => unwrapApiResponse(response));
 
-export const createParentLinkCode = () =>
-  apiFetch("/students/me/link-codes", {
-    method: "POST",
-  }).then((response) => unwrapApiResponse(response));
+export const fetchStudentParents = () =>
+  apiFetch("/students/me/parents").then((response) => unwrapApiResponse(response) || []);
+
+export const revokeStudentParent = (parentId) =>
+  apiFetch(`/students/me/parents/${parentId}`, {
+    method: "DELETE",
+  });
 
 export const fetchParentProfile = () => apiFetch("/parents/me").then((response) => unwrapApiResponse(response));
 
@@ -583,12 +642,6 @@ export const cancelParentInvitation = (invitationId) =>
     method: "DELETE",
   });
 
-export const linkChild = (code) =>
-  apiFetch("/parents/me/links", {
-    method: "POST",
-    body: JSON.stringify({ code }),
-  }).then((response) => unwrapApiResponse(response));
-
 export const unlinkChild = (studentId) =>
   apiFetch(`/parents/me/links/${studentId}`, {
     method: "DELETE",
@@ -618,6 +671,12 @@ export const fetchChildSessionResult = (studentId, sessionId) =>
     unwrapApiResponse(response)
   );
 
+export const fetchChildTrends = (studentId) =>
+  apiFetch(`/parents/me/children/${studentId}/trends`).then((response) => unwrapApiResponse(response) || []);
+
+export const fetchChildTopicTrends = (studentId) =>
+  apiFetch(`/parents/me/children/${studentId}/topic-trends`).then((response) => unwrapApiResponse(response) || []);
+
 export const createOrganization = (payload) =>
   apiFetch("/organizations", {
     method: "POST",
@@ -626,6 +685,12 @@ export const createOrganization = (payload) =>
 
 export const fetchMyOrganizations = () =>
   apiFetch("/organizations/me").then((response) => unwrapApiResponse(response) || []);
+
+export const updateOrganizationNotificationSetting = (orgId, notifyOnMemberCompletion) =>
+  apiFetch(`/organizations/${orgId}/notification-setting`, {
+    method: "PUT",
+    body: JSON.stringify({ notifyOnMemberCompletion }),
+  }).then((response) => unwrapApiResponse(response));
 
 export const createOrganizationInvite = (orgId, payload) =>
   apiFetch(`/organizations/${orgId}/invites`, {
@@ -675,6 +740,18 @@ export const fetchResults = ({ page = 1, perPage = 10 } = {}) =>
   apiFetch(`/results${toQueryString({ page: Math.max(page - 1, 0), size: perPage })}`).then((response) =>
     normalizePage(unwrapApiResponse(response), page, perPage)
   );
+
+export const fetchResultTrends = () =>
+  apiFetch("/results/trends").then((response) => unwrapApiResponse(response) || []);
+
+export const fetchResultTopicTrends = () =>
+  apiFetch("/results/topic-trends").then((response) => unwrapApiResponse(response) || []);
+
+export const reportQuestion = (questionId, payload) =>
+  apiFetch(`/questions/${questionId}/reports`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  }).then((response) => unwrapApiResponse(response));
 
 export const fetchNotificationPreferences = () =>
   apiFetch("/notifications/preferences").then((response) => unwrapApiResponse(response));
@@ -747,11 +824,6 @@ export const approveAllAdminQuestions = () =>
     method: "POST",
   }).then((response) => Number(unwrapApiResponse(response)?.approvedCount || 0));
 
-export const approveAdminQuestion = (id) =>
-  apiFetch(`/admin/questions/${id}/approve`, {
-    method: "POST",
-  });
-
 export const rejectAdminQuestion = (id) =>
   apiFetch(`/admin/questions/${id}/reject`, {
     method: "POST",
@@ -790,6 +862,9 @@ export const fetchAdminAiJobs = ({ page = 1, perPage = 10 } = {}) =>
   apiFetch(`/admin/ai/jobs${toQueryString({ page: Math.max(page - 1, 0), size: perPage })}`).then((response) =>
     normalizePage(unwrapApiResponse(response), page, perPage)
   );
+
+export const fetchAdminAiJob = (id) =>
+  apiFetch(`/admin/ai/jobs/${id}`).then((response) => unwrapApiResponse(response));
 
 export const generateAdminAiQuestions = (payload) =>
   apiFetch("/admin/ai/generate", {
@@ -832,11 +907,102 @@ export const fetchMySubscriptions = () =>
 export const fetchSubscriptionEntitlement = () =>
   apiFetch("/subscriptions/me/entitlement").then((response) => unwrapApiResponse(response) || { entitled: false });
 
+export const cancelSubscription = (id) =>
+  apiFetch(`/subscriptions/me/${id}/cancel`, {
+    method: "POST",
+  });
+
 export const startPaymentCheckout = (planCode) =>
   apiFetch("/payments/checkout", {
     method: "POST",
     body: JSON.stringify({ planCode }),
   }).then((response) => unwrapApiResponse(response));
+
+export const fetchAdminDashboard = () =>
+  apiFetch("/admin/dashboard").then((response) => unwrapApiResponse(response));
+
+export const fetchAdminPlans = ({ page = 1, perPage = 10, code = "", active = "" } = {}) =>
+  apiFetch(
+    `/admin/subscription-plans${toQueryString({
+      page: Math.max(page - 1, 0),
+      size: perPage,
+      code,
+      active,
+    })}`
+  ).then((response) => {
+    const pageData = normalizePage(unwrapApiResponse(response), page, perPage);
+    return {
+      ...pageData,
+      data: pageData.data.map(normalizeSubscriptionPlan),
+    };
+  });
+
+export const fetchAdminPlan = (id) =>
+  apiFetch(`/admin/subscription-plans/${id}`).then((response) =>
+    normalizeSubscriptionPlan(unwrapApiResponse(response))
+  );
+
+export const createAdminPlan = (payload) =>
+  apiFetch("/admin/subscription-plans", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  }).then((response) => normalizeSubscriptionPlan(unwrapApiResponse(response)));
+
+export const updateAdminPlan = (id, payload) =>
+  apiFetch(`/admin/subscription-plans/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  }).then((response) => normalizeSubscriptionPlan(unwrapApiResponse(response)));
+
+export const activateAdminPlan = (id) =>
+  apiFetch(`/admin/subscription-plans/${id}/activate`, {
+    method: "POST",
+  }).then((response) => normalizeSubscriptionPlan(unwrapApiResponse(response)));
+
+export const deactivateAdminPlan = (id) =>
+  apiFetch(`/admin/subscription-plans/${id}/deactivate`, {
+    method: "POST",
+  }).then((response) => normalizeSubscriptionPlan(unwrapApiResponse(response)));
+
+export const fetchAdminSubscriptions = ({
+  page = 1,
+  perPage = 10,
+  payerUserId = "",
+  status = "",
+  planId = "",
+} = {}) =>
+  apiFetch(
+    `/admin/subscriptions${toQueryString({
+      page: Math.max(page - 1, 0),
+      size: perPage,
+      payerUserId,
+      status,
+      planId,
+    })}`
+  ).then((response) => {
+    const pageData = normalizePage(unwrapApiResponse(response), page, perPage);
+    return {
+      ...pageData,
+      data: pageData.data.map(normalizeSubscription),
+    };
+  });
+
+export const fetchAdminPayments = ({
+  page = 1,
+  perPage = 10,
+  payerUserId = "",
+  status = "",
+  provider = "",
+} = {}) =>
+  apiFetch(
+    `/admin/payments${toQueryString({
+      page: Math.max(page - 1, 0),
+      size: perPage,
+      payerUserId,
+      status,
+      provider,
+    })}`
+  ).then((response) => normalizePage(unwrapApiResponse(response), page, perPage));
 
 export const fetchAdminAuditLogs = ({
   page = 1,

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import AdminRefreshButton from "@/components/admin/AdminRefreshButton";
 import AdminStatusBadge from "@/components/admin/AdminStatusBadge";
 import {
+  cancelSubscription,
   fetchMySubscriptions,
   fetchSubscriptionEntitlement,
   fetchSubscriptionPlans,
@@ -21,6 +22,8 @@ const AdminPaymentsPage = () => {
   const [entitlement, setEntitlement] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [checkoutCode, setCheckoutCode] = useState("");
+  const [cancelingId, setCancelingId] = useState("");
+  const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
 
   const loadPayments = async () => {
@@ -36,8 +39,8 @@ const AdminPaymentsPage = () => {
       setPlans(planResponse || []);
       setSubscriptions(subscriptionResponse || []);
       setEntitlement(entitlementResponse || null);
-    } catch {
-      setError("Subscription information could not be loaded.");
+    } catch (requestError) {
+      setError(requestError?.message || "Subscription information could not be loaded.");
       setPlans([]);
       setSubscriptions([]);
       setEntitlement(null);
@@ -53,6 +56,7 @@ const AdminPaymentsPage = () => {
   const handleCheckout = async (planCode) => {
     setCheckoutCode(planCode);
     setError("");
+    setNotice("");
 
     try {
       const checkout = await startPaymentCheckout(planCode);
@@ -62,10 +66,28 @@ const AdminPaymentsPage = () => {
       }
 
       await loadPayments();
-    } catch {
-      setError("Checkout could not be started.");
+    } catch (requestError) {
+      setError(requestError?.message || "Checkout could not be started.");
     } finally {
       setCheckoutCode("");
+    }
+  };
+
+  const handleCancel = async (subscription) => {
+    if (!window.confirm("Cancel this subscription? Access will end immediately.")) return;
+
+    setCancelingId(subscription.id);
+    setError("");
+    setNotice("");
+
+    try {
+      await cancelSubscription(subscription.id);
+      setNotice("Subscription canceled.");
+      await loadPayments();
+    } catch (requestError) {
+      setError(requestError?.message || "Subscription could not be canceled.");
+    } finally {
+      setCancelingId("");
     }
   };
 
@@ -82,7 +104,8 @@ const AdminPaymentsPage = () => {
           <AdminRefreshButton isLoading={isLoading} onClick={loadPayments} />
         </div>
 
-        {error ? <p className='text-danger mb-16'>{error}</p> : null}
+        {notice ? <div className='alert alert-success text-14 py-10 mb-16'>{notice}</div> : null}
+        {error ? <div className='alert alert-danger text-14 py-10 mb-16'>{error}</div> : null}
       </div>
 
       <div className='row gy-4 mb-24'>
@@ -97,7 +120,9 @@ const AdminPaymentsPage = () => {
                 <div className='d-flex align-items-start justify-content-between gap-12 mb-16'>
                   <div>
                     <span className='text-12 fw-semibold text-main-600'>{plan.code}</span>
-                    <h5 className='text-20 fw-semibold text-neutral-500 mb-0 mt-4'>{plan.nameAz}</h5>
+                    <h5 className='text-20 fw-semibold text-neutral-500 mb-0 mt-4'>
+                      {plan.nameAz || plan.name || plan.code}
+                    </h5>
                   </div>
                   {plan.coversLinkedChildren ? <AdminStatusBadge status='ACTIVE' label='Family' /> : null}
                 </div>
@@ -146,11 +171,13 @@ const AdminPaymentsPage = () => {
                 <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Status</th>
                 <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Starts</th>
                 <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Expires</th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Canceled</th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20 text-end'>Action</th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='4'>Loading...</td></tr>
+                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'>Loading...</td></tr>
               ) : subscriptions.length ? (
                 subscriptions.map((subscription) => (
                   <tr key={subscription.id}>
@@ -158,10 +185,25 @@ const AdminPaymentsPage = () => {
                     <td className='py-16 px-20'><AdminStatusBadge status={subscription.status} /></td>
                     <td className='py-16 px-20 text-14 text-neutral-500'>{formatDate(subscription.startsAt)}</td>
                     <td className='py-16 px-20 text-14 text-neutral-500'>{formatDate(subscription.expiresAt)}</td>
+                    <td className='py-16 px-20 text-14 text-neutral-500'>{formatDate(subscription.canceledAt)}</td>
+                    <td className='py-16 px-20 text-end'>
+                      {["PENDING", "ACTIVE"].includes(subscription.status) ? (
+                        <button
+                          type='button'
+                          className='px-14 py-8 border border-danger-200 rounded-pill text-13 text-danger-600 bg-white'
+                          disabled={cancelingId === subscription.id}
+                          onClick={() => handleCancel(subscription)}
+                        >
+                          {cancelingId === subscription.id ? "Canceling..." : "Cancel"}
+                        </button>
+                      ) : (
+                        <span className='text-13 text-neutral-300'>-</span>
+                      )}
+                    </td>
                   </tr>
                 ))
               ) : (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='4'>No subscriptions found.</td></tr>
+                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'>No subscriptions found.</td></tr>
               )}
             </tbody>
           </table>

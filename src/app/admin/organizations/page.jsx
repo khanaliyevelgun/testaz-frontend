@@ -1,10 +1,10 @@
-import AdminPlaceholderPage from "@/components/admin/AdminPlaceholderPage";
+import OrganizationManagementPage from "@/components/admin/OrganizationManagementPage";
+import RoleProtectedRoute from "@/components/auth/RoleProtectedRoute";
 
 export default function Page() {
   return (
-    <AdminPlaceholderPage
-      title='Organizations'
-      description='Course, private tutor, and school teacher organization management will use /api/v1/organizations endpoints.'
-    />
+    <RoleProtectedRoute allowedRoles={["organization"]}>
+      <OrganizationManagementPage />
+    </RoleProtectedRoute>
   );
 }

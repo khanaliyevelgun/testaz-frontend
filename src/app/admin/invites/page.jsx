@@ -1,10 +1,10 @@
-import AdminPlaceholderPage from "@/components/admin/AdminPlaceholderPage";
+import OrganizationInvitesPage from "@/components/admin/OrganizationInvitesPage";
+import RoleProtectedRoute from "@/components/auth/RoleProtectedRoute";
 
 export default function Page() {
   return (
-    <AdminPlaceholderPage
-      title='Invites'
-      description='Organization test invites will be created with /api/v1/organizations/{orgId}/invites.'
-    />
+    <RoleProtectedRoute allowedRoles={["organization"]}>
+      <OrganizationInvitesPage />
+    </RoleProtectedRoute>
   );
 }

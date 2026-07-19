@@ -1,5 +1,5 @@
-import AdminPlaceholderPage from "@/components/admin/AdminPlaceholderPage";
+import AccountProfilePage from "@/components/admin/AccountProfilePage";
 
 export default function Page() {
-  return <AdminPlaceholderPage title='Profile' description='Profil bilgileri burada gösterilecek.' />;
+  return <AccountProfilePage />;
 }

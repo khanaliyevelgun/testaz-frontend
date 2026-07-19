@@ -1,9 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import AdminRefreshButton from "@/components/admin/AdminRefreshButton";
 import AdminStatusBadge from "@/components/admin/AdminStatusBadge";
-import { fetchExam } from "@/lib/api";
+import {
+  addExamAssignments,
+  archiveExam,
+  deleteExam,
+  fetchExam,
+  regenerateExamShareToken,
+  revokeExamAssignment,
+  unarchiveExam,
+} from "@/lib/api";
 
 const formatDate = (value) => {
   if (!value) return "-";
@@ -25,30 +35,30 @@ const getPreviewUrl = (exam) => {
 };
 
 const AdminExamDetailPage = ({ examId }) => {
+  const router = useRouter();
   const [exam, setExam] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isActing, setIsActing] = useState(false);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [copyStatus, setCopyStatus] = useState("");
+  const [assignmentInput, setAssignmentInput] = useState("");
 
-  useEffect(() => {
-    let isMounted = true;
+  const loadExam = useCallback(async () => {
     setIsLoading(true);
     setError("");
-    fetchExam(examId)
-      .then((response) => {
-        if (isMounted) setExam(response);
-      })
-      .catch((requestError) => {
-        if (isMounted) setError(requestError?.message || "Exam could not be loaded.");
-      })
-      .finally(() => {
-        if (isMounted) setIsLoading(false);
-      });
-
-    return () => {
-      isMounted = false;
-    };
+    try {
+      setExam(await fetchExam(examId));
+    } catch (requestError) {
+      setError(requestError?.message || "Exam could not be loaded.");
+    } finally {
+      setIsLoading(false);
+    }
   }, [examId]);
+
+  useEffect(() => {
+    loadExam();
+  }, [loadExam]);
 
   const copyLink = async () => {
     const code = getExamCode(exam);
@@ -60,6 +70,83 @@ const AdminExamDetailPage = ({ examId }) => {
       setCopyStatus("Select the code and copy manually");
     }
   };
+
+  const runAction = async ({ action, successMessage, confirmation }) => {
+    if (confirmation && !window.confirm(confirmation)) return;
+    setIsActing(true);
+    setError("");
+    setNotice("");
+
+    try {
+      const updatedExam = await action();
+      if (updatedExam?.examId) {
+        setExam(updatedExam);
+      } else {
+        await loadExam();
+      }
+      setNotice(successMessage);
+    } catch (requestError) {
+      setError(requestError?.message || "Exam action failed.");
+    } finally {
+      setIsActing(false);
+    }
+  };
+
+  const changeArchiveState = () =>
+    runAction({
+      action: () => (exam?.status === "ARCHIVED" ? unarchiveExam(examId) : archiveExam(examId)),
+      successMessage: exam?.status === "ARCHIVED" ? "Exam restored." : "Exam archived.",
+      confirmation:
+        exam?.status === "ARCHIVED"
+          ? "Restore this exam and allow learners to access it again?"
+          : "Archive this exam? Learners will no longer be able to preview or start it.",
+    });
+
+  const regenerateCode = () =>
+    runAction({
+      action: async () => {
+        const share = await regenerateExamShareToken(examId);
+        return { ...exam, shareToken: share?.shareToken || exam?.shareToken };
+      },
+      successMessage: "Share code regenerated. The previous code is no longer valid.",
+      confirmation: "Generate a new share code? The current code will stop working.",
+    });
+
+  const removeExam = async () => {
+    if (!window.confirm("Permanently delete this exam? This only succeeds when it has no attempts.")) return;
+    setIsActing(true);
+    setError("");
+    try {
+      await deleteExam(examId);
+      router.replace("/admin/exams");
+      router.refresh();
+    } catch (requestError) {
+      setError(requestError?.message || "Exam could not be deleted. Archive exams that already have attempts.");
+      setIsActing(false);
+    }
+  };
+
+  const addAssignments = async (event) => {
+    event.preventDefault();
+    const userIds = [...new Set(assignmentInput.split(/[\s,;]+/).map((value) => value.trim()).filter(Boolean))];
+    if (!userIds.length) {
+      setError("Enter at least one user ID.");
+      return;
+    }
+
+    await runAction({
+      action: () => addExamAssignments(examId, userIds),
+      successMessage: `${userIds.length} assignment${userIds.length === 1 ? "" : "s"} added.`,
+    });
+    setAssignmentInput("");
+  };
+
+  const revokeAssignment = (userId) =>
+    runAction({
+      action: () => revokeExamAssignment(examId, userId),
+      successMessage: "Assignment revoked.",
+      confirmation: "Remove this learner from the assignment list?",
+    });
 
   return (
     <div className='px-24 py-24'>
@@ -73,11 +160,23 @@ const AdminExamDetailPage = ({ examId }) => {
             <Link href='/admin/exams' className='px-18 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white'>Exams</Link>
             <Link href={`/admin/exams/${examId}/statistics`} className='px-18 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white'>Statistics</Link>
             <Link href={`/admin/exams/${examId}/attempts`} className='btn btn-main rounded-pill px-20'>Attempts</Link>
+            {exam ? (
+              <>
+                <button type='button' className='px-18 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' disabled={isActing} onClick={changeArchiveState}>
+                  {exam.status === "ARCHIVED" ? "Restore" : "Archive"}
+                </button>
+                <button type='button' className='px-18 py-10 border border-danger-200 rounded-pill text-14 text-danger bg-white' disabled={isActing} onClick={removeExam}>
+                  Delete
+                </button>
+              </>
+            ) : null}
+            <AdminRefreshButton isLoading={isLoading} onClick={loadExam} />
           </div>
         </div>
 
         {isLoading ? <p className='text-14 text-neutral-400 mb-0'>Loading...</p> : null}
-        {error ? <p className='text-danger mb-0'>{error}</p> : null}
+        {notice ? <div className='alert alert-success text-14 py-10 mb-16'>{notice}</div> : null}
+        {error ? <div className='alert alert-danger text-14 py-10 mb-16'>{error}</div> : null}
 
         {exam ? (
           <>
@@ -103,6 +202,9 @@ const AdminExamDetailPage = ({ examId }) => {
               <div className='d-flex flex-wrap align-items-center gap-10'>
                 <input className='common-input rounded-pill flex-grow-1 min-w-240-px' readOnly value={getExamCode(exam)} onFocus={(event) => event.target.select()} />
                 <button type='button' className='btn btn-main rounded-pill px-20' onClick={copyLink}>Copy</button>
+                <button type='button' className='px-18 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' disabled={isActing} onClick={regenerateCode}>
+                  Regenerate
+                </button>
               </div>
               {copyStatus ? <p className='text-14 text-neutral-400 mt-8 mb-0'>{copyStatus}</p> : null}
               {getPreviewUrl(exam) ? (
@@ -114,6 +216,49 @@ const AdminExamDetailPage = ({ examId }) => {
                   </div>
                 </div>
               ) : null}
+            </div>
+
+            <div className='border border-neutral-30 rounded-12 p-20 mb-24'>
+              <div className='d-flex flex-wrap align-items-start justify-content-between gap-12 mb-16'>
+                <div>
+                  <h5 className='text-16 fw-semibold text-neutral-500 mb-4'>Assigned learners</h5>
+                  <p className='text-13 text-neutral-400 mb-0'>
+                    Adding learners switches the exam to assigned visibility.
+                  </p>
+                </div>
+                <span className='text-13 text-neutral-400'>{exam.assignedUserIds?.length || 0} assigned</span>
+              </div>
+              <form className='d-flex flex-wrap align-items-center gap-10 mb-16' onSubmit={addAssignments}>
+                <input
+                  className='common-input rounded-pill flex-grow-1 min-w-240-px'
+                  placeholder='Paste user IDs separated by commas or spaces'
+                  value={assignmentInput}
+                  onChange={(event) => setAssignmentInput(event.target.value)}
+                />
+                <button type='submit' className='btn btn-main rounded-pill px-20' disabled={isActing}>
+                  Add assignments
+                </button>
+              </form>
+              {exam.assignedUserIds?.length ? (
+                <div className='d-flex flex-wrap gap-8'>
+                  {exam.assignedUserIds.map((userId) => (
+                    <span className='d-inline-flex align-items-center gap-8 px-12 py-8 rounded-pill bg-main-25 text-main-600 text-13' key={userId}>
+                      {userId}
+                      <button
+                        type='button'
+                        className='border-0 bg-transparent text-danger p-0 d-flex'
+                        aria-label={`Remove ${userId}`}
+                        disabled={isActing}
+                        onClick={() => revokeAssignment(userId)}
+                      >
+                        <i className='ph-bold ph-x' />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className='text-14 text-neutral-400 mb-0'>No learners are assigned.</p>
+              )}
             </div>
 
             <h5 className='text-16 fw-semibold text-neutral-500 mb-12'>Sections</h5>

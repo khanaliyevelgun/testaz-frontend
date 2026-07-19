@@ -286,7 +286,13 @@ const ExamSessionPage = ({ sessionId }) => {
             </div>
 
             {question.mediaPath ? (
-              <img src={getApiAssetUrl(question.mediaPath)} alt='' className='mb-16 rounded-8 max-w-100' />
+              question.mediaType?.startsWith("audio/") ? (
+                <audio controls className='w-100 mb-16' src={getApiAssetUrl(question.mediaPath)}>
+                  Your browser does not support audio playback.
+                </audio>
+              ) : (
+                <img src={getApiAssetUrl(question.mediaPath)} alt='' className='mb-16 rounded-8 max-w-100' />
+              )
             ) : null}
             <div className='text-15 text-neutral-500 mb-20' dangerouslySetInnerHTML={renderQuestionHtml(question.stem || "")} />
 

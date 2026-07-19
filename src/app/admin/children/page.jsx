@@ -3,7 +3,7 @@ import RoleProtectedRoute from "@/components/auth/RoleProtectedRoute";
 
 export default function Page() {
   return (
-    <RoleProtectedRoute allowedRoles={["parent", "child"]}>
+    <RoleProtectedRoute allowedRoles={["parent"]}>
       <ParentChildrenPage />
     </RoleProtectedRoute>
   );
