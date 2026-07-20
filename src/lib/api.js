@@ -4,6 +4,7 @@ import {
   getRefreshToken,
   setTokens,
 } from "@/stores/authStore";
+import { localizeApiResponse, translateApiMessage } from "@/lib/i18n";
 
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(/\/+$/, "");
 const API_PREFIX = "/api/v1";
@@ -34,9 +35,10 @@ const unwrapApiResponse = (data) => {
 };
 
 const withMessage = (response) => {
-  const data = unwrapApiResponse(response);
+  const localizedResponse = localizeApiResponse(response);
+  const data = unwrapApiResponse(localizedResponse);
   if (data && typeof data === "object" && !Array.isArray(data)) {
-    return { ...data, message: response?.message };
+    return { ...data, message: localizedResponse?.message };
   }
 
   return data;
@@ -130,7 +132,7 @@ export async function refreshAccessToken() {
         const data = unwrapApiResponse(responseData);
 
         if (!response.ok) {
-          throw new ApiError("Unauthorized", response.status, data);
+          throw new ApiError(translateApiMessage(data?.message, "api.unauthorized"), response.status, localizeApiResponse(data));
         }
 
         const accessToken = data?.accessToken;
@@ -209,11 +211,13 @@ export async function apiFetch(path, options = {}) {
   const data = await parseResponse(response);
 
   if (!response.ok) {
-    const message = data?.message || "Request failed";
-    throw new ApiError(message, response.status, data);
+    const localizedData = localizeApiResponse(data);
+    const fallback = response.status === 401 ? "api.unauthorized" : response.status === 403 ? "api.forbidden" : response.status === 404 ? "api.notFound" : "common.requestFailed";
+    const apiMessage = typeof localizedData === "string" ? localizedData : localizedData?.message || data?.message;
+    throw new ApiError(translateApiMessage(apiMessage, fallback), response.status, localizedData);
   }
 
-  return data;
+  return localizeApiResponse(data);
 }
 
 const toQueryString = (params) => {

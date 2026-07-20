@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import AdminRefreshButton from "@/components/admin/AdminRefreshButton";
 import AdminStatusBadge from "@/components/admin/AdminStatusBadge";
+import DashboardCharts from "@/components/admin/DashboardCharts";
 import { useAuth } from "@/hooks/useAuth";
 import {
   fetchAdminDashboard,
@@ -64,6 +65,14 @@ const getChildDashboard = (resultsResponse, trendsResponse) => {
   const weakestSubject = [...trends]
     .filter((trend) => trend.accuracy != null)
     .sort((left, right) => Number(left.accuracy) - Number(right.accuracy))[0];
+  const recentTrend = [...scoredResults]
+    .reverse()
+    .map((result, index) => ({ label: `#${index + 1}`, value: Number(result.percentage) }));
+  const subjectChart = trends
+    .filter((trend) => trend.accuracy != null)
+    .sort((left, right) => Number(right.accuracy) - Number(left.accuracy))
+    .slice(0, 8)
+    .map((trend) => ({ label: trend.subjectName || `#${trend.subjectId}`, value: Number(trend.accuracy) }));
 
   return {
     stats: [
@@ -108,6 +117,23 @@ const getChildDashboard = (resultsResponse, trendsResponse) => {
       },
     ],
     emptyText: "Complete a test to see subject trends here.",
+    charts: [
+      {
+        type: "line",
+        title: "Score progress",
+        description: "Your latest completed tests, from oldest to newest.",
+        data: recentTrend,
+        unit: "%",
+        icon: "ph ph-chart-line-up",
+      },
+      {
+        title: "Subject performance",
+        description: "Accuracy by subject based on all completed tests.",
+        data: subjectChart,
+        unit: "%",
+        icon: "ph ph-target",
+      },
+    ],
     quickLinks: [
       { label: "Assignments", href: "/admin/assignments", icon: "ph ph-clipboard-text" },
       { label: "Results", href: "/admin/quiz-attempts", icon: "ph ph-chart-bar" },
@@ -126,6 +152,12 @@ const getParentDashboard = (dashboard = {}) => {
   const familyAverage = averages.length
     ? averages.reduce((total, value) => total + value, 0) / averages.length
     : null;
+  const childChart = learners
+    .filter((learner) => learner.averagePercentage != null)
+    .map((learner) => ({ label: learner.name || learner.learnerId || "Child", value: Number(learner.averagePercentage) }));
+  const activityChart = learners
+    .filter((learner) => learner.recentResultCount != null)
+    .map((learner) => ({ label: learner.name || learner.learnerId || "Child", value: Number(learner.recentResultCount) }));
 
   return {
     stats: [
@@ -175,6 +207,21 @@ const getParentDashboard = (dashboard = {}) => {
       },
     ],
     emptyText: "No linked children yet.",
+    charts: [
+      {
+        title: "Children average",
+        description: "Compare the latest average performance of linked children.",
+        data: childChart,
+        unit: "%",
+        icon: "ph ph-users-three",
+      },
+      {
+        title: "Learning activity",
+        description: "Completed results reported for each linked child.",
+        data: activityChart,
+        icon: "ph ph-chart-line-up",
+      },
+    ],
     quickLinks: [
       { label: "Children", href: "/admin/children", icon: "ph ph-student" },
       { label: "Progress", href: "/admin/progress", icon: "ph ph-chart-line-up" },
@@ -205,14 +252,14 @@ const getAdminDashboard = (dashboard = {}) => ({
       value: numberValue(dashboard.totalSessions),
       icon: "ph ph-play-circle",
       tone: "bg-success-600",
-      href: "/admin/exams",
+      href: "/admin/quiz-attempts",
     },
     {
       label: "Sessions this month",
       value: numberValue(dashboard.sessionsThisMonth),
       icon: "ph ph-calendar-check",
       tone: "bg-main-600",
-      href: "/admin/exams",
+      href: "/admin/quiz-attempts",
     },
     {
       label: "Active subscriptions",
@@ -238,6 +285,28 @@ const getAdminDashboard = (dashboard = {}) => ({
     { label: "Users", render: (row) => numberValue(row.count) },
   ],
   emptyText: "No role totals are available.",
+  charts: [
+    {
+      title: "Users by role",
+      description: "Current account distribution across platform roles.",
+      data: Object.entries(dashboard.usersByRole || {}).map(([role, count]) => ({
+        label: String(role).replaceAll("_", " "),
+        value: Number(count),
+      })),
+      icon: "ph ph-users-three",
+    },
+    {
+      title: "Platform workload",
+      description: "The main operational queues and session volume.",
+      data: [
+        { label: "All sessions", value: Number(dashboard.totalSessions) },
+        { label: "This month", value: Number(dashboard.sessionsThisMonth) },
+        { label: "Pending questions", value: Number(dashboard.pendingQuestionReview) },
+        { label: "Open reports", value: Number(dashboard.openReports) },
+      ],
+      icon: "ph ph-chart-bar",
+    },
+  ],
   quickLinks: [
     { label: "Users", href: "/admin/users", icon: "ph ph-users-three" },
     { label: "Subscription plans", href: "/admin/subscription-plans", icon: "ph ph-cards" },
@@ -248,6 +317,20 @@ const getAdminDashboard = (dashboard = {}) => ({
 
 const getOrganizationDashboard = (organizationsResponse) => {
   const organizations = Array.isArray(organizationsResponse) ? organizationsResponse : [];
+  const statusChart = Object.entries(
+    organizations.reduce((counts, organization) => {
+      const status = organization.status || "UNKNOWN";
+      counts[status] = (counts[status] || 0) + 1;
+      return counts;
+    }, {})
+  ).map(([label, value]) => ({ label, value }));
+  const typeChart = Object.entries(
+    organizations.reduce((counts, organization) => {
+      const type = organization.type || "UNKNOWN";
+      counts[type] = (counts[type] || 0) + 1;
+      return counts;
+    }, {})
+  ).map(([label, value]) => ({ label: String(label).replaceAll("_", " "), value }));
 
   return {
     stats: [
@@ -294,6 +377,20 @@ const getOrganizationDashboard = (organizationsResponse) => {
       },
     ],
     emptyText: "No organizations found.",
+    charts: [
+      {
+        title: "Organization status",
+        description: "Active and archived organizations that you own.",
+        data: statusChart,
+        icon: "ph ph-buildings",
+      },
+      {
+        title: "Organization types",
+        description: "Distribution of your courses, schools and tutor organizations.",
+        data: typeChart,
+        icon: "ph ph-chart-pie-slice",
+      },
+    ],
     quickLinks: [
       { label: "Organizations", href: "/admin/organizations", icon: "ph ph-buildings" },
       { label: "Members", href: "/admin/members", icon: "ph ph-users-three" },
@@ -386,6 +483,8 @@ const AdminDashboardHome = () => {
               <StatCard key={stat.label} stat={stat} />
             ))}
           </div>
+
+          <DashboardCharts charts={dashboard.charts} />
 
           <div className='row gy-4'>
             <div className='col-xl-8'>

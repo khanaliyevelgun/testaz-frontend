@@ -31,8 +31,8 @@ const AboutOne = () => {
                     <i className='ph ph-watch' />
                   </span>
                   <div>
-                    <h6 className='mb-4'>20% OFF</h6>
-                    <span className='text-neutral-500'>For All Courses</span>
+                    <h6 className='mb-4'>20% endirim</h6>
+                    <span className='text-neutral-500'>Bütün kurslar üçün</span>
                   </div>
                 </div>
                 <div className='row gy-4'>
@@ -64,7 +64,7 @@ const AboutOne = () => {
                             </h1>
                           )}
                         </VisibilitySensor>
-                        <span className='text-white'>Years of experience</span>
+                        <span className='text-white'>illik təcrübə</span>
                       </div>
                       <div
                         className='bg-neutral-700 rounded-12 text-center py-24 px-2 w-50-percent'
@@ -80,7 +80,7 @@ const AboutOne = () => {
                             </h1>
                           )}
                         </VisibilitySensor>
-                        <span className='text-white'>Years of experience</span>
+                        <span className='text-white'>illik təcrübə</span>
                       </div>
                     </div>
                     <img
@@ -102,14 +102,14 @@ const AboutOne = () => {
                 <div className='mb-40'>
                   <div className='flex-align gap-8 mb-16 wow bounceInDown'>
                     <span className='w-8 h-8 bg-main-600 rounded-circle' />
-                    <h5 className='text-main-600 mb-0 '>About EduAll</h5>
+                    <h5 className='text-main-600 mb-0 '>EduSınaq haqqında</h5>
                   </div>
                   <h2 className='mb-24 wow bounceIn'>
-                    The Place Where You Can Achieve
+                    Uğur qazana biləcəyiniz məkan
                   </h2>
                   <p className='text-neutral-500 text-line-2 wow bounceInUp'>
-                    Welcome to EduAll, where learning knows no bounds. Whether
-                    you're a student, professional, or lifelong learner...
+                    EduSınaqa xoş gəlmisiniz. Burada öyrənmək üçün heç bir sərhəd yoxdur;
+                    istər şagird, istər peşəkar, istərsə də davamlı öyrənən olun.
                   </p>
                 </div>
                 <div
@@ -121,10 +121,10 @@ const AboutOne = () => {
                     <img src='assets/images/icons/about-img1.png' alt='' />
                   </span>
                   <div className='flex-grow-1'>
-                    <h4 className='text-neutral-500 mb-12'>Our Mission</h4>
+                    <h4 className='text-neutral-500 mb-12'>Missiyamız</h4>
                     <p className='text-neutral-500'>
-                      Driven by a team of dedicated educators, technologists,
-                      and visionaries, we strive to create a supportive
+                      Peşəkar müəllimlər və texnologiya mütəxəssislərindən ibarət komandamızla
+                      hər kəs üçün əlçatan, dəstəkləyici öyrənmə mühiti yaradırıq.
                     </p>
                   </div>
                 </div>
@@ -137,11 +137,10 @@ const AboutOne = () => {
                     <img src='assets/images/icons/about-img2.png' alt='' />
                   </span>
                   <div className='flex-grow-1'>
-                    <h4 className='text-neutral-500 mb-12'>Our Vision</h4>
+                    <h4 className='text-neutral-500 mb-12'>Baxışımız</h4>
                     <p className='text-neutral-500'>
-                      A professional seeking to upskill, or a lifelong learner
-                      exploring new horizons, we're here to accompany you every
-                      step of the way.{" "}
+                      Bacarıqlarını inkişaf etdirmək istəyən peşəkarlara və yeni üfüqləri
+                      kəşf edən öyrənənlərə bu yolda hər addımda dəstək oluruq.{" "}
                     </p>
                   </div>
                 </div>
@@ -154,7 +153,7 @@ const AboutOne = () => {
                     href='/course'
                     className='btn btn-main rounded-pill flex-align gap-8'
                   >
-                    Read More
+                    Ətraflı oxu
                     <i className='ph-bold ph-arrow-up-right d-flex text-lg' />
                   </Link>
                   <div className='flex-align gap-20'>
@@ -167,7 +166,7 @@ const AboutOne = () => {
                       <span className='mb-4'>
                         <img src='assets/images/thumbs/signature.png' alt='' />
                       </span>
-                      <span className='text-sm d-block'>CEO Of Company</span>
+                      <span className='text-sm d-block'>Şirkətin baş icraçı direktoru</span>
                     </div>
                   </div>
                 </div>

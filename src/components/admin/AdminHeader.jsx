@@ -1,6 +1,7 @@
 import Link from "next/link";
 import AdminNotificationDropdown from "@/components/admin/AdminNotificationDropdown";
 import AdminProfileDropdown from "@/components/admin/AdminProfileDropdown";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { getPrimaryRole } from "@/lib/authRoles";
 
 const AdminHeader = ({ onToggleSidebar, onLogout, user }) => {
@@ -30,6 +31,7 @@ const AdminHeader = ({ onToggleSidebar, onLogout, user }) => {
               Yeni imtahan yarat
             </Link>
           ) : null}
+          <LanguageSwitcher className='w-auto min-w-70-px' />
           <AdminNotificationDropdown />
           <AdminProfileDropdown user={user} onLogout={onLogout} />
         </div>

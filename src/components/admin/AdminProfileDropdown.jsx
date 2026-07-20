@@ -57,7 +57,7 @@ const AdminProfileDropdown = ({ user, onLogout }) => {
               onClick={() => setIsOpen(false)}
             >
               <span><i className='ph ph-gear'></i></span>
-              <span>Ayarlar</span>
+              <span>Tənzimləmələr</span>
             </Link>
           </li>
           <li>

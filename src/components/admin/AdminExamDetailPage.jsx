@@ -10,7 +10,6 @@ import {
   archiveExam,
   deleteExam,
   fetchExam,
-  regenerateExamShareToken,
   revokeExamAssignment,
   unarchiveExam,
 } from "@/lib/api";
@@ -61,13 +60,13 @@ const AdminExamDetailPage = ({ examId }) => {
   }, [loadExam]);
 
   const copyLink = async () => {
-    const code = getExamCode(exam);
-    if (!code) return;
+    const examLink = getPreviewUrl(exam);
+    if (!examLink) return;
     try {
-      await navigator.clipboard.writeText(code);
+      await navigator.clipboard.writeText(examLink);
       setCopyStatus("Copied");
     } catch {
-      setCopyStatus("Select the code and copy manually");
+      setCopyStatus("Select the link and copy manually");
     }
   };
 
@@ -100,16 +99,6 @@ const AdminExamDetailPage = ({ examId }) => {
         exam?.status === "ARCHIVED"
           ? "Restore this exam and allow learners to access it again?"
           : "Archive this exam? Learners will no longer be able to preview or start it.",
-    });
-
-  const regenerateCode = () =>
-    runAction({
-      action: async () => {
-        const share = await regenerateExamShareToken(examId);
-        return { ...exam, shareToken: share?.shareToken || exam?.shareToken };
-      },
-      successMessage: "Share code regenerated. The previous code is no longer valid.",
-      confirmation: "Generate a new share code? The current code will stop working.",
     });
 
   const removeExam = async () => {
@@ -198,24 +187,14 @@ const AdminExamDetailPage = ({ examId }) => {
             </div>
 
             <div className='mb-24'>
-              <label className='text-14 text-neutral-500 fw-medium mb-8'>Exam code</label>
+              <label className='text-14 text-neutral-500 fw-medium mb-8'>Exam link</label>
               <div className='d-flex flex-wrap align-items-center gap-10'>
-                <input className='common-input rounded-pill flex-grow-1 min-w-240-px' readOnly value={getExamCode(exam)} onFocus={(event) => event.target.select()} />
-                <button type='button' className='btn btn-main rounded-pill px-20' onClick={copyLink}>Copy</button>
-                <button type='button' className='px-18 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' disabled={isActing} onClick={regenerateCode}>
-                  Regenerate
+                <input className='common-input rounded-pill flex-grow-1 min-w-240-px' readOnly value={getPreviewUrl(exam)} onFocus={(event) => event.target.select()} />
+                <button type='button' className='btn btn-main rounded-pill px-20' onClick={copyLink}>
+                  Copy link
                 </button>
               </div>
               {copyStatus ? <p className='text-14 text-neutral-400 mt-8 mb-0'>{copyStatus}</p> : null}
-              {getPreviewUrl(exam) ? (
-                <div className='mt-16'>
-                  <label className='text-14 text-neutral-500 fw-medium mb-8'>Preview link</label>
-                  <div className='d-flex flex-wrap align-items-center gap-10'>
-                    <input className='common-input rounded-pill flex-grow-1 min-w-240-px' readOnly value={getPreviewUrl(exam)} onFocus={(event) => event.target.select()} />
-                    <Link className='btn btn-main rounded-pill px-20' href={getPreviewPath(exam)}>Preview</Link>
-                  </div>
-                </div>
-              ) : null}
             </div>
 
             <div className='border border-neutral-30 rounded-12 p-20 mb-24'>

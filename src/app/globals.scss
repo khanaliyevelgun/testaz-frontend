@@ -98,6 +98,26 @@
 }
 
 @media (max-width: 575px) {
+  .account {
+    padding-block: 48px !important;
+  }
+
+  .account .auth-card {
+    padding: 24px 16px !important;
+  }
+
+  .auth-card form label,
+  .auth-card form .common-input,
+  .auth-card form .position-relative,
+  .auth-card form button[type="submit"] {
+    display: block;
+    width: 100%;
+  }
+
+  .auth-card form label {
+    margin-bottom: 10px !important;
+  }
+
   .option-editor-row {
     grid-template-columns: 1fr;
   }

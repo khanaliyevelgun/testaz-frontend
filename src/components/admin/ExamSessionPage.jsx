@@ -282,7 +282,6 @@ const ExamSessionPage = ({ sessionId }) => {
           <div className='border border-neutral-30 rounded-8 p-20'>
             <div className='d-flex justify-content-between gap-12 mb-16'>
               <h5 className='text-16 fw-semibold text-neutral-500 mb-0'>Question {currentIndex + 1}</h5>
-              <span className='text-13 text-neutral-400'>{question.type}</span>
             </div>
 
             {question.mediaPath ? (

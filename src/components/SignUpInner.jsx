@@ -100,7 +100,7 @@ const SignUpInner = () => {
       <div className='container'>
         <div className='row gy-4 align-items-center'>
           <div className='col-lg-6'>
-            <div className='bg-main-25 border border-neutral-30 rounded-8 p-32'>
+            <div className='auth-card bg-main-25 border border-neutral-30 rounded-8 p-32'>
               <div className='mb-40'>
                 <h3 className='mb-16 text-neutral-500'>
                   {phase === "verify" ? "Hesabınızı təsdiqləyin" : "Başlayaq!"}
@@ -207,7 +207,7 @@ const SignUpInner = () => {
                   {message ? <div className='col-sm-12'><p className='text-success-600 mb-0'>{message}</p></div> : null}
 
                   <div className='col-sm-12'>
-                    <button type='submit' className='btn btn-main rounded-pill flex-center gap-8 mt-20' disabled={isSubmitting}>
+                    <button type='submit' className='btn btn-main rounded-pill d-flex align-items-center justify-content-center gap-8 mt-20' disabled={isSubmitting}>
                       {phase === "verify"
                         ? isSubmitting ? "Təsdiqlənir..." : "Kodu təsdiqlə"
                         : isSubmitting ? "Qeydiyyat aparılır..." : "Qeydiyyatdan keç"}

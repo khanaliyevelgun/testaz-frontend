@@ -153,7 +153,7 @@ const AdminAiJobsPage = () => {
             onChange={setSubject}
             minWidthClass='min-w-220-px'
           />
-          <AdminGradeSelect value={form.gradeId} onChange={setGrade} minWidthClass='min-w-140-px' />
+          <AdminGradeSelect label='' value={form.gradeId} onChange={setGrade} minWidthClass='min-w-140-px' />
           <AdminSearchSelect
             value={form.topicId}
             selectedLabel={topicLabel}

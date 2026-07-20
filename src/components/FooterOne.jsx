@@ -66,19 +66,19 @@ const FooterOne = () => {
             </div>
             <div className='col' data-aos='fade-up' data-aos-duration={400}>
               <div className='footer-item'>
-                <h4 className='footer-item__title mb-32'>Navigation</h4>
+                <h4 className='footer-item__title mb-32'>Naviqasiya</h4>
                 <ul className='footer-menu'>
                   <li className='mb-16'>
                     <Link
                       href='/about'
                       className='text-neutral-500 hover-text-main-600 hover-text-decoration-underline'
                     >
-                      Haqq?m?zda
+                      Haqqımızda
                     </Link>
                   </li>
                   <li className='mb-16'>
                     <Link
-                      href='/courses'
+                      href='/pricing-plan'
                       className='text-neutral-500 hover-text-main-600 hover-text-decoration-underline'
                     >
                       Planlar
@@ -89,7 +89,7 @@ const FooterOne = () => {
                       href='/faq'
                       className='text-neutral-500 hover-text-main-600 hover-text-decoration-underline'
                     >
-                      FAQ
+                      Tez-tez verilən suallar
                     </Link>
                   </li>
                   <li className='mb-0'>
@@ -97,7 +97,7 @@ const FooterOne = () => {
                       href='/blog'
                       className='text-neutral-500 hover-text-main-600 hover-text-decoration-underline'
                     >
-                      Bloglar
+                      Bloq
                     </Link>
                   </li>
                 </ul>
@@ -105,14 +105,14 @@ const FooterOne = () => {
             </div>
             <div className='col d-none' data-aos='fade-up' data-aos-duration={600}>
               <div className='footer-item'>
-                <h4 className='footer-item__title mb-32'>Category</h4>
+                <h4 className='footer-item__title mb-32'>Kateqoriyalar</h4>
                 <ul className='footer-menu'>
                   <li className='mb-16'>
                     <Link
                       href='/courses'
                       className='text-neutral-500 hover-text-main-600 hover-text-decoration-underline'
                     >
-                      UI/UX Design
+                      UI/UX dizaynı
                     </Link>
                   </li>
                   <li className='mb-16'>
@@ -120,7 +120,7 @@ const FooterOne = () => {
                       href='/courses'
                       className='text-neutral-500 hover-text-main-600 hover-text-decoration-underline'
                     >
-                      Web Development
+                      Veb proqramlaşdırma
                     </Link>
                   </li>
                   <li className='mb-16'>
@@ -128,7 +128,7 @@ const FooterOne = () => {
                       href='/courses'
                       className='text-neutral-500 hover-text-main-600 hover-text-decoration-underline'
                     >
-                      Python Development
+                      Python proqramlaşdırması
                     </Link>
                   </li>
                   <li className='mb-16'>
@@ -136,7 +136,7 @@ const FooterOne = () => {
                       href='/courses'
                       className='text-neutral-500 hover-text-main-600 hover-text-decoration-underline'
                     >
-                      Digital Marketing
+                      Rəqəmsal marketinq
                     </Link>
                   </li>
                   <li className='mb-16'>
@@ -144,7 +144,7 @@ const FooterOne = () => {
                       href='/courses'
                       className='text-neutral-500 hover-text-main-600 hover-text-decoration-underline'
                     >
-                      Graphic Design
+                      Qrafik dizayn
                     </Link>
                   </li>
                 </ul>
@@ -152,14 +152,14 @@ const FooterOne = () => {
             </div>
             <div className='col' data-aos='fade-up' data-aos-duration={800}>
               <div className='footer-item'>
-                <h4 className='footer-item__title mb-32'>?laq?</h4>
+                <h4 className='footer-item__title mb-32'>Əlaqə</h4>
                 <div className='flex-align gap-20 mb-24'>
                   <span className='icon d-flex text-32 text-main-600'>
                     <i className='ph ph-phone' />
                   </span>
                   <div className=''>
                     <Link
-                      href='/tel:(207)555-0119'
+                      href='tel:(207)555-0119'
                       className='text-neutral-500 d-block hover-text-main-600 mb-4'
                     >
                       (207) 555-0119
@@ -173,7 +173,7 @@ const FooterOne = () => {
                   </span>
                   <div className=''>
                     <Link
-                      href='/mailto:dwallo@gmail.com'
+                      href='mailto:dwallo@gmail.com'
                       className='text-neutral-500 d-block hover-text-main-600 mb-4'
                     >
                       dwallo@gmail.com
@@ -187,7 +187,7 @@ const FooterOne = () => {
                   </span>
                   <div className=''>
                     <span className='text-neutral-500 d-block mb-4'>
-                      Bak? ??h., Suraxan? ray.
+                      Bakı şəhəri, Suraxanı rayonu
                     </span>
                     
                   </div>
@@ -196,15 +196,15 @@ const FooterOne = () => {
             </div>
             <div className='col' data-aos='fade-up' data-aos-duration={1000}>
               <div className='footer-item'>
-                <h4 className='footer-item__title mb-32'>Abun? ol</h4>
+                <h4 className='footer-item__title mb-32'>Abunə olun</h4>
                 <p className='text-neutral-500'>
-                  Email ?nvan?n?z? yazaraq yenilikl?rd?n ilk siz x?b?rdar olun
+                  E-poçt ünvanınızı yazaraq yeniliklərdən ilk siz xəbərdar olun.
                 </p>
                 <form action='#' className='mt-24 position-relative'>
                   <input
                     type='email'
                     className='form-control bg-white shadow-none border border-neutral-30 rounded-pill h-52 ps-24 pe-48 focus-border-main-600'
-                    placeholder='Email...'
+                    placeholder='E-poçt ünvanı'
                   />
                   <button
                     type='submit'
@@ -225,15 +225,15 @@ const FooterOne = () => {
             <div className='bottom-footer__inner flex-between gap-3 flex-wrap'>
               <p className='bottom-footer__text'>
                 {" "}
-                Copyright ? 2025 <span className='fw-semibold'>EduS?naq &nbsp; </span>
-                B?t?n h?quqlar? qorunur.
+                Müəllif hüquqları © 2025 <span className='fw-semibold'>EduSınaq &nbsp; </span>
+                Bütün hüquqlar qorunur.
               </p>
               <div className='footer-links'>
                 <Link
                   href='#'
                   className='text-neutral-500 hover-text-main-600 hover-text-decoration-underline'
                 >
-                  ?stifad? qaydalar?
+                  İstifadə qaydaları
                 </Link>
                 
               </div>

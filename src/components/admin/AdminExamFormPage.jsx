@@ -458,14 +458,14 @@ const AdminExamFormPage = () => {
   };
 
   const copyLink = async () => {
-    const code = getExamCode(createdExam);
-    if (!code) return;
+    const examLink = getPreviewUrl(createdExam);
+    if (!examLink) return;
 
     try {
-      await navigator.clipboard.writeText(code);
+      await navigator.clipboard.writeText(examLink);
       setCopyStatus("Copied");
     } catch {
-      setCopyStatus("Select the code and copy manually");
+      setCopyStatus("Select the link and copy manually");
     }
   };
 
@@ -475,10 +475,10 @@ const AdminExamFormPage = () => {
         <div className='d-flex flex-wrap align-items-start justify-content-between gap-16 mb-24'>
           <div>
             <h4 className='fw-semibold text-neutral-500 text-20 mb-4'>Yeni imtahan yarat</h4>
-            <p className='text-14 text-neutral-400 mb-0'>B?lm?l?ri, sual saylar?n? v? imtahan kodunu burada haz?rla.</p>
+            <p className='text-14 text-neutral-400 mb-0'>Bölmələri, sual saylarını və imtahan kodunu burada hazırlayın.</p>
           </div>
           <div className='px-16 py-10 rounded-12 bg-main-25 text-14 text-neutral-500'>
-            ?mumi sual: <span className='fw-semibold'>{totalQuestionCount}</span>
+            Ümumi sual: <span className='fw-semibold'>{totalQuestionCount}</span>
           </div>
         </div>
 
@@ -490,18 +490,18 @@ const AdminExamFormPage = () => {
         ) : (
         <form className='row gy-4' onSubmit={handleSubmit} noValidate>
           <div className='col-md-6'>
-            <label className='text-14 text-neutral-500 fw-medium mb-8'>Ba?l?q</label>
+            <label className='text-14 text-neutral-500 fw-medium mb-8'>Başlıq</label>
             <input
               name='title'
               className='common-input rounded-pill'
               maxLength='200'
               value={form.title}
               onChange={updateForm}
-              placeholder='M?s?l?n: 9-cu sinif s?naq imtahan?'
+              placeholder='Məsələn: 9-cu sinif sınaq imtahanı'
             />
           </div>
           <div className='col-md-3'>
-            <label className='text-14 text-neutral-500 fw-medium mb-8'>M?dd?t (d?qiq?)</label>
+            <label className='text-14 text-neutral-500 fw-medium mb-8'>Müddət (dəqiqə)</label>
             <input
               name='durationMinutes'
               type='number'
@@ -514,7 +514,7 @@ const AdminExamFormPage = () => {
           </div>
           {!isParent ? (
           <div className='col-md-3'>
-            <label className='text-14 text-neutral-500 fw-medium mb-8'>G?r?n?rl?k</label>
+            <label className='text-14 text-neutral-500 fw-medium mb-8'>Görünürlük</label>
             <select
               name='visibility'
               className='form-select rounded-pill border-neutral-40 text-14 py-11 px-16'
@@ -528,7 +528,7 @@ const AdminExamFormPage = () => {
           </div>
           ) : null}
           <div className='col-12'>
-            <label className='text-14 text-neutral-500 fw-medium mb-8'>A??qlama</label>
+            <label className='text-14 text-neutral-500 fw-medium mb-8'>Açıqlama</label>
             <textarea
               name='description'
               className='common-input rounded-12'
@@ -564,7 +564,7 @@ const AdminExamFormPage = () => {
 
           {isParent ? (
             <div className='col-12'>
-              <label className='text-14 text-neutral-500 fw-medium mb-8'>U?aq</label>
+              <label className='text-14 text-neutral-500 fw-medium mb-8'>Uşaq</label>
               {childrenError ? <p className='text-danger text-13 mb-8'>{childrenError}</p> : null}
               <select
                 name='assignedUserIds'
@@ -572,7 +572,7 @@ const AdminExamFormPage = () => {
                 value={form.assignedUserIds}
                 onChange={updateForm}
               >
-                <option value=''>U?aq se?</option>
+                <option value=''>Uşaq seçin</option>
                 {children.map((child) => {
                   const childId = child.studentId || child.learnerId;
                   return (
@@ -582,7 +582,7 @@ const AdminExamFormPage = () => {
                   );
                 })}
               </select>
-              <p className='text-13 text-neutral-400 mt-8 mb-0'>Parent imtahan yaratd?qda se?il?n u?a?a bildiri? gedir.</p>
+              <p className='text-13 text-neutral-400 mt-8 mb-0'>Valideyn imtahan yaratdıqda seçilən uşağa bildiriş göndərilir.</p>
             </div>
           ) : form.visibility === "ASSIGNED" ? (
             <div className='col-12'>
@@ -645,9 +645,9 @@ const AdminExamFormPage = () => {
 
           <div className='col-12 mt-16'>
             <div className='d-flex align-items-center justify-content-between gap-12 mb-12'>
-              <h5 className='text-16 fw-semibold text-neutral-500 mb-0'>B?lm?l?r</h5>
+              <h5 className='text-16 fw-semibold text-neutral-500 mb-0'>Bölmələr</h5>
               <button type='button' className='px-14 py-8 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={addSection} disabled={sections.length >= 20}>
-                B?lm? ?lav? et
+                Bölmə əlavə et
               </button>
             </div>
 
@@ -655,7 +655,7 @@ const AdminExamFormPage = () => {
               {sections.map((section, sectionIndex) => (
                 <div className='border border-neutral-30 rounded-12 p-16' key={sectionIndex}>
                   <div className='d-flex flex-wrap align-items-center justify-content-between gap-12 mb-16'>
-                    <h6 className='text-15 fw-semibold text-neutral-500 mb-0'>B?lm? {sectionIndex + 1}</h6>
+                    <h6 className='text-15 fw-semibold text-neutral-500 mb-0'>Bölmə {sectionIndex + 1}</h6>
                     <button
                       type='button'
                       className='px-12 py-8 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white'
@@ -668,7 +668,7 @@ const AdminExamFormPage = () => {
 
                   <div className='row gy-3'>
                     <div className='col-md-4'>
-                      <label className='text-14 text-neutral-500 fw-medium mb-8'>B?lm? ad?</label>
+                      <label className='text-14 text-neutral-500 fw-medium mb-8'>Bölmə adı</label>
                       <input
                         className='common-input rounded-pill'
                         maxLength='200'
@@ -679,19 +679,19 @@ const AdminExamFormPage = () => {
                     </div>
                     <div className='col-md-4'>
                       <AdminSearchSelect
-                        label='F?nn'
+                        label='Fənn'
                         value={section.subjectId}
                         selectedLabel={section.subjectLabel}
-                        placeholder='F?nn axtar...'
+                        placeholder='Fənn axtar...'
                         required
                         loadOptions={subjectOptions}
-                        loadingText='Y?kl?nir...'
-                        emptyText='N?tic? tap?lmad?.'
+                        loadingText='Yüklənir...'
+                        emptyText='Nəticə tapılmadı.'
                         onChange={(value, label) => setSubject(sectionIndex, value, label)}
                       />
                     </div>
                     <div className='col-md-2'>
-                      <label className='text-14 text-neutral-500 fw-medium mb-8'>Sual n?v?</label>
+                      <label className='text-14 text-neutral-500 fw-medium mb-8'>Sual növü</label>
                       <select
                         className='form-select rounded-pill border-neutral-40 text-14 py-11 px-16'
                         value={section.typeFilter}
@@ -703,7 +703,7 @@ const AdminExamFormPage = () => {
                       </select>
                     </div>
                     <div className='col-md-2'>
-                      <label className='text-14 text-neutral-500 fw-medium mb-8'>??tinlik</label>
+                      <label className='text-14 text-neutral-500 fw-medium mb-8'>Çətinlik</label>
                       <select
                         className='form-select rounded-pill border-neutral-40 text-14 py-11 px-16'
                         value={section.difficultyFilter}
@@ -715,7 +715,7 @@ const AdminExamFormPage = () => {
                       </select>
                     </div>
                     <div className='col-md-2'>
-                      <label className='text-14 text-neutral-500 fw-medium mb-8'>Do?ru bal?</label>
+                      <label className='text-14 text-neutral-500 fw-medium mb-8'>Doğru balı</label>
                       <input
                         type='number'
                         min='0'
@@ -726,7 +726,7 @@ const AdminExamFormPage = () => {
                       />
                     </div>
                     <div className='col-md-2'>
-                      <label className='text-14 text-neutral-500 fw-medium mb-8'>S?hv c?rim?si</label>
+                      <label className='text-14 text-neutral-500 fw-medium mb-8'>Səhv cəriməsi</label>
                       <input
                         type='number'
                         min='0'
@@ -747,7 +747,7 @@ const AdminExamFormPage = () => {
                         onClick={() => addTopic(sectionIndex)}
                         disabled={section.topics.length >= 50}
                       >
-                        Topic ?lav? et
+                        Mövzu əlavə et
                       </button>
                     </div>
                     <div className='d-flex flex-column gap-12'>
@@ -755,19 +755,19 @@ const AdminExamFormPage = () => {
                         <div className='row gy-2 align-items-end' key={topicIndex}>
                           <div className='col-md-8'>
                             <AdminSearchSelect
-                              label={topicIndex === 0 ? "M?vzu" : ""}
+                              label={topicIndex === 0 ? "Mövzu" : ""}
                               value={topic.topicId}
                               selectedLabel={topic.topicLabel}
-                              placeholder={section.subjectId ? "M?vzu axtar... bo? saxla = b?t?n m?vzular" : "?vv?l f?nn se?"}
+                              placeholder={section.subjectId ? "Mövzu axtar... boş saxlayın = bütün mövzular" : "Əvvəl fənn seçin"}
                               disabled={!section.subjectId}
                               loadOptions={buildTopicOptions(sectionIndex)}
-                              loadingText='Y?kl?nir...'
-                              emptyText='N?tic? tap?lmad?.'
+                              loadingText='Yüklənir...'
+                              emptyText='Nəticə tapılmadı.'
                               onChange={(value, label) => updateTopic(sectionIndex, topicIndex, { topicId: value, topicLabel: label })}
                             />
                           </div>
                           <div className='col-md-2'>
-                            <label className='text-14 text-neutral-500 fw-medium mb-8'>{topicIndex === 0 ? "Sual say?" : ""}</label>
+                            <label className='text-14 text-neutral-500 fw-medium mb-8'>{topicIndex === 0 ? "Sual sayı" : ""}</label>
                             <input
                               type='number'
                               min='1'
@@ -804,7 +804,7 @@ const AdminExamFormPage = () => {
                   checked={saveAsTemplate}
                   onChange={(event) => setSaveAsTemplate(event.target.checked)}
                 />
-                ?ablon kimi saxla
+                Şablon kimi saxla
               </label>
               {saveAsTemplate ? (
                 <input
@@ -812,7 +812,7 @@ const AdminExamFormPage = () => {
                   maxLength='200'
                   value={templateName}
                   onChange={(event) => setTemplateName(event.target.value)}
-                  placeholder='?ablon ad?'
+                  placeholder='Şablon adı'
                 />
               ) : null}
             </div>
@@ -820,7 +820,7 @@ const AdminExamFormPage = () => {
 
           <div className='col-12 d-flex align-items-center gap-12 mt-24'>
             <button type='submit' className='btn btn-main rounded-pill px-24' disabled={isSubmitting}>
-              {isSubmitting ? "Yarad?l?r..." : "?mtahan yarat"}
+              {isSubmitting ? "Yaradılır..." : "İmtahan yarat"}
             </button>
           </div>
         </form>
@@ -833,8 +833,8 @@ const AdminExamFormPage = () => {
             <div className='modal-content rounded-12 border-0'>
               <div className='modal-header border-neutral-30'>
                 <div>
-                  <h5 className='modal-title text-18 fw-semibold text-neutral-500'>?mtahan yarad?ld?</h5>
-                  <p className='text-14 text-neutral-400 mb-0'>Frontend yaln?z imtahan kodunu g?st?rir.</p>
+                  <h5 className='modal-title text-18 fw-semibold text-neutral-500'>İmtahan yaradıldı</h5>
+                  <p className='text-14 text-neutral-400 mb-0'>İnterfeys yalnız imtahan keçidini göstərir.</p>
                 </div>
                 <button type='button' className='btn-close' aria-label='Close' onClick={() => setCreatedExam(null)}></button>
               </div>
@@ -842,13 +842,13 @@ const AdminExamFormPage = () => {
                 <div className='row gy-3 mb-20'>
                   <div className='col-md-6'>
                     <div className='border border-neutral-30 rounded-12 p-14'>
-                      <span className='text-13 text-neutral-400 d-block mb-4'>Ba?l?q</span>
+                      <span className='text-13 text-neutral-400 d-block mb-4'>Başlıq</span>
                       <strong className='text-15 text-neutral-500'>{createdExam.title || "-"}</strong>
                     </div>
                   </div>
                   <div className='col-md-3'>
                     <div className='border border-neutral-30 rounded-12 p-14'>
-                      <span className='text-13 text-neutral-400 d-block mb-4'>B?lm?</span>
+                      <span className='text-13 text-neutral-400 d-block mb-4'>Bölmə</span>
                       <strong className='text-15 text-neutral-500'>{createdExam.sectionCount ?? "-"}</strong>
                     </div>
                   </div>
@@ -866,42 +866,31 @@ const AdminExamFormPage = () => {
                   </div>
                   <div className='col-md-4'>
                     <div className='border border-neutral-30 rounded-12 p-14'>
-                      <span className='text-13 text-neutral-400 d-block mb-4'>M?dd?t</span>
-                      <strong className='text-15 text-neutral-500'>{createdExam.durationMinutes ? `${createdExam.durationMinutes} d?q.` : "Limitsiz"}</strong>
+                      <span className='text-13 text-neutral-400 d-block mb-4'>Müddət</span>
+                      <strong className='text-15 text-neutral-500'>{createdExam.durationMinutes ? `${createdExam.durationMinutes} dəq.` : "Məhdudiyyətsiz"}</strong>
                     </div>
                   </div>
                   <div className='col-md-4'>
                     <div className='border border-neutral-30 rounded-12 p-14'>
-                      <span className='text-13 text-neutral-400 d-block mb-4'>G?r?n?rl?k</span>
+                      <span className='text-13 text-neutral-400 d-block mb-4'>Görünürlük</span>
                       <strong className='text-15 text-neutral-500'>{createdExam.visibility || "-"}</strong>
                     </div>
                   </div>
                 </div>
 
-                <label className='text-14 text-neutral-500 fw-medium mb-8'>?mtahan kodu</label>
+                <label className='text-14 text-neutral-500 fw-medium mb-8'>İmtahan keçidi</label>
                 <div className='d-flex flex-wrap align-items-center gap-10'>
-                  <input className='common-input rounded-pill flex-grow-1 min-w-240-px' readOnly value={getExamCode(createdExam)} onFocus={(event) => event.target.select()} />
+                  <input className='common-input rounded-pill flex-grow-1 min-w-240-px' readOnly value={getPreviewUrl(createdExam)} onFocus={(event) => event.target.select()} />
                   <button type='button' className='btn btn-main rounded-pill px-20' onClick={copyLink}>
-                    Kopyala
+                    Linki kopyala
                   </button>
                 </div>
                 {copyStatus ? <p className='text-14 text-neutral-400 mt-8 mb-0'>{copyStatus}</p> : null}
-                {getPreviewUrl(createdExam) ? (
-                  <div className='mt-16'>
-                    <label className='text-14 text-neutral-500 fw-medium mb-8'>Preview linki</label>
-                    <div className='d-flex flex-wrap align-items-center gap-10'>
-                      <input className='common-input rounded-pill flex-grow-1 min-w-240-px' readOnly value={getPreviewUrl(createdExam)} onFocus={(event) => event.target.select()} />
-                      <a className='btn btn-main rounded-pill px-20' href={getPreviewPath(createdExam)}>
-                        Preview
-                      </a>
-                    </div>
-                  </div>
-                ) : null}
                 <p className='text-13 text-neutral-400 mt-12 mb-0'>Exam ID: {createdExam.examId || "-"}</p>
               </div>
               <div className='modal-footer border-neutral-30'>
                 <button type='button' className='px-18 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={() => setCreatedExam(null)}>
-                  Ba?la
+                  Bağla
                 </button>
               </div>
             </div>
