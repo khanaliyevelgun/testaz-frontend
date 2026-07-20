@@ -6,9 +6,11 @@ import ChooseUsOne from "@/components/ChooseUsOne";
 import CounterOne from "@/components/CounterOne";
 import FooterOne from "@/components/FooterOne";
 import HeaderOne from "@/components/HeaderOne";
-import InstructorOne from "@/components/InstructorOne";
 import TestimonialsOne from "@/components/TestimonialsOne";
 import Animation from "@/helper/Animation";
+
+// Etibarlı komandalar bölməsini yenidən göstərmək üçün `true` edin.
+const SHOW_TRUSTED_TEAMS = false;
 
 export const metadata = {
   title: "EduSınaq | Haqqımızda",
@@ -21,11 +23,10 @@ const page = () => (
     <HeaderOne />
     <Breadcrumb title="Haqqımızda" />
     <AboutOne />
-    <InstructorOne />
     <ChooseUsOne />
     <CounterOne />
     <TestimonialsOne />
-    <BrandTwo />
+    {SHOW_TRUSTED_TEAMS ? <BrandTwo /> : null}
     <CertificateOne />
     <FooterOne />
   </>
