@@ -8,6 +8,8 @@ import OrganizationSelector, {
   useOrganizationSelection,
 } from "@/components/admin/OrganizationSelector";
 import { fetchOrganizationMembers } from "@/lib/api";
+import StaticText from "@/components/StaticText";
+
 
 const emptyMeta = {
   page: 1,
@@ -99,10 +101,10 @@ const OrganizationMembersPage = () => {
         <div className='d-flex flex-wrap align-items-start justify-content-between gap-16 mb-24'>
           <div>
             <h4 className='fw-semibold text-neutral-500 text-20 mb-4'>
-              Organization members
+              <StaticText text={"Organization members"} />
             </h4>
             <p className='text-14 text-neutral-400 mb-0'>
-              Review learners who joined through organization test invitations.
+              <StaticText text={"Review learners who joined through organization test invitations."} />
             </p>
           </div>
           <div className='d-flex flex-wrap gap-8'>
@@ -111,7 +113,7 @@ const OrganizationMembersPage = () => {
                 href={`/admin/invites?orgId=${encodeURIComponent(selectedOrganizationId)}`}
                 className='btn btn-main rounded-pill px-18 py-10'
               >
-                Create invite
+                <StaticText text={"Create invite"} />
               </Link>
             ) : null}
             <AdminRefreshButton isLoading={isLoading} onClick={handleRefresh} />
@@ -130,7 +132,7 @@ const OrganizationMembersPage = () => {
           <div className='col-lg-5'>
             <div className='border border-neutral-30 rounded-10 px-16 py-12'>
               <span className='text-12 text-neutral-400 d-block mb-2'>
-                Selected organization
+                <StaticText text={"Selected organization"} />
               </span>
               <span className='text-14 fw-medium text-neutral-500'>
                 {selectedOrganization?.name || "-"}
@@ -147,10 +149,10 @@ const OrganizationMembersPage = () => {
           <div className='border border-neutral-30 rounded-10 px-20 py-24 text-center'>
             <i className='ph ph-buildings text-32 text-neutral-300 d-block mb-8'></i>
             <p className='text-14 text-neutral-400 mb-12'>
-              Create an organization before viewing members.
+              <StaticText text={"Create an organization before viewing members."} />
             </p>
             <Link href='/admin/organizations' className='btn btn-main rounded-pill px-20'>
-              Go to organizations
+              <StaticText text={"Go to organizations"} />
             </Link>
           </div>
         ) : (
@@ -160,16 +162,16 @@ const OrganizationMembersPage = () => {
                 <thead>
                   <tr>
                     <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>
-                      Student ID
+                      <StaticText text={"Student ID"} />
                     </th>
                     <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>
-                      Grade
+                      <StaticText text={"Grade"} />
                     </th>
                     <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>
-                      Status
+                      <StaticText text={"Status"} />
                     </th>
                     <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>
-                      Joined
+                      <StaticText text={"Joined"} />
                     </th>
                   </tr>
                 </thead>
@@ -177,7 +179,7 @@ const OrganizationMembersPage = () => {
                   {isLoadingMembers ? (
                     <tr>
                       <td className='py-20 px-20 text-neutral-400' colSpan='4'>
-                        Loading members...
+                        <StaticText text={"Loading members..."} />
                       </td>
                     </tr>
                   ) : members.length ? (
@@ -201,8 +203,8 @@ const OrganizationMembersPage = () => {
                     <tr>
                       <td className='py-20 px-20 text-neutral-400' colSpan='4'>
                         {selectedOrganizationId
-                          ? "No members have joined this organization yet."
-                          : "Select an organization to view its members."}
+                          ? <StaticText text={"No members have joined this organization yet."} />
+                          : <StaticText text={"Select an organization to view its members."} />}
                       </td>
                     </tr>
                   )}
@@ -212,7 +214,7 @@ const OrganizationMembersPage = () => {
 
             <div className='d-flex flex-wrap align-items-center justify-content-between gap-12 mt-24'>
               <span className='text-13 text-neutral-400'>
-                {meta.total} member{meta.total === 1 ? "" : "s"}
+                {meta.total} <StaticText text={"member"} />{meta.total === 1 ? "" : <StaticText text={"s"} />}
               </span>
               <div className='d-flex align-items-center gap-8'>
                 <button
@@ -221,7 +223,7 @@ const OrganizationMembersPage = () => {
                   disabled={isLoadingMembers || meta.page <= 1}
                   onClick={() => loadMembers(Math.max(meta.page - 1, 1))}
                 >
-                  Previous
+                  <StaticText text={"Previous"} />
                 </button>
                 <span className='text-14 text-neutral-400'>
                   {meta.page} / {Math.max(meta.totalPages, 1)}
@@ -238,7 +240,7 @@ const OrganizationMembersPage = () => {
                     loadMembers(Math.min(meta.page + 1, Math.max(meta.totalPages, 1)))
                   }
                 >
-                  Next
+                  <StaticText text={"Next"} />
                 </button>
               </div>
             </div>

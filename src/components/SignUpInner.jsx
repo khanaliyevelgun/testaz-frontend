@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { confirmVerification, sendVerification } from "@/lib/api";
+import StaticText from "@/components/StaticText";
+
 
 const SignUpInner = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -103,12 +105,12 @@ const SignUpInner = () => {
             <div className='auth-card bg-main-25 border border-neutral-30 rounded-8 p-32'>
               <div className='mb-40'>
                 <h3 className='mb-16 text-neutral-500'>
-                  {phase === "verify" ? "Hesabınızı təsdiqləyin" : "Başlayaq!"}
+                  {phase === "verify" ? <StaticText text={"Hesabınızı təsdiqləyin"} /> : <StaticText text={"Başlayaq!"} />}
                 </h3>
                 <p className='text-neutral-500'>
                   {phase === "verify"
                     ? `${form.email} ünvanına göndərilən kodu daxil edin.`
-                    : "Hesab yaratmaq üçün məlumatlarınızı daxil edin."}
+                    : <StaticText text={"Hesab yaratmaq üçün məlumatlarınızı daxil edin."} />}
                 </p>
               </div>
 
@@ -117,7 +119,7 @@ const SignUpInner = () => {
                   {phase === "register" ? (
                     <>
                       <div className='col-sm-6'>
-                        <label htmlFor='fname' className='d-block fw-medium text-lg text-neutral-500 mb-16'>Ad</label>
+                        <label htmlFor='fname' className='d-block fw-medium text-lg text-neutral-500 mb-16'><StaticText text={"Ad"} /></label>
                         <input
                           type='text'
                           name='firstName'
@@ -130,7 +132,7 @@ const SignUpInner = () => {
                         />
                       </div>
                       <div className='col-sm-6'>
-                        <label htmlFor='lname' className='d-block fw-medium text-lg text-neutral-500 mb-16'>Soyad</label>
+                        <label htmlFor='lname' className='d-block fw-medium text-lg text-neutral-500 mb-16'><StaticText text={"Soyad"} /></label>
                         <input
                           type='text'
                           name='lastName'
@@ -143,7 +145,7 @@ const SignUpInner = () => {
                         />
                       </div>
                       <div className='col-sm-12'>
-                        <label htmlFor='email' className='d-block fw-medium text-lg text-neutral-500 mb-16'>Email ünvanı</label>
+                        <label htmlFor='email' className='d-block fw-medium text-lg text-neutral-500 mb-16'><StaticText text={"Email ünvanı"} /></label>
                         <input
                           type='email'
                           name='email'
@@ -156,7 +158,7 @@ const SignUpInner = () => {
                         />
                       </div>
                       <div className='col-sm-12'>
-                        <label htmlFor='password' className='d-block fw-medium text-lg text-neutral-500 mb-16'>Şifrə</label>
+                        <label htmlFor='password' className='d-block fw-medium text-lg text-neutral-500 mb-16'><StaticText text={"Şifrə"} /></label>
                         <div className='position-relative'>
                           <input
                             type={passwordVisible ? "text" : "password"}
@@ -181,7 +183,7 @@ const SignUpInner = () => {
                     </>
                   ) : (
                     <div className='col-sm-12'>
-                      <label htmlFor='verificationCode' className='d-block fw-medium text-lg text-neutral-500 mb-16'>Təsdiq kodu</label>
+                      <label htmlFor='verificationCode' className='d-block fw-medium text-lg text-neutral-500 mb-16'><StaticText text={"Təsdiq kodu"} /></label>
                       <input
                         type='text'
                         className='common-input rounded-pill w-100'
@@ -198,7 +200,7 @@ const SignUpInner = () => {
                         disabled={isSubmitting}
                         onClick={resendCode}
                       >
-                        Kodu yenidən göndər
+                        <StaticText text={"Kodu yenidən göndər"} />
                       </button>
                     </div>
                   )}
@@ -209,16 +211,16 @@ const SignUpInner = () => {
                   <div className='col-sm-12'>
                     <button type='submit' className='btn btn-main rounded-pill d-flex align-items-center justify-content-center gap-8 mt-20' disabled={isSubmitting}>
                       {phase === "verify"
-                        ? isSubmitting ? "Təsdiqlənir..." : "Kodu təsdiqlə"
-                        : isSubmitting ? "Qeydiyyat aparılır..." : "Qeydiyyatdan keç"}
+                        ? isSubmitting ? <StaticText text={"Təsdiqlənir..."} /> : <StaticText text={"Kodu təsdiqlə"} />
+                        : isSubmitting ? <StaticText text={"Qeydiyyat aparılır..."} /> : <StaticText text={"Qeydiyyatdan keç"} />}
                       <i className='ph-bold ph-arrow-up-right d-flex text-lg' />
                     </button>
                   </div>
                   <div className='col-sm-12'>
                     <p className='text-neutral-500 mb-0'>
-                      Hesabınız var?{" "}
+                      <StaticText text={"Hesabınız var?"} />{" "}
                       <Link href='/sign-in' className='fw-semibold text-main-600 hover-text-decoration-underline'>
-                        Daxil olun
+                        <StaticText text={"Daxil olun"} />
                       </Link>
                     </p>
                   </div>

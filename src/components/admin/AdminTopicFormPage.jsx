@@ -5,6 +5,8 @@ import { useCallback, useEffect, useState } from "react";
 import AdminGradeSelect from "@/components/admin/AdminGradeSelect";
 import AdminSearchSelect from "@/components/admin/AdminSearchSelect";
 import { createTopic, fetchSubject, fetchSubjects, fetchTopic, fetchTopics, updateTopic } from "@/lib/api";
+import StaticText from "@/components/StaticText";
+
 
 const emptyForm = {
   subjectId: "",
@@ -165,13 +167,13 @@ const AdminTopicFormPage = ({ subjectId, topicId }) => {
     <div className='px-24 py-24'>
       <div className='bg-white rounded-10 px-24 py-24'>
         <div className='mb-24'>
-          <h4 className='fw-semibold text-neutral-500 text-20 mb-4'>{isEdit ? "Edit Topic" : "Create Topic"}</h4>
-          <p className='text-14 text-neutral-400 mb-0'>{isEdit ? "Update topic metadata." : "Create a topic under a subject."}</p>
+          <h4 className='fw-semibold text-neutral-500 text-20 mb-4'>{isEdit ? <StaticText text={"Edit Topic"} /> : <StaticText text={"Create Topic"} />}</h4>
+          <p className='text-14 text-neutral-400 mb-0'>{isEdit ? <StaticText text={"Update topic metadata."} /> : <StaticText text={"Create a topic under a subject."} />}</p>
         </div>
 
         {error ? <p className='text-danger mb-16'>{error}</p> : null}
         {isLoading ? (
-          <p className='text-14 text-neutral-400 mb-0'>Loading...</p>
+          <p className='text-14 text-neutral-400 mb-0'><StaticText text={"Loading..."} /></p>
         ) : (
           <form className='row gy-4' onSubmit={handleSubmit}>
             <div className='col-md-4'>
@@ -187,11 +189,11 @@ const AdminTopicFormPage = ({ subjectId, topicId }) => {
               />
             </div>
             <div className='col-md-4'>
-              <label className='text-14 text-neutral-500 fw-medium mb-8'>Name AZ</label>
+              <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Name AZ"} /></label>
               <input name='nameAz' className='common-input rounded-pill' value={form.nameAz} onChange={handleChange} required />
             </div>
             <div className='col-md-4'>
-              <label className='text-14 text-neutral-500 fw-medium mb-8'>Code</label>
+              <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Code"} /></label>
               <input name='code' className='common-input rounded-pill' value={form.code} onChange={handleChange} />
             </div>
             <div className='col-md-4'>
@@ -209,8 +211,8 @@ const AdminTopicFormPage = ({ subjectId, topicId }) => {
               />
             </div>
             <div className='col-12 d-flex align-items-center gap-12 mt-24'>
-              <button type='submit' className='btn btn-main rounded-pill px-24' disabled={isSubmitting}>{isSubmitting ? "Saving..." : "Save"}</button>
-              <button type='button' className='px-18 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={() => router.push(`/admin/courses/${form.subjectId || subjectId}/topics`)}>Cancel</button>
+              <button type='submit' className='btn btn-main rounded-pill px-24' disabled={isSubmitting}>{isSubmitting ? <StaticText text={"Saving..."} /> : <StaticText text={"Save"} />}</button>
+              <button type='button' className='px-18 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={() => router.push(`/admin/courses/${form.subjectId || subjectId}/topics`)}><StaticText text={"Cancel"} /></button>
             </div>
           </form>
         )}

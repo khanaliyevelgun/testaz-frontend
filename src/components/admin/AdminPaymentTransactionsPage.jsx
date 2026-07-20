@@ -4,6 +4,10 @@ import { useEffect, useState } from "react";
 import AdminRefreshButton from "@/components/admin/AdminRefreshButton";
 import AdminStatusBadge from "@/components/admin/AdminStatusBadge";
 import { fetchAdminPayments } from "@/lib/api";
+import StaticText from "@/components/StaticText";
+import StaticOption from "@/components/StaticOption";
+
+
 
 const PAGE_SIZE = 10;
 const defaultMeta = { page: 1, perPage: PAGE_SIZE, total: 0, totalPages: 1 };
@@ -77,9 +81,9 @@ const AdminPaymentTransactionsPage = () => {
       <div className='bg-white rounded-10 px-24 py-24'>
         <div className='d-flex flex-wrap align-items-center justify-content-between gap-16 mb-24'>
           <div>
-            <h4 className='fw-semibold text-neutral-500 text-20 mb-4'>Payment transactions</h4>
+            <h4 className='fw-semibold text-neutral-500 text-20 mb-4'><StaticText text={"Payment transactions"} /></h4>
             <p className='text-14 text-neutral-400 mb-0'>
-              Provider payment attempts, completion details and failure reasons.
+              <StaticText text={"Provider payment attempts, completion details and failure reasons."} />
             </p>
           </div>
           <AdminRefreshButton
@@ -90,7 +94,7 @@ const AdminPaymentTransactionsPage = () => {
 
         <form className='row gy-3 align-items-end mb-24' onSubmit={applyFilters}>
           <div className='col-xl-4 col-md-6'>
-            <label className='text-14 text-neutral-500 fw-medium mb-8'>Payer user ID</label>
+            <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Payer user ID"} /></label>
             <input
               className='common-input rounded-pill'
               value={filters.payerUserId}
@@ -99,20 +103,20 @@ const AdminPaymentTransactionsPage = () => {
             />
           </div>
           <div className='col-xl-3 col-md-6'>
-            <label className='text-14 text-neutral-500 fw-medium mb-8'>Status</label>
+            <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Status"} /></label>
             <select
               className='form-select rounded-pill border-neutral-40 text-14 py-11 px-16'
               value={filters.status}
               onChange={(event) => setFilters((current) => ({ ...current, status: event.target.value }))}
             >
-              <option value=''>All statuses</option>
+              <StaticOption value='' text={"All statuses"} />
               {statuses.map((status) => (
                 <option value={status} key={status}>{status}</option>
               ))}
             </select>
           </div>
           <div className='col-xl-2 col-md-4'>
-            <label className='text-14 text-neutral-500 fw-medium mb-8'>Provider</label>
+            <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Provider"} /></label>
             <input
               className='common-input rounded-pill'
               value={filters.provider}
@@ -122,7 +126,7 @@ const AdminPaymentTransactionsPage = () => {
           </div>
           <div className='col-xl-3 col-md-8 d-flex gap-8'>
             <button type='submit' className='btn btn-main rounded-pill flex-grow-1' disabled={isLoading}>
-              Apply filters
+              <StaticText text={"Apply filters"} />
             </button>
             <button
               type='button'
@@ -130,7 +134,7 @@ const AdminPaymentTransactionsPage = () => {
               disabled={isLoading}
               onClick={clearFilters}
             >
-              Clear
+              <StaticText text={"Clear"} />
             </button>
           </div>
         </form>
@@ -138,28 +142,28 @@ const AdminPaymentTransactionsPage = () => {
         {error ? <div className='alert alert-danger text-14 py-10 mb-16'>{error}</div> : null}
 
         <div className='d-flex align-items-center justify-content-between gap-12 mb-12'>
-          <span className='text-13 text-neutral-400'>Total: {meta.total}</span>
-          <span className='text-13 text-neutral-400'>Newest first</span>
+          <span className='text-13 text-neutral-400'><StaticText text={"Total:"} /> {meta.total}</span>
+          <span className='text-13 text-neutral-400'><StaticText text={"Newest first"} /></span>
         </div>
 
         <div className='table-responsive admin-users-table'>
           <table className='table mb-0'>
             <thead>
               <tr>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Payment</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Payer</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Provider</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Amount</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Status</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Failure</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Created</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Completed</th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Payment"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Payer"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Provider"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Amount"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Status"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Failure"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Created"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Completed"} /></th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td className='py-20 px-20 text-neutral-400' colSpan='8'>Loading payments...</td>
+                  <td className='py-20 px-20 text-neutral-400' colSpan='8'><StaticText text={"Loading payments..."} /></td>
                 </tr>
               ) : payments.length ? (
                 payments.map((payment) => (
@@ -169,7 +173,7 @@ const AdminPaymentTransactionsPage = () => {
                         {payment.id}
                       </span>
                       <span className='text-12 text-neutral-400'>
-                        Subscription: {payment.subscriptionId || "-"}
+                        <StaticText text={"Subscription:"} /> {payment.subscriptionId || "-"}
                       </span>
                     </td>
                     <td className='py-16 px-20'>
@@ -196,7 +200,7 @@ const AdminPaymentTransactionsPage = () => {
                 ))
               ) : (
                 <tr>
-                  <td className='py-24 px-20 text-neutral-400' colSpan='8'>No payment transactions found.</td>
+                  <td className='py-24 px-20 text-neutral-400' colSpan='8'><StaticText text={"No payment transactions found."} /></td>
                 </tr>
               )}
             </tbody>
@@ -210,7 +214,7 @@ const AdminPaymentTransactionsPage = () => {
             disabled={isLoading || meta.page <= 1}
             onClick={() => loadPayments(Math.max(meta.page - 1, 1), appliedFilters)}
           >
-            Previous
+            <StaticText text={"Previous"} />
           </button>
           <span className='text-14 text-neutral-400'>
             {meta.page} / {Math.max(meta.totalPages, 1)}
@@ -221,7 +225,7 @@ const AdminPaymentTransactionsPage = () => {
             disabled={isLoading || meta.page >= meta.totalPages}
             onClick={() => loadPayments(Math.min(meta.page + 1, meta.totalPages), appliedFilters)}
           >
-            Next
+            <StaticText text={"Next"} />
           </button>
         </div>
       </div>

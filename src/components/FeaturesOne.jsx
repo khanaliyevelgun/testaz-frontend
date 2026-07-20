@@ -1,5 +1,7 @@
 "use client";
 import Slider from "react-slick";
+import StaticText from "@/components/StaticText";
+
 
 const FeaturesOne = () => {
   const settings = {
@@ -53,11 +55,10 @@ const FeaturesOne = () => {
       <div className='container'>
         <div className='section-heading text-center'>
           <h2 className='mb-24 wow bounceIn'>
-            Üç addımda övladınızın biliyini görün
+            <StaticText text={"Üç addımda övladınızın biliyini görün"} />
           </h2>
           <p className='wow bounceInUp'>
-            Mövzunu seçin, sınağa başlayın və nəticəni aydın hesabatla izləyin.
-            Harada güclüdür, harada dəstəyə ehtiyacı var - hamısı görünür.
+            <StaticText text={"Mövzunu seçin, sınağa başlayın və nəticəni aydın hesabatla izləyin. Harada güclüdür, harada dəstəyə ehtiyacı var - hamısı görünür."} />
           </p>
         </div>
         <Slider {...settings} className='features-slider'>
@@ -71,11 +72,10 @@ const FeaturesOne = () => {
                 />
               </span>
               <h4 className='mb-16 transition-1 item-hover__text'>
-                Mövzunu seçin
+                <StaticText text={"Mövzunu seçin"} />
               </h4>
               <p className='transition-1 item-hover__text '>
-                Övladınızın məktəbdə keçdiyi mövzunu seçin. Riyaziyyat, fizika,
-                kimya, Azərbaycan dili və digər əsas fənlər üzrə sınaq hazırlayın.
+                <StaticText text={"Övladınızın məktəbdə keçdiyi mövzunu seçin. Riyaziyyat, fizika, kimya, Azərbaycan dili və digər əsas fənlər üzrə sınaq hazırlayın."} />
               </p>
             </div>
           </div>
@@ -89,11 +89,10 @@ const FeaturesOne = () => {
                 />
               </span>
               <h4 className='mb-16 transition-1 item-hover__text'>
-                Sınağa başlayın
+                <StaticText text={"Sınağa başlayın"} />
               </h4>
               <p className='transition-1 item-hover__text'>
-                Qısa və fokuslu testlə real bilik yoxlanır. Suallar hər dəfə yenilənir,
-                ona görə cavabı əzbərləmək yox, mövzunu anlamaq önə çıxır.
+                <StaticText text={"Qısa və fokuslu testlə real bilik yoxlanır. Suallar hər dəfə yenilənir, ona görə cavabı əzbərləmək yox, mövzunu anlamaq önə çıxır."} />
               </p>
             </div>
           </div>
@@ -107,11 +106,10 @@ const FeaturesOne = () => {
                 />
               </span>
               <h4 className='mb-16 transition-1 item-hover__text'>
-                Nəticəni görün
+                <StaticText text={"Nəticəni görün"} />
               </h4>
               <p className='transition-1 item-hover__text '>
-                Səhvlər, zəif mövzular və növbəti öyrənmə addımları bir hesabatda
-                toplanır. Nə üzərində işləmək lazım olduğu dərhal aydın olur.
+                <StaticText text={"Səhvlər, zəif mövzular və növbəti öyrənmə addımları bir hesabatda toplanır. Nə üzərində işləmək lazım olduğu dərhal aydın olur."} />
               </p>
             </div>
           </div>

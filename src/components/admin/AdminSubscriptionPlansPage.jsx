@@ -11,6 +11,10 @@ import {
   fetchAdminPlans,
   updateAdminPlan,
 } from "@/lib/api";
+import StaticText from "@/components/StaticText";
+import StaticOption from "@/components/StaticOption";
+
+
 
 const PAGE_SIZE = 10;
 const defaultMeta = { page: 1, perPage: PAGE_SIZE, total: 0, totalPages: 1 };
@@ -214,12 +218,12 @@ const AdminSubscriptionPlansPage = () => {
       <div className='bg-white rounded-10 px-24 py-24'>
         <div className='d-flex flex-wrap align-items-center justify-content-between gap-16 mb-24'>
           <div>
-            <h4 className='fw-semibold text-neutral-500 text-20 mb-4'>Subscription plans</h4>
-            <p className='text-14 text-neutral-400 mb-0'>Create, edit and publish the plans shown at checkout.</p>
+            <h4 className='fw-semibold text-neutral-500 text-20 mb-4'><StaticText text={"Subscription plans"} /></h4>
+            <p className='text-14 text-neutral-400 mb-0'><StaticText text={"Create, edit and publish the plans shown at checkout."} /></p>
           </div>
           <div className='d-flex flex-wrap align-items-center gap-8'>
             <button type='button' className='btn btn-main rounded-pill px-20' onClick={openCreateForm}>
-              Create plan
+              <StaticText text={"Create plan"} />
             </button>
             <AdminRefreshButton isLoading={isLoading} onClick={() => loadPlans(meta.page)} />
           </div>
@@ -232,13 +236,13 @@ const AdminSubscriptionPlansPage = () => {
           <form className='border border-neutral-30 rounded-10 p-20 mb-24' onSubmit={handleSubmit}>
             <div className='d-flex align-items-center justify-content-between gap-12 mb-20'>
               <h5 className='text-16 fw-semibold text-neutral-500 mb-0'>
-                {editingId != null ? "Edit plan" : "Create plan"}
+                {editingId != null ? <StaticText text={"Edit plan"} /> : <StaticText text={"Create plan"} />}
               </h5>
               <button type='button' className='btn-close' aria-label='Close form' onClick={closeForm} />
             </div>
             <div className='row gy-3'>
               <div className='col-lg-4 col-md-6'>
-                <label className='text-14 text-neutral-500 fw-medium mb-8'>Code</label>
+                <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Code"} /></label>
                 <input
                   className='common-input rounded-pill text-uppercase'
                   value={form.code}
@@ -250,7 +254,7 @@ const AdminSubscriptionPlansPage = () => {
                 />
               </div>
               <div className='col-lg-4 col-md-6'>
-                <label className='text-14 text-neutral-500 fw-medium mb-8'>Name</label>
+                <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Name"} /></label>
                 <input
                   className='common-input rounded-pill'
                   value={form.nameAz}
@@ -261,7 +265,7 @@ const AdminSubscriptionPlansPage = () => {
                 />
               </div>
               <div className='col-lg-2 col-md-6'>
-                <label className='text-14 text-neutral-500 fw-medium mb-8'>Price</label>
+                <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Price"} /></label>
                 <input
                   type='number'
                   min='0'
@@ -273,7 +277,7 @@ const AdminSubscriptionPlansPage = () => {
                 />
               </div>
               <div className='col-lg-2 col-md-6'>
-                <label className='text-14 text-neutral-500 fw-medium mb-8'>Currency</label>
+                <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Currency"} /></label>
                 <input
                   className='common-input rounded-pill text-uppercase'
                   value={form.currency}
@@ -284,7 +288,7 @@ const AdminSubscriptionPlansPage = () => {
                 />
               </div>
               <div className='col-lg-3 col-md-6'>
-                <label className='text-14 text-neutral-500 fw-medium mb-8'>Period (days)</label>
+                <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Period (days)"} /></label>
                 <input
                   type='number'
                   min='1'
@@ -303,15 +307,15 @@ const AdminSubscriptionPlansPage = () => {
                     checked={form.coversLinkedChildren}
                     onChange={(event) => updateForm("coversLinkedChildren", event.target.checked)}
                   />
-                  Covers linked children
+                  <StaticText text={"Covers linked children"} />
                 </label>
               </div>
               <div className='col-lg-4 d-flex align-items-end justify-content-lg-end gap-8'>
                 <button type='button' className='btn btn-outline-secondary rounded-pill px-20' onClick={closeForm}>
-                  Cancel
+                  <StaticText text={"Cancel"} />
                 </button>
                 <button type='submit' className='btn btn-main rounded-pill px-20' disabled={isSaving}>
-                  {isSaving ? "Saving..." : editingId != null ? "Save changes" : "Create plan"}
+                  {isSaving ? <StaticText text={"Saving..."} /> : editingId != null ? <StaticText text={"Save changes"} /> : <StaticText text={"Create plan"} />}
                 </button>
               </div>
             </div>
@@ -336,9 +340,9 @@ const AdminSubscriptionPlansPage = () => {
             value={filters.active}
             onChange={(event) => setFilters((current) => ({ ...current, active: event.target.value }))}
           >
-            <option value=''>All statuses</option>
-            <option value='true'>Active</option>
-            <option value='false'>Inactive</option>
+            <StaticOption value='' text={"All statuses"} />
+            <StaticOption value='true' text={"Active"} />
+            <StaticOption value='false' text={"Inactive"} />
           </select>
         </div>
 
@@ -346,19 +350,19 @@ const AdminSubscriptionPlansPage = () => {
           <table className='table mb-0'>
             <thead>
               <tr>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Plan</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Price</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Period</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Coverage</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Status</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Updated</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20 text-end'>Action</th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Plan"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Price"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Period"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Coverage"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Status"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Updated"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20 text-end'><StaticText text={"Action"} /></th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td className='py-20 px-20 text-neutral-400' colSpan='7'>Loading plans...</td>
+                  <td className='py-20 px-20 text-neutral-400' colSpan='7'><StaticText text={"Loading plans..."} /></td>
                 </tr>
               ) : plans.length ? (
                 plans.map((plan) => (
@@ -370,9 +374,9 @@ const AdminSubscriptionPlansPage = () => {
                     <td className='py-16 px-20 text-14 text-neutral-500'>
                       {formatPrice(plan.priceAmount, plan.currency)}
                     </td>
-                    <td className='py-16 px-20 text-14 text-neutral-500'>{plan.periodDays} days</td>
+                    <td className='py-16 px-20 text-14 text-neutral-500'>{plan.periodDays} <StaticText text={"days"} /></td>
                     <td className='py-16 px-20 text-14 text-neutral-500'>
-                      {plan.coversLinkedChildren ? "Family" : "Account only"}
+                      {plan.coversLinkedChildren ? <StaticText text={"Family"} /> : <StaticText text={"Account only"} />}
                     </td>
                     <td className='py-16 px-20'>
                       <AdminStatusBadge status={plan.active ? "ACTIVE" : "INACTIVE"} />
@@ -386,7 +390,7 @@ const AdminSubscriptionPlansPage = () => {
                           disabled={Boolean(actionId)}
                           onClick={() => openEditForm(plan)}
                         >
-                          {actionId === `edit-${plan.id}` ? "Loading..." : "Edit"}
+                          {actionId === `edit-${plan.id}` ? <StaticText text={"Loading..."} /> : <StaticText text={"Edit"} />}
                         </button>
                         <button
                           type='button'
@@ -399,10 +403,10 @@ const AdminSubscriptionPlansPage = () => {
                           onClick={() => togglePlan(plan)}
                         >
                           {actionId === `toggle-${plan.id}`
-                            ? "Updating..."
+                            ? <StaticText text={"Updating..."} />
                             : plan.active
-                              ? "Deactivate"
-                              : "Activate"}
+                              ? <StaticText text={"Deactivate"} />
+                              : <StaticText text={"Activate"} />}
                         </button>
                       </div>
                     </td>
@@ -410,7 +414,7 @@ const AdminSubscriptionPlansPage = () => {
                 ))
               ) : (
                 <tr>
-                  <td className='py-24 px-20 text-neutral-400' colSpan='7'>No subscription plans found.</td>
+                  <td className='py-24 px-20 text-neutral-400' colSpan='7'><StaticText text={"No subscription plans found."} /></td>
                 </tr>
               )}
             </tbody>
@@ -424,7 +428,7 @@ const AdminSubscriptionPlansPage = () => {
             disabled={isLoading || meta.page <= 1}
             onClick={() => loadPlans(Math.max(meta.page - 1, 1))}
           >
-            Previous
+            <StaticText text={"Previous"} />
           </button>
           <span className='text-14 text-neutral-400'>
             {meta.page} / {Math.max(meta.totalPages, 1)}
@@ -435,7 +439,7 @@ const AdminSubscriptionPlansPage = () => {
             disabled={isLoading || meta.page >= meta.totalPages}
             onClick={() => loadPlans(Math.min(meta.page + 1, meta.totalPages))}
           >
-            Next
+            <StaticText text={"Next"} />
           </button>
         </div>
       </div>

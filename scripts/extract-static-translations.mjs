@@ -1,10 +1,10 @@
-import { readFile, readdir, writeFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import { join, relative } from "node:path";
+import { readStaticLocale, writeStaticLocale } from "./i18n-static-utils.mjs";
 
 const sourceRoot = join(process.cwd(), "src");
-const localesRoot = join(sourceRoot, "locales");
 const sourceExtensions = new Set([".js", ".jsx"]);
-const ignoredDirectories = new Set(["api"]);
+const ignoredDirectories = new Set(["api", "locales"]);
 
 const filesIn = async (directory) => {
   const entries = await readdir(directory, { withFileTypes: true });
@@ -50,8 +50,8 @@ const extract = (source) => {
   return [...texts].sort((first, second) => first.localeCompare(second));
 };
 
-const existingAz = JSON.parse(await readFile(join(localesRoot, "static.az.json"), "utf8").catch(() => "{}"));
-const existingEn = JSON.parse(await readFile(join(localesRoot, "static.en.json"), "utf8").catch(() => "{}"));
+const existingAz = await readStaticLocale("az", "static.az.json");
+const existingEn = await readStaticLocale("en", "static.en.json");
 const sourceTexts = {};
 const english = {};
 const azerbaijani = {};
@@ -68,7 +68,9 @@ for (const file of files) {
   }
 }
 
-await writeFile(join(localesRoot, "static.source.json"), `${JSON.stringify(sourceTexts, null, 2)}\n`, "utf8");
-await writeFile(join(localesRoot, "static.en.json"), `${JSON.stringify(english, null, 2)}\n`, "utf8");
-await writeFile(join(localesRoot, "static.az.json"), `${JSON.stringify(azerbaijani, null, 2)}\n`, "utf8");
-console.log(`${Object.keys(sourceTexts).length} static texts exported to src/locales/static.source.json and static.{en,az}.json`);
+await Promise.all([
+  writeStaticLocale("source", sourceTexts),
+  writeStaticLocale("en", english),
+  writeStaticLocale("az", azerbaijani),
+]);
+console.log(`${Object.keys(sourceTexts).length} static texts exported to grouped static locale files.`);

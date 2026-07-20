@@ -15,6 +15,10 @@ import {
   saveExamTemplate,
 } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
+import StaticText from "@/components/StaticText";
+import StaticOption from "@/components/StaticOption";
+
+
 
 const visibilityOptions = [
   { value: "PRIVATE", label: "Private" },
@@ -474,11 +478,11 @@ const AdminExamFormPage = () => {
       <div className='bg-white rounded-10 px-24 py-24'>
         <div className='d-flex flex-wrap align-items-start justify-content-between gap-16 mb-24'>
           <div>
-            <h4 className='fw-semibold text-neutral-500 text-20 mb-4'>Yeni imtahan yarat</h4>
-            <p className='text-14 text-neutral-400 mb-0'>Bölmələri, sual saylarını və imtahan kodunu burada hazırlayın.</p>
+            <h4 className='fw-semibold text-neutral-500 text-20 mb-4'><StaticText text={"Yeni imtahan yarat"} /></h4>
+            <p className='text-14 text-neutral-400 mb-0'><StaticText text={"Bölmələri, sual saylarını və imtahan kodunu burada hazırlayın."} /></p>
           </div>
           <div className='px-16 py-10 rounded-12 bg-main-25 text-14 text-neutral-500'>
-            Ümumi sual: <span className='fw-semibold'>{totalQuestionCount}</span>
+            <StaticText text={"Ümumi sual:"} /> <span className='fw-semibold'>{totalQuestionCount}</span>
           </div>
         </div>
 
@@ -486,11 +490,11 @@ const AdminExamFormPage = () => {
         {error ? <div className='alert alert-danger text-14 py-10 mb-20'>{error}</div> : null}
 
         {isLoadingTemplate ? (
-          <p className='text-14 text-neutral-400 mb-0'>Template loading...</p>
+          <p className='text-14 text-neutral-400 mb-0'><StaticText text={"Template loading..."} /></p>
         ) : (
         <form className='row gy-4' onSubmit={handleSubmit} noValidate>
           <div className='col-md-6'>
-            <label className='text-14 text-neutral-500 fw-medium mb-8'>Başlıq</label>
+            <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Başlıq"} /></label>
             <input
               name='title'
               className='common-input rounded-pill'
@@ -501,7 +505,7 @@ const AdminExamFormPage = () => {
             />
           </div>
           <div className='col-md-3'>
-            <label className='text-14 text-neutral-500 fw-medium mb-8'>Müddət (dəqiqə)</label>
+            <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Müddət (dəqiqə)"} /></label>
             <input
               name='durationMinutes'
               type='number'
@@ -514,7 +518,7 @@ const AdminExamFormPage = () => {
           </div>
           {!isParent ? (
           <div className='col-md-3'>
-            <label className='text-14 text-neutral-500 fw-medium mb-8'>Görünürlük</label>
+            <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Görünürlük"} /></label>
             <select
               name='visibility'
               className='form-select rounded-pill border-neutral-40 text-14 py-11 px-16'
@@ -528,7 +532,7 @@ const AdminExamFormPage = () => {
           </div>
           ) : null}
           <div className='col-12'>
-            <label className='text-14 text-neutral-500 fw-medium mb-8'>Açıqlama</label>
+            <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Açıqlama"} /></label>
             <textarea
               name='description'
               className='common-input rounded-12'
@@ -539,7 +543,7 @@ const AdminExamFormPage = () => {
             />
           </div>
           <div className='col-md-4'>
-            <label className='text-14 text-neutral-500 fw-medium mb-8'>Pass mark (%)</label>
+            <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Pass mark (%)"} /></label>
             <input
               name='passMark'
               type='number'
@@ -558,13 +562,13 @@ const AdminExamFormPage = () => {
                 checked={Boolean(form.allowRetakes)}
                 onChange={(event) => setForm((current) => ({ ...current, allowRetakes: event.target.checked }))}
               />
-              Allow learners to retake the exam after submission
+              <StaticText text={"Allow learners to retake the exam after submission"} />
             </label>
           </div>
 
           {isParent ? (
             <div className='col-12'>
-              <label className='text-14 text-neutral-500 fw-medium mb-8'>Uşaq</label>
+              <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Uşaq"} /></label>
               {childrenError ? <p className='text-danger text-13 mb-8'>{childrenError}</p> : null}
               <select
                 name='assignedUserIds'
@@ -572,7 +576,7 @@ const AdminExamFormPage = () => {
                 value={form.assignedUserIds}
                 onChange={updateForm}
               >
-                <option value=''>Uşaq seçin</option>
+                <StaticOption value='' text={"Uşaq seçin"} />
                 {children.map((child) => {
                   const childId = child.studentId || child.learnerId;
                   return (
@@ -582,11 +586,11 @@ const AdminExamFormPage = () => {
                   );
                 })}
               </select>
-              <p className='text-13 text-neutral-400 mt-8 mb-0'>Valideyn imtahan yaratdıqda seçilən uşağa bildiriş göndərilir.</p>
+              <p className='text-13 text-neutral-400 mt-8 mb-0'><StaticText text={"Valideyn imtahan yaratdıqda seçilən uşağa bildiriş göndərilir."} /></p>
             </div>
           ) : form.visibility === "ASSIGNED" ? (
             <div className='col-12'>
-              <label className='text-14 text-neutral-500 fw-medium mb-8'>Assigned users</label>
+              <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Assigned users"} /></label>
               <div className='border border-neutral-30 rounded-12 p-16'>
                 <div className='d-flex flex-wrap gap-10 align-items-center mb-12'>
                   <input
@@ -599,7 +603,7 @@ const AdminExamFormPage = () => {
                     placeholder='Name, surname, email or ID'
                   />
                   <button type='button' className='btn btn-main rounded-pill px-20' onClick={searchAssignableUsers} disabled={isSearchingUsers}>
-                    {isSearchingUsers ? "Searching..." : "Search"}
+                    {isSearchingUsers ? <StaticText text={"Searching..."} /> : <StaticText text={"Search"} />}
                   </button>
                 </div>
 
@@ -616,7 +620,7 @@ const AdminExamFormPage = () => {
                           <span className='d-block text-14 fw-medium text-neutral-500'>{userRow.name || userRow.fullName || userRow.email || userRow.id}</span>
                           <span className='d-block text-12 text-neutral-400'>{userRow.email || userRow.phone || userRow.id}</span>
                         </span>
-                        <span className='text-main-600 text-13 fw-medium'>Add</span>
+                        <span className='text-main-600 text-13 fw-medium'><StaticText text={"Add"} /></span>
                       </button>
                     ))}
                   </div>
@@ -631,12 +635,12 @@ const AdminExamFormPage = () => {
                           <span className='d-block text-12 text-neutral-400'>{assignedUser.contact || assignedUser.id}</span>
                         </span>
                         <button type='button' className='px-10 py-6 border border-neutral-40 rounded-pill bg-white text-13 text-neutral-500' onClick={() => removeAssignedUser(assignedUser.id)}>
-                          X
+                          <StaticText text={"X"} />
                         </button>
                       </div>
                     ))
                   ) : (
-                    <p className='text-13 text-neutral-400 mb-0'>No users selected.</p>
+                    <p className='text-13 text-neutral-400 mb-0'><StaticText text={"No users selected."} /></p>
                   )}
                 </div>
               </div>
@@ -645,9 +649,9 @@ const AdminExamFormPage = () => {
 
           <div className='col-12 mt-16'>
             <div className='d-flex align-items-center justify-content-between gap-12 mb-12'>
-              <h5 className='text-16 fw-semibold text-neutral-500 mb-0'>Bölmələr</h5>
+              <h5 className='text-16 fw-semibold text-neutral-500 mb-0'><StaticText text={"Bölmələr"} /></h5>
               <button type='button' className='px-14 py-8 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={addSection} disabled={sections.length >= 20}>
-                Bölmə əlavə et
+                <StaticText text={"Bölmə əlavə et"} />
               </button>
             </div>
 
@@ -655,20 +659,20 @@ const AdminExamFormPage = () => {
               {sections.map((section, sectionIndex) => (
                 <div className='border border-neutral-30 rounded-12 p-16' key={sectionIndex}>
                   <div className='d-flex flex-wrap align-items-center justify-content-between gap-12 mb-16'>
-                    <h6 className='text-15 fw-semibold text-neutral-500 mb-0'>Bölmə {sectionIndex + 1}</h6>
+                    <h6 className='text-15 fw-semibold text-neutral-500 mb-0'><StaticText text={"Bölmə"} /> {sectionIndex + 1}</h6>
                     <button
                       type='button'
                       className='px-12 py-8 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white'
                       onClick={() => removeSection(sectionIndex)}
                       disabled={sections.length <= 1}
                     >
-                      Sil
+                      <StaticText text={"Sil"} />
                     </button>
                   </div>
 
                   <div className='row gy-3'>
                     <div className='col-md-4'>
-                      <label className='text-14 text-neutral-500 fw-medium mb-8'>Bölmə adı</label>
+                      <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Bölmə adı"} /></label>
                       <input
                         className='common-input rounded-pill'
                         maxLength='200'
@@ -691,7 +695,7 @@ const AdminExamFormPage = () => {
                       />
                     </div>
                     <div className='col-md-2'>
-                      <label className='text-14 text-neutral-500 fw-medium mb-8'>Sual növü</label>
+                      <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Sual növü"} /></label>
                       <select
                         className='form-select rounded-pill border-neutral-40 text-14 py-11 px-16'
                         value={section.typeFilter}
@@ -703,7 +707,7 @@ const AdminExamFormPage = () => {
                       </select>
                     </div>
                     <div className='col-md-2'>
-                      <label className='text-14 text-neutral-500 fw-medium mb-8'>Çətinlik</label>
+                      <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Çətinlik"} /></label>
                       <select
                         className='form-select rounded-pill border-neutral-40 text-14 py-11 px-16'
                         value={section.difficultyFilter}
@@ -715,7 +719,7 @@ const AdminExamFormPage = () => {
                       </select>
                     </div>
                     <div className='col-md-2'>
-                      <label className='text-14 text-neutral-500 fw-medium mb-8'>Doğru balı</label>
+                      <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Doğru balı"} /></label>
                       <input
                         type='number'
                         min='0'
@@ -726,7 +730,7 @@ const AdminExamFormPage = () => {
                       />
                     </div>
                     <div className='col-md-2'>
-                      <label className='text-14 text-neutral-500 fw-medium mb-8'>Səhv cəriməsi</label>
+                      <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Səhv cəriməsi"} /></label>
                       <input
                         type='number'
                         min='0'
@@ -740,14 +744,14 @@ const AdminExamFormPage = () => {
 
                   <div className='mt-16'>
                     <div className='d-flex align-items-center justify-content-between gap-12 mb-12'>
-                      <span className='text-14 fw-medium text-neutral-500'>Topic buckets</span>
+                      <span className='text-14 fw-medium text-neutral-500'><StaticText text={"Topic buckets"} /></span>
                       <button
                         type='button'
                         className='px-12 py-8 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white'
                         onClick={() => addTopic(sectionIndex)}
                         disabled={section.topics.length >= 50}
                       >
-                        Mövzu əlavə et
+                        <StaticText text={"Mövzu əlavə et"} />
                       </button>
                     </div>
                     <div className='d-flex flex-column gap-12'>
@@ -767,7 +771,7 @@ const AdminExamFormPage = () => {
                             />
                           </div>
                           <div className='col-md-2'>
-                            <label className='text-14 text-neutral-500 fw-medium mb-8'>{topicIndex === 0 ? "Sual sayı" : ""}</label>
+                            <label className='text-14 text-neutral-500 fw-medium mb-8'>{topicIndex === 0 ? <StaticText text={"Sual sayı"} /> : ""}</label>
                             <input
                               type='number'
                               min='1'
@@ -784,7 +788,7 @@ const AdminExamFormPage = () => {
                               onClick={() => removeTopic(sectionIndex, topicIndex)}
                               disabled={section.topics.length <= 1}
                             >
-                              Sil
+                              <StaticText text={"Sil"} />
                             </button>
                           </div>
                         </div>
@@ -804,7 +808,7 @@ const AdminExamFormPage = () => {
                   checked={saveAsTemplate}
                   onChange={(event) => setSaveAsTemplate(event.target.checked)}
                 />
-                Şablon kimi saxla
+                <StaticText text={"Şablon kimi saxla"} />
               </label>
               {saveAsTemplate ? (
                 <input
@@ -820,7 +824,7 @@ const AdminExamFormPage = () => {
 
           <div className='col-12 d-flex align-items-center gap-12 mt-24'>
             <button type='submit' className='btn btn-main rounded-pill px-24' disabled={isSubmitting}>
-              {isSubmitting ? "Yaradılır..." : "İmtahan yarat"}
+              {isSubmitting ? <StaticText text={"Yaradılır..."} /> : <StaticText text={"İmtahan yarat"} />}
             </button>
           </div>
         </form>
@@ -833,8 +837,8 @@ const AdminExamFormPage = () => {
             <div className='modal-content rounded-12 border-0'>
               <div className='modal-header border-neutral-30'>
                 <div>
-                  <h5 className='modal-title text-18 fw-semibold text-neutral-500'>İmtahan yaradıldı</h5>
-                  <p className='text-14 text-neutral-400 mb-0'>İnterfeys yalnız imtahan keçidini göstərir.</p>
+                  <h5 className='modal-title text-18 fw-semibold text-neutral-500'><StaticText text={"İmtahan yaradıldı"} /></h5>
+                  <p className='text-14 text-neutral-400 mb-0'><StaticText text={"İnterfeys yalnız imtahan keçidini göstərir."} /></p>
                 </div>
                 <button type='button' className='btn-close' aria-label='Close' onClick={() => setCreatedExam(null)}></button>
               </div>
@@ -842,55 +846,55 @@ const AdminExamFormPage = () => {
                 <div className='row gy-3 mb-20'>
                   <div className='col-md-6'>
                     <div className='border border-neutral-30 rounded-12 p-14'>
-                      <span className='text-13 text-neutral-400 d-block mb-4'>Başlıq</span>
+                      <span className='text-13 text-neutral-400 d-block mb-4'><StaticText text={"Başlıq"} /></span>
                       <strong className='text-15 text-neutral-500'>{createdExam.title || "-"}</strong>
                     </div>
                   </div>
                   <div className='col-md-3'>
                     <div className='border border-neutral-30 rounded-12 p-14'>
-                      <span className='text-13 text-neutral-400 d-block mb-4'>Bölmə</span>
+                      <span className='text-13 text-neutral-400 d-block mb-4'><StaticText text={"Bölmə"} /></span>
                       <strong className='text-15 text-neutral-500'>{createdExam.sectionCount ?? "-"}</strong>
                     </div>
                   </div>
                   <div className='col-md-3'>
                     <div className='border border-neutral-30 rounded-12 p-14'>
-                      <span className='text-13 text-neutral-400 d-block mb-4'>Sual</span>
+                      <span className='text-13 text-neutral-400 d-block mb-4'><StaticText text={"Sual"} /></span>
                       <strong className='text-15 text-neutral-500'>{createdExam.totalQuestions ?? "-"}</strong>
                     </div>
                   </div>
                   <div className='col-md-4'>
                     <div className='border border-neutral-30 rounded-12 p-14'>
-                      <span className='text-13 text-neutral-400 d-block mb-4'>Maksimum bal</span>
+                      <span className='text-13 text-neutral-400 d-block mb-4'><StaticText text={"Maksimum bal"} /></span>
                       <strong className='text-15 text-neutral-500'>{createdExam.totalMaxScore ?? "-"}</strong>
                     </div>
                   </div>
                   <div className='col-md-4'>
                     <div className='border border-neutral-30 rounded-12 p-14'>
-                      <span className='text-13 text-neutral-400 d-block mb-4'>Müddət</span>
-                      <strong className='text-15 text-neutral-500'>{createdExam.durationMinutes ? `${createdExam.durationMinutes} dəq.` : "Məhdudiyyətsiz"}</strong>
+                      <span className='text-13 text-neutral-400 d-block mb-4'><StaticText text={"Müddət"} /></span>
+                      <strong className='text-15 text-neutral-500'>{createdExam.durationMinutes ? `${createdExam.durationMinutes} dəq.` : <StaticText text={"Məhdudiyyətsiz"} />}</strong>
                     </div>
                   </div>
                   <div className='col-md-4'>
                     <div className='border border-neutral-30 rounded-12 p-14'>
-                      <span className='text-13 text-neutral-400 d-block mb-4'>Görünürlük</span>
+                      <span className='text-13 text-neutral-400 d-block mb-4'><StaticText text={"Görünürlük"} /></span>
                       <strong className='text-15 text-neutral-500'>{createdExam.visibility || "-"}</strong>
                     </div>
                   </div>
                 </div>
 
-                <label className='text-14 text-neutral-500 fw-medium mb-8'>İmtahan keçidi</label>
+                <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"İmtahan keçidi"} /></label>
                 <div className='d-flex flex-wrap align-items-center gap-10'>
                   <input className='common-input rounded-pill flex-grow-1 min-w-240-px' readOnly value={getPreviewUrl(createdExam)} onFocus={(event) => event.target.select()} />
                   <button type='button' className='btn btn-main rounded-pill px-20' onClick={copyLink}>
-                    Linki kopyala
+                    <StaticText text={"Linki kopyala"} />
                   </button>
                 </div>
                 {copyStatus ? <p className='text-14 text-neutral-400 mt-8 mb-0'>{copyStatus}</p> : null}
-                <p className='text-13 text-neutral-400 mt-12 mb-0'>Exam ID: {createdExam.examId || "-"}</p>
+                <p className='text-13 text-neutral-400 mt-12 mb-0'><StaticText text={"Exam ID:"} /> {createdExam.examId || "-"}</p>
               </div>
               <div className='modal-footer border-neutral-30'>
                 <button type='button' className='px-18 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={() => setCreatedExam(null)}>
-                  Bağla
+                  <StaticText text={"Bağla"} />
                 </button>
               </div>
             </div>

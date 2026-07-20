@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import AdminRefreshButton from "@/components/admin/AdminRefreshButton";
 import AdminRowActions from "@/components/admin/AdminRowActions";
 import { fetchExamTemplates } from "@/lib/api";
+import StaticText from "@/components/StaticText";
+
 
 const formatDate = (value) => {
   if (!value) return "-";
@@ -52,12 +54,12 @@ const AdminExamTemplatesPage = () => {
       <div className='bg-white rounded-10 px-24 py-24'>
         <div className='d-flex flex-wrap align-items-center justify-content-between gap-16 mb-24'>
           <div>
-            <h4 className='fw-semibold text-neutral-500 text-20 mb-4'>Exam Templates</h4>
-            <p className='text-14 text-neutral-400 mb-0'>Saved reusable exam configurations.</p>
+            <h4 className='fw-semibold text-neutral-500 text-20 mb-4'><StaticText text={"Exam Templates"} /></h4>
+            <p className='text-14 text-neutral-400 mb-0'><StaticText text={"Saved reusable exam configurations."} /></p>
           </div>
           <div className='d-flex flex-wrap align-items-center gap-8'>
-            <Link href='/admin/exams' className='px-18 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white'>Exams</Link>
-            <Link href='/admin/exams/new' className='btn btn-main rounded-pill px-20'>Create Exam</Link>
+            <Link href='/admin/exams' className='px-18 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white'><StaticText text={"Exams"} /></Link>
+            <Link href='/admin/exams/new' className='btn btn-main rounded-pill px-20'><StaticText text={"Create Exam"} /></Link>
             <AdminRefreshButton isLoading={isLoading} onClick={() => loadTemplates(meta.page)} />
           </div>
         </div>
@@ -68,42 +70,42 @@ const AdminExamTemplatesPage = () => {
           <table className='table mb-0'>
             <thead>
               <tr>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Template</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Sections</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Questions</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Duration</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Updated</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20 text-end'>Action</th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Template"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Sections"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Questions"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Duration"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Updated"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20 text-end'><StaticText text={"Action"} /></th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'>Loading...</td></tr>
+                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'><StaticText text={"Loading..."} /></td></tr>
               ) : templates.length ? (
                 templates.map((template) => (
                   <tr key={template.templateId}>
                     <td className='py-16 px-20'>
-                      <Link href={`/admin/exams/new?templateId=${template.templateId}`} className='text-14 fw-medium text-neutral-500'>{template.name || "Untitled template"}</Link>
+                      <Link href={`/admin/exams/new?templateId=${template.templateId}`} className='text-14 fw-medium text-neutral-500'>{template.name || <StaticText text={"Untitled template"} />}</Link>
                       <span className='d-block text-12 text-neutral-400'>{template.templateId}</span>
                     </td>
                     <td className='py-16 px-20 text-14 text-neutral-500'>{template.config?.sections?.length || 0}</td>
                     <td className='py-16 px-20 text-14 text-neutral-500'>{countQuestions(template)}</td>
-                    <td className='py-16 px-20 text-14 text-neutral-500'>{template.config?.durationMinutes ? `${template.config.durationMinutes} min` : "Untimed"}</td>
+                    <td className='py-16 px-20 text-14 text-neutral-500'>{template.config?.durationMinutes ? `${template.config.durationMinutes} min` : <StaticText text={"Untimed"} />}</td>
                     <td className='py-16 px-20 text-14 text-neutral-500'>{formatDate(template.updatedAt || template.createdAt)}</td>
                     <td className='py-16 px-20'><div className='d-flex justify-content-end'><AdminRowActions items={actionsFor(template)} /></div></td>
                   </tr>
                 ))
               ) : (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'>No templates found.</td></tr>
+                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'><StaticText text={"No templates found."} /></td></tr>
               )}
             </tbody>
           </table>
         </div>
 
         <div className='d-flex align-items-center justify-content-end gap-8 mt-24'>
-          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page <= 1} onClick={() => loadTemplates(Math.max(meta.page - 1, 1))}>Previous</button>
+          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page <= 1} onClick={() => loadTemplates(Math.max(meta.page - 1, 1))}><StaticText text={"Previous"} /></button>
           <span className='text-14 text-neutral-400'>{meta.page} / {meta.totalPages}</span>
-          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page >= meta.totalPages} onClick={() => loadTemplates(Math.min(meta.page + 1, meta.totalPages))}>Next</button>
+          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page >= meta.totalPages} onClick={() => loadTemplates(Math.min(meta.page + 1, meta.totalPages))}><StaticText text={"Next"} /></button>
         </div>
       </div>
     </div>

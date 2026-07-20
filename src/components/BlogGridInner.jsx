@@ -1,18 +1,22 @@
 import Link from "next/link";
+import StaticText from "@/components/StaticText";
+import StaticOption from "@/components/StaticOption";
+
+
 
 const BlogGridInner = () => {
   return (
     <div className='blog-page-section py-120'>
       <div className='container'>
         <div className='flex-between gap-16 flex-wrap mb-40'>
-          <span className='text-neutral-500'>Showing 9 of 600 Results </span>
+          <span className='text-neutral-500'><StaticText text={"Showing 9 of 600 Results"} /> </span>
           <div className='flex-align gap-16'>
             <div className='flex-align gap-8'>
-              <span className='text-neutral-500 flex-shrink-0'>Sort By :</span>
+              <span className='text-neutral-500 flex-shrink-0'><StaticText text={"Sort By :"} /></span>
               <select className='form-select ps-20 pe-28 py-8 fw-medium rounded-pill bg-main-25 border border-neutral-30 text-neutral-700'>
-                <option value={1}>Newest</option>
-                <option value={1}>Trending</option>
-                <option value={1}>Popular</option>
+                <StaticOption value={1} text={"Newest"} />
+                <StaticOption value={1} text={"Trending"} />
+                <StaticOption value={1} text={"Popular"} />
               </select>
             </div>
             <button
@@ -35,14 +39,14 @@ const BlogGridInner = () => {
                   />
                 </Link>
                 <div className='position-absolute inset-inline-end-0 inset-block-end-0 me-16 mb-16 py-12 px-24 rounded-8 bg-main-three-600 text-white fw-medium'>
-                  <h3 className='mb-0 text-white fw-medium'>21</h3>
-                  DEC
+                  <h3 className='mb-0 text-white fw-medium'><StaticText text={"21"} /></h3>
+                  <StaticText text={"DEC"} />
                 </div>
               </div>
               <div className='pt-32 pb-24 px-16 position-relative'>
                 <h4 className='mb-28'>
                   <Link href='/blog-details' className='link text-line-2'>
-                    Navigating the Job Market: Advice for Graduates
+                    <StaticText text={"Navigating the Job Market: Advice for Graduates"} />
                   </Link>
                 </h4>
                 <div className='flex-align gap-14 flex-wrap my-20'>
@@ -50,21 +54,21 @@ const BlogGridInner = () => {
                     <span className='text-neutral-500 text-2xl d-flex'>
                       <i className='ph ph-user-circle' />
                     </span>
-                    <span className='text-neutral-500 text-lg'>By Admin</span>
+                    <span className='text-neutral-500 text-lg'><StaticText text={"By Admin"} /></span>
                   </div>
                   <span className='w-8 h-8 bg-neutral-100 rounded-circle' />
                   <div className='flex-align gap-8'>
                     <span className='text-neutral-500 text-2xl d-flex'>
                       <i className='ph-bold ph-eye' />
                     </span>
-                    <span className='text-neutral-500 text-lg'>1.6k</span>
+                    <span className='text-neutral-500 text-lg'><StaticText text={"1.6k"} /></span>
                   </div>
                   <span className='w-8 h-8 bg-neutral-100 rounded-circle' />
                   <div className='flex-align gap-8'>
                     <span className='text-neutral-500 text-2xl d-flex'>
                       <i className='ph ph-chat-dots' />
                     </span>
-                    <span className='text-neutral-500 text-lg'>24</span>
+                    <span className='text-neutral-500 text-lg'><StaticText text={"24"} /></span>
                   </div>
                 </div>
                 <div className='flex-between gap-8 pt-24 border-top border-neutral-50 mt-28 border-dashed border-0'>
@@ -73,7 +77,7 @@ const BlogGridInner = () => {
                     className='flex-align gap-8 text-main-600 hover-text-decoration-underline transition-1 fw-semibold'
                     tabIndex={0}
                   >
-                    Read More
+                    <StaticText text={"Read More"} />
                     <i className='ph ph-arrow-right' />
                   </Link>
                 </div>
@@ -91,14 +95,14 @@ const BlogGridInner = () => {
                   />
                 </Link>
                 <div className='position-absolute inset-inline-end-0 inset-block-end-0 me-16 mb-16 py-12 px-24 rounded-8 bg-main-three-600 text-white fw-medium'>
-                  <h3 className='mb-0 text-white fw-medium'>21</h3>
-                  DEC
+                  <h3 className='mb-0 text-white fw-medium'><StaticText text={"21"} /></h3>
+                  <StaticText text={"DEC"} />
                 </div>
               </div>
               <div className='pt-32 pb-24 px-16 position-relative'>
                 <h4 className='mb-28'>
                   <Link href='/blog-details' className='link text-line-2'>
-                    The Importance of Diversity in Higher Education
+                    <StaticText text={"The Importance of Diversity in Higher Education"} />
                   </Link>
                 </h4>
                 <div className='flex-align gap-14 flex-wrap my-20'>
@@ -106,21 +110,21 @@ const BlogGridInner = () => {
                     <span className='text-neutral-500 text-2xl d-flex'>
                       <i className='ph ph-user-circle' />
                     </span>
-                    <span className='text-neutral-500 text-lg'>By Admin</span>
+                    <span className='text-neutral-500 text-lg'><StaticText text={"By Admin"} /></span>
                   </div>
                   <span className='w-8 h-8 bg-neutral-100 rounded-circle' />
                   <div className='flex-align gap-8'>
                     <span className='text-neutral-500 text-2xl d-flex'>
                       <i className='ph-bold ph-eye' />
                     </span>
-                    <span className='text-neutral-500 text-lg'>1.6k</span>
+                    <span className='text-neutral-500 text-lg'><StaticText text={"1.6k"} /></span>
                   </div>
                   <span className='w-8 h-8 bg-neutral-100 rounded-circle' />
                   <div className='flex-align gap-8'>
                     <span className='text-neutral-500 text-2xl d-flex'>
                       <i className='ph ph-chat-dots' />
                     </span>
-                    <span className='text-neutral-500 text-lg'>24</span>
+                    <span className='text-neutral-500 text-lg'><StaticText text={"24"} /></span>
                   </div>
                 </div>
                 <div className='flex-between gap-8 pt-24 border-top border-neutral-50 mt-28 border-dashed border-0'>
@@ -129,7 +133,7 @@ const BlogGridInner = () => {
                     className='flex-align gap-8 text-main-600 hover-text-decoration-underline transition-1 fw-semibold'
                     tabIndex={0}
                   >
-                    Read More
+                    <StaticText text={"Read More"} />
                     <i className='ph ph-arrow-right' />
                   </Link>
                 </div>
@@ -147,14 +151,14 @@ const BlogGridInner = () => {
                   />
                 </Link>
                 <div className='position-absolute inset-inline-end-0 inset-block-end-0 me-16 mb-16 py-12 px-24 rounded-8 bg-main-three-600 text-white fw-medium'>
-                  <h3 className='mb-0 text-white fw-medium'>21</h3>
-                  DEC
+                  <h3 className='mb-0 text-white fw-medium'><StaticText text={"21"} /></h3>
+                  <StaticText text={"DEC"} />
                 </div>
               </div>
               <div className='pt-32 pb-24 px-16 position-relative'>
                 <h4 className='mb-28'>
                   <Link href='/blog-details' className='link text-line-2'>
-                    10 Tips for Successful Online Learning
+                    <StaticText text={"10 Tips for Successful Online Learning"} />
                   </Link>
                 </h4>
                 <div className='flex-align gap-14 flex-wrap my-20'>
@@ -162,21 +166,21 @@ const BlogGridInner = () => {
                     <span className='text-neutral-500 text-2xl d-flex'>
                       <i className='ph ph-user-circle' />
                     </span>
-                    <span className='text-neutral-500 text-lg'>By Admin</span>
+                    <span className='text-neutral-500 text-lg'><StaticText text={"By Admin"} /></span>
                   </div>
                   <span className='w-8 h-8 bg-neutral-100 rounded-circle' />
                   <div className='flex-align gap-8'>
                     <span className='text-neutral-500 text-2xl d-flex'>
                       <i className='ph-bold ph-eye' />
                     </span>
-                    <span className='text-neutral-500 text-lg'>1.6k</span>
+                    <span className='text-neutral-500 text-lg'><StaticText text={"1.6k"} /></span>
                   </div>
                   <span className='w-8 h-8 bg-neutral-100 rounded-circle' />
                   <div className='flex-align gap-8'>
                     <span className='text-neutral-500 text-2xl d-flex'>
                       <i className='ph ph-chat-dots' />
                     </span>
-                    <span className='text-neutral-500 text-lg'>24</span>
+                    <span className='text-neutral-500 text-lg'><StaticText text={"24"} /></span>
                   </div>
                 </div>
                 <div className='flex-between gap-8 pt-24 border-top border-neutral-50 mt-28 border-dashed border-0'>
@@ -185,7 +189,7 @@ const BlogGridInner = () => {
                     className='flex-align gap-8 text-main-600 hover-text-decoration-underline transition-1 fw-semibold'
                     tabIndex={0}
                   >
-                    Read More
+                    <StaticText text={"Read More"} />
                     <i className='ph ph-arrow-right' />
                   </Link>
                 </div>
@@ -203,14 +207,14 @@ const BlogGridInner = () => {
                   />
                 </Link>
                 <div className='position-absolute inset-inline-end-0 inset-block-end-0 me-16 mb-16 py-12 px-24 rounded-8 bg-main-three-600 text-white fw-medium'>
-                  <h3 className='mb-0 text-white fw-medium'>21</h3>
-                  DEC
+                  <h3 className='mb-0 text-white fw-medium'><StaticText text={"21"} /></h3>
+                  <StaticText text={"DEC"} />
                 </div>
               </div>
               <div className='pt-32 pb-24 px-16 position-relative'>
                 <h4 className='mb-28'>
                   <Link href='/blog-details' className='link text-line-2'>
-                    How to Stay Motivated While Studying from Home
+                    <StaticText text={"How to Stay Motivated While Studying from Home"} />
                   </Link>
                 </h4>
                 <div className='flex-align gap-14 flex-wrap my-20'>
@@ -218,21 +222,21 @@ const BlogGridInner = () => {
                     <span className='text-neutral-500 text-2xl d-flex'>
                       <i className='ph ph-user-circle' />
                     </span>
-                    <span className='text-neutral-500 text-lg'>By Admin</span>
+                    <span className='text-neutral-500 text-lg'><StaticText text={"By Admin"} /></span>
                   </div>
                   <span className='w-8 h-8 bg-neutral-100 rounded-circle' />
                   <div className='flex-align gap-8'>
                     <span className='text-neutral-500 text-2xl d-flex'>
                       <i className='ph-bold ph-eye' />
                     </span>
-                    <span className='text-neutral-500 text-lg'>1.6k</span>
+                    <span className='text-neutral-500 text-lg'><StaticText text={"1.6k"} /></span>
                   </div>
                   <span className='w-8 h-8 bg-neutral-100 rounded-circle' />
                   <div className='flex-align gap-8'>
                     <span className='text-neutral-500 text-2xl d-flex'>
                       <i className='ph ph-chat-dots' />
                     </span>
-                    <span className='text-neutral-500 text-lg'>24</span>
+                    <span className='text-neutral-500 text-lg'><StaticText text={"24"} /></span>
                   </div>
                 </div>
                 <div className='flex-between gap-8 pt-24 border-top border-neutral-50 mt-28 border-dashed border-0'>
@@ -241,7 +245,7 @@ const BlogGridInner = () => {
                     className='flex-align gap-8 text-main-600 hover-text-decoration-underline transition-1 fw-semibold'
                     tabIndex={0}
                   >
-                    Read More
+                    <StaticText text={"Read More"} />
                     <i className='ph ph-arrow-right' />
                   </Link>
                 </div>
@@ -259,14 +263,14 @@ const BlogGridInner = () => {
                   />
                 </Link>
                 <div className='position-absolute inset-inline-end-0 inset-block-end-0 me-16 mb-16 py-12 px-24 rounded-8 bg-main-three-600 text-white fw-medium'>
-                  <h3 className='mb-0 text-white fw-medium'>21</h3>
-                  DEC
+                  <h3 className='mb-0 text-white fw-medium'><StaticText text={"21"} /></h3>
+                  <StaticText text={"DEC"} />
                 </div>
               </div>
               <div className='pt-32 pb-24 px-16 position-relative'>
                 <h4 className='mb-28'>
                   <Link href='/blog-details' className='link text-line-2'>
-                    Mastering Python: Beginner to Advanced Tips
+                    <StaticText text={"Mastering Python: Beginner to Advanced Tips"} />
                   </Link>
                 </h4>
                 <div className='flex-align gap-14 flex-wrap my-20'>
@@ -274,21 +278,21 @@ const BlogGridInner = () => {
                     <span className='text-neutral-500 text-2xl d-flex'>
                       <i className='ph ph-user-circle' />
                     </span>
-                    <span className='text-neutral-500 text-lg'>By Admin</span>
+                    <span className='text-neutral-500 text-lg'><StaticText text={"By Admin"} /></span>
                   </div>
                   <span className='w-8 h-8 bg-neutral-100 rounded-circle' />
                   <div className='flex-align gap-8'>
                     <span className='text-neutral-500 text-2xl d-flex'>
                       <i className='ph-bold ph-eye' />
                     </span>
-                    <span className='text-neutral-500 text-lg'>1.6k</span>
+                    <span className='text-neutral-500 text-lg'><StaticText text={"1.6k"} /></span>
                   </div>
                   <span className='w-8 h-8 bg-neutral-100 rounded-circle' />
                   <div className='flex-align gap-8'>
                     <span className='text-neutral-500 text-2xl d-flex'>
                       <i className='ph ph-chat-dots' />
                     </span>
-                    <span className='text-neutral-500 text-lg'>24</span>
+                    <span className='text-neutral-500 text-lg'><StaticText text={"24"} /></span>
                   </div>
                 </div>
                 <div className='flex-between gap-8 pt-24 border-top border-neutral-50 mt-28 border-dashed border-0'>
@@ -297,7 +301,7 @@ const BlogGridInner = () => {
                     className='flex-align gap-8 text-main-600 hover-text-decoration-underline transition-1 fw-semibold'
                     tabIndex={0}
                   >
-                    Read More
+                    <StaticText text={"Read More"} />
                     <i className='ph ph-arrow-right' />
                   </Link>
                 </div>
@@ -315,14 +319,14 @@ const BlogGridInner = () => {
                   />
                 </Link>
                 <div className='position-absolute inset-inline-end-0 inset-block-end-0 me-16 mb-16 py-12 px-24 rounded-8 bg-main-three-600 text-white fw-medium'>
-                  <h3 className='mb-0 text-white fw-medium'>21</h3>
-                  DEC
+                  <h3 className='mb-0 text-white fw-medium'><StaticText text={"21"} /></h3>
+                  <StaticText text={"DEC"} />
                 </div>
               </div>
               <div className='pt-32 pb-24 px-16 position-relative'>
                 <h4 className='mb-28'>
                   <Link href='/blog-details' className='link text-line-2'>
-                    Balancing Work and Study: Strategies for Success
+                    <StaticText text={"Balancing Work and Study: Strategies for Success"} />
                   </Link>
                 </h4>
                 <div className='flex-align gap-14 flex-wrap my-20'>
@@ -330,21 +334,21 @@ const BlogGridInner = () => {
                     <span className='text-neutral-500 text-2xl d-flex'>
                       <i className='ph ph-user-circle' />
                     </span>
-                    <span className='text-neutral-500 text-lg'>By Admin</span>
+                    <span className='text-neutral-500 text-lg'><StaticText text={"By Admin"} /></span>
                   </div>
                   <span className='w-8 h-8 bg-neutral-100 rounded-circle' />
                   <div className='flex-align gap-8'>
                     <span className='text-neutral-500 text-2xl d-flex'>
                       <i className='ph-bold ph-eye' />
                     </span>
-                    <span className='text-neutral-500 text-lg'>1.6k</span>
+                    <span className='text-neutral-500 text-lg'><StaticText text={"1.6k"} /></span>
                   </div>
                   <span className='w-8 h-8 bg-neutral-100 rounded-circle' />
                   <div className='flex-align gap-8'>
                     <span className='text-neutral-500 text-2xl d-flex'>
                       <i className='ph ph-chat-dots' />
                     </span>
-                    <span className='text-neutral-500 text-lg'>24</span>
+                    <span className='text-neutral-500 text-lg'><StaticText text={"24"} /></span>
                   </div>
                 </div>
                 <div className='flex-between gap-8 pt-24 border-top border-neutral-50 mt-28 border-dashed border-0'>
@@ -353,7 +357,7 @@ const BlogGridInner = () => {
                     className='flex-align gap-8 text-main-600 hover-text-decoration-underline transition-1 fw-semibold'
                     tabIndex={0}
                   >
-                    Read More
+                    <StaticText text={"Read More"} />
                     <i className='ph ph-arrow-right' />
                   </Link>
                 </div>
@@ -371,14 +375,14 @@ const BlogGridInner = () => {
                   />
                 </Link>
                 <div className='position-absolute inset-inline-end-0 inset-block-end-0 me-16 mb-16 py-12 px-24 rounded-8 bg-main-three-600 text-white fw-medium'>
-                  <h3 className='mb-0 text-white fw-medium'>21</h3>
-                  DEC
+                  <h3 className='mb-0 text-white fw-medium'><StaticText text={"21"} /></h3>
+                  <StaticText text={"DEC"} />
                 </div>
               </div>
               <div className='pt-32 pb-24 px-16 position-relative'>
                 <h4 className='mb-28'>
                   <Link href='/blog-details' className='link text-line-2'>
-                    The Importance of Lifelong Learning in Today's World
+                    <StaticText text={"The Importance of Lifelong Learning in Today's World"} />
                   </Link>
                 </h4>
                 <div className='flex-align gap-14 flex-wrap my-20'>
@@ -386,21 +390,21 @@ const BlogGridInner = () => {
                     <span className='text-neutral-500 text-2xl d-flex'>
                       <i className='ph ph-user-circle' />
                     </span>
-                    <span className='text-neutral-500 text-lg'>By Admin</span>
+                    <span className='text-neutral-500 text-lg'><StaticText text={"By Admin"} /></span>
                   </div>
                   <span className='w-8 h-8 bg-neutral-100 rounded-circle' />
                   <div className='flex-align gap-8'>
                     <span className='text-neutral-500 text-2xl d-flex'>
                       <i className='ph-bold ph-eye' />
                     </span>
-                    <span className='text-neutral-500 text-lg'>1.6k</span>
+                    <span className='text-neutral-500 text-lg'><StaticText text={"1.6k"} /></span>
                   </div>
                   <span className='w-8 h-8 bg-neutral-100 rounded-circle' />
                   <div className='flex-align gap-8'>
                     <span className='text-neutral-500 text-2xl d-flex'>
                       <i className='ph ph-chat-dots' />
                     </span>
-                    <span className='text-neutral-500 text-lg'>24</span>
+                    <span className='text-neutral-500 text-lg'><StaticText text={"24"} /></span>
                   </div>
                 </div>
                 <div className='flex-between gap-8 pt-24 border-top border-neutral-50 mt-28 border-dashed border-0'>
@@ -409,7 +413,7 @@ const BlogGridInner = () => {
                     className='flex-align gap-8 text-main-600 hover-text-decoration-underline transition-1 fw-semibold'
                     tabIndex={0}
                   >
-                    Read More
+                    <StaticText text={"Read More"} />
                     <i className='ph ph-arrow-right' />
                   </Link>
                 </div>
@@ -427,14 +431,14 @@ const BlogGridInner = () => {
                   />
                 </Link>
                 <div className='position-absolute inset-inline-end-0 inset-block-end-0 me-16 mb-16 py-12 px-24 rounded-8 bg-main-three-600 text-white fw-medium'>
-                  <h3 className='mb-0 text-white fw-medium'>21</h3>
-                  DEC
+                  <h3 className='mb-0 text-white fw-medium'><StaticText text={"21"} /></h3>
+                  <StaticText text={"DEC"} />
                 </div>
               </div>
               <div className='pt-32 pb-24 px-16 position-relative'>
                 <h4 className='mb-28'>
                   <Link href='/blog-details' className='link text-line-2'>
-                    Effective Time Management for Students
+                    <StaticText text={"Effective Time Management for Students"} />
                   </Link>
                 </h4>
                 <div className='flex-align gap-14 flex-wrap my-20'>
@@ -442,21 +446,21 @@ const BlogGridInner = () => {
                     <span className='text-neutral-500 text-2xl d-flex'>
                       <i className='ph ph-user-circle' />
                     </span>
-                    <span className='text-neutral-500 text-lg'>By Admin</span>
+                    <span className='text-neutral-500 text-lg'><StaticText text={"By Admin"} /></span>
                   </div>
                   <span className='w-8 h-8 bg-neutral-100 rounded-circle' />
                   <div className='flex-align gap-8'>
                     <span className='text-neutral-500 text-2xl d-flex'>
                       <i className='ph-bold ph-eye' />
                     </span>
-                    <span className='text-neutral-500 text-lg'>1.6k</span>
+                    <span className='text-neutral-500 text-lg'><StaticText text={"1.6k"} /></span>
                   </div>
                   <span className='w-8 h-8 bg-neutral-100 rounded-circle' />
                   <div className='flex-align gap-8'>
                     <span className='text-neutral-500 text-2xl d-flex'>
                       <i className='ph ph-chat-dots' />
                     </span>
-                    <span className='text-neutral-500 text-lg'>24</span>
+                    <span className='text-neutral-500 text-lg'><StaticText text={"24"} /></span>
                   </div>
                 </div>
                 <div className='flex-between gap-8 pt-24 border-top border-neutral-50 mt-28 border-dashed border-0'>
@@ -465,7 +469,7 @@ const BlogGridInner = () => {
                     className='flex-align gap-8 text-main-600 hover-text-decoration-underline transition-1 fw-semibold'
                     tabIndex={0}
                   >
-                    Read More
+                    <StaticText text={"Read More"} />
                     <i className='ph ph-arrow-right' />
                   </Link>
                 </div>
@@ -483,14 +487,14 @@ const BlogGridInner = () => {
                   />
                 </Link>
                 <div className='position-absolute inset-inline-end-0 inset-block-end-0 me-16 mb-16 py-12 px-24 rounded-8 bg-main-three-600 text-white fw-medium'>
-                  <h3 className='mb-0 text-white fw-medium'>21</h3>
-                  DEC
+                  <h3 className='mb-0 text-white fw-medium'><StaticText text={"21"} /></h3>
+                  <StaticText text={"DEC"} />
                 </div>
               </div>
               <div className='pt-32 pb-24 px-16 position-relative'>
                 <h4 className='mb-28'>
                   <Link href='/blog-details' className='link text-line-2'>
-                    The Benefits of Learning a New Language Online
+                    <StaticText text={"The Benefits of Learning a New Language Online"} />
                   </Link>
                 </h4>
                 <div className='flex-align gap-14 flex-wrap my-20'>
@@ -498,21 +502,21 @@ const BlogGridInner = () => {
                     <span className='text-neutral-500 text-2xl d-flex'>
                       <i className='ph ph-user-circle' />
                     </span>
-                    <span className='text-neutral-500 text-lg'>By Admin</span>
+                    <span className='text-neutral-500 text-lg'><StaticText text={"By Admin"} /></span>
                   </div>
                   <span className='w-8 h-8 bg-neutral-100 rounded-circle' />
                   <div className='flex-align gap-8'>
                     <span className='text-neutral-500 text-2xl d-flex'>
                       <i className='ph-bold ph-eye' />
                     </span>
-                    <span className='text-neutral-500 text-lg'>1.6k</span>
+                    <span className='text-neutral-500 text-lg'><StaticText text={"1.6k"} /></span>
                   </div>
                   <span className='w-8 h-8 bg-neutral-100 rounded-circle' />
                   <div className='flex-align gap-8'>
                     <span className='text-neutral-500 text-2xl d-flex'>
                       <i className='ph ph-chat-dots' />
                     </span>
-                    <span className='text-neutral-500 text-lg'>24</span>
+                    <span className='text-neutral-500 text-lg'><StaticText text={"24"} /></span>
                   </div>
                 </div>
                 <div className='flex-between gap-8 pt-24 border-top border-neutral-50 mt-28 border-dashed border-0'>
@@ -521,7 +525,7 @@ const BlogGridInner = () => {
                     className='flex-align gap-8 text-main-600 hover-text-decoration-underline transition-1 fw-semibold'
                     tabIndex={0}
                   >
-                    Read More
+                    <StaticText text={"Read More"} />
                     <i className='ph ph-arrow-right' />
                   </Link>
                 </div>
@@ -543,7 +547,7 @@ const BlogGridInner = () => {
               className='page-link text-neutral-700 fw-semibold w-40 h-40 bg-main-25 rounded-circle hover-bg-main-600 border-neutral-30 hover-border-main-600 hover-text-white flex-center p-0'
               href='#'
             >
-              1
+              <StaticText text={"1"} />
             </a>
           </li>
           <li className='page-item'>
@@ -551,7 +555,7 @@ const BlogGridInner = () => {
               className='page-link text-neutral-700 fw-semibold w-40 h-40 bg-main-25 rounded-circle hover-bg-main-600 border-neutral-30 hover-border-main-600 hover-text-white flex-center p-0'
               href='#'
             >
-              2
+              <StaticText text={"2"} />
             </a>
           </li>
           <li className='page-item'>
@@ -559,7 +563,7 @@ const BlogGridInner = () => {
               className='page-link text-neutral-700 fw-semibold w-40 h-40 bg-main-25 rounded-circle hover-bg-main-600 border-neutral-30 hover-border-main-600 hover-text-white flex-center p-0'
               href='#'
             >
-              3
+              <StaticText text={"3"} />
             </a>
           </li>
           <li className='page-item'>

@@ -10,6 +10,8 @@ import {
   fetchSubscriptionPlans,
   startPaymentCheckout,
 } from "@/lib/api";
+import StaticText from "@/components/StaticText";
+
 
 const formatDate = (value) => (value ? new Date(value).toLocaleString("az-AZ") : "-");
 
@@ -96,9 +98,9 @@ const AdminPaymentsPage = () => {
       <div className='bg-white rounded-10 px-24 py-24 mb-24'>
         <div className='d-flex flex-wrap align-items-center justify-content-between gap-16 mb-24'>
           <div>
-            <h4 className='fw-semibold text-neutral-500 text-20 mb-4'>Subscriptions</h4>
+            <h4 className='fw-semibold text-neutral-500 text-20 mb-4'><StaticText text={"Subscriptions"} /></h4>
             <p className='text-14 text-neutral-400 mb-0'>
-              Entitlement: {entitlement?.entitled ? "Active" : "Inactive"}
+              <StaticText text={"Entitlement:"} /> {entitlement?.entitled ? <StaticText text={"Active"} /> : <StaticText text={"Inactive"} />}
             </p>
           </div>
           <AdminRefreshButton isLoading={isLoading} onClick={loadPayments} />
@@ -111,7 +113,7 @@ const AdminPaymentsPage = () => {
       <div className='row gy-4 mb-24'>
         {isLoading ? (
           <div className='col-12'>
-            <div className='bg-white rounded-10 px-24 py-24 text-neutral-400'>Loading plans...</div>
+            <div className='bg-white rounded-10 px-24 py-24 text-neutral-400'><StaticText text={"Loading plans..."} /></div>
           </div>
         ) : plans.length ? (
           plans.map((plan) => (
@@ -127,15 +129,15 @@ const AdminPaymentsPage = () => {
                   {plan.coversLinkedChildren ? <AdminStatusBadge status='ACTIVE' label='Family' /> : null}
                 </div>
                 <div className='display-6 fw-bold text-neutral-700 mb-4'>{formatPrice(plan.priceAmount, plan.currency)}</div>
-                <p className='text-14 text-neutral-400 mb-24'>{plan.periodDays || "-"} days</p>
+                <p className='text-14 text-neutral-400 mb-24'>{plan.periodDays || "-"} <StaticText text={"days"} /></p>
                 <ul className='d-flex flex-column gap-10 mb-24 flex-grow-1'>
                   <li className='d-flex align-items-center gap-8 text-14 text-neutral-500'>
                     <i className='ph-bold ph-check text-success-600' />
-                    Tests and result analytics
+                    <StaticText text={"Tests and result analytics"} />
                   </li>
                   <li className='d-flex align-items-center gap-8 text-14 text-neutral-500'>
                     <i className={`${plan.coversLinkedChildren ? "ph-bold ph-check text-success-600" : "ph-bold ph-x text-danger-600"}`} />
-                    Linked children coverage
+                    <StaticText text={"Linked children coverage"} />
                   </li>
                 </ul>
                 {Number(plan.priceAmount || 0) > 0 ? (
@@ -145,39 +147,39 @@ const AdminPaymentsPage = () => {
                     disabled={checkoutCode === plan.code}
                     onClick={() => handleCheckout(plan.code)}
                   >
-                    {checkoutCode === plan.code ? "Starting..." : "Checkout"}
+                    {checkoutCode === plan.code ? <StaticText text={"Starting..."} /> : <StaticText text={"Checkout"} />}
                     <i className='ph-bold ph-arrow-up-right d-flex text-lg' />
                   </button>
                 ) : (
-                  <span className='btn btn-outline-main rounded-pill w-100 disabled'>Free plan</span>
+                  <span className='btn btn-outline-main rounded-pill w-100 disabled'><StaticText text={"Free plan"} /></span>
                 )}
               </div>
             </div>
           ))
         ) : (
           <div className='col-12'>
-            <div className='bg-white rounded-10 px-24 py-24 text-neutral-400'>No active plans found.</div>
+            <div className='bg-white rounded-10 px-24 py-24 text-neutral-400'><StaticText text={"No active plans found."} /></div>
           </div>
         )}
       </div>
 
       <div className='bg-white rounded-10 px-24 py-24'>
-        <h4 className='fw-semibold text-neutral-500 text-20 mb-24'>Subscription History</h4>
+        <h4 className='fw-semibold text-neutral-500 text-20 mb-24'><StaticText text={"Subscription History"} /></h4>
         <div className='table-responsive admin-users-table'>
           <table className='table mb-0'>
             <thead>
               <tr>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Plan</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Status</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Starts</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Expires</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Canceled</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20 text-end'>Action</th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Plan"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Status"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Starts"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Expires"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Canceled"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20 text-end'><StaticText text={"Action"} /></th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'>Loading...</td></tr>
+                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'><StaticText text={"Loading..."} /></td></tr>
               ) : subscriptions.length ? (
                 subscriptions.map((subscription) => (
                   <tr key={subscription.id}>
@@ -194,7 +196,7 @@ const AdminPaymentsPage = () => {
                           disabled={cancelingId === subscription.id}
                           onClick={() => handleCancel(subscription)}
                         >
-                          {cancelingId === subscription.id ? "Canceling..." : "Cancel"}
+                          {cancelingId === subscription.id ? <StaticText text={"Canceling..."} /> : <StaticText text={"Cancel"} />}
                         </button>
                       ) : (
                         <span className='text-13 text-neutral-300'>-</span>
@@ -203,7 +205,7 @@ const AdminPaymentsPage = () => {
                   </tr>
                 ))
               ) : (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'>No subscriptions found.</td></tr>
+                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'><StaticText text={"No subscriptions found."} /></td></tr>
               )}
             </tbody>
           </table>

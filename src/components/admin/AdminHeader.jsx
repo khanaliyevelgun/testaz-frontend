@@ -3,6 +3,8 @@ import AdminNotificationDropdown from "@/components/admin/AdminNotificationDropd
 import AdminProfileDropdown from "@/components/admin/AdminProfileDropdown";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { getPrimaryRole } from "@/lib/authRoles";
+import StaticText from "@/components/StaticText";
+
 
 const AdminHeader = ({ onToggleSidebar, onLogout, user }) => {
   const role = getPrimaryRole(user);
@@ -19,7 +21,7 @@ const AdminHeader = ({ onToggleSidebar, onLogout, user }) => {
           >
             <i className='ph-bold ph-list'></i>
           </button>
-          <h5 className='mb-0 text-neutral-500 fw-semibold text-18'>İdarə paneli</h5>
+          <h5 className='mb-0 text-neutral-500 fw-semibold text-18'><StaticText text={"İdarə paneli"} /></h5>
         </div>
 
         <div className='d-flex align-items-center gap-16'>
@@ -28,7 +30,7 @@ const AdminHeader = ({ onToggleSidebar, onLogout, user }) => {
               href='/admin/exams/new'
               className='px-20 py-10 border-main-600 border rounded-pill text-14 text-main-600 hover-bg-main-600 hover-text-white hover-border-600 d-lg-block d-none line-height-1'
             >
-              Yeni imtahan yarat
+              <StaticText text={"Yeni imtahan yarat"} />
             </Link>
           ) : null}
           <LanguageSwitcher className='w-auto min-w-70-px' />

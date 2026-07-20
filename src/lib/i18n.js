@@ -1,8 +1,6 @@
 import az from "@/locales/az.json";
 import en from "@/locales/en.json";
-import staticAz from "@/locales/static.az.json";
-import staticEn from "@/locales/static.en.json";
-import staticSource from "@/locales/static.source.json";
+import { staticAz, staticEn, staticSource } from "@/locales/static";
 
 export const DEFAULT_LOCALE = "az";
 export const SUPPORTED_LOCALES = ["az", "en"];

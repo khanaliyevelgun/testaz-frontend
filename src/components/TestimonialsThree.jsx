@@ -1,6 +1,8 @@
 "use client";
 import { useRef } from "react";
 import Slider from "react-slick";
+import StaticText from "@/components/StaticText";
+
 
 const TestimonialsThree = () => {
   const sliderRef = useRef(null);
@@ -72,8 +74,7 @@ const TestimonialsThree = () => {
                   </span>
                 </div>
                 <p className='text-neutral-500 my-24'>
-                  Attending [University Name] was one of the best decisions I've
-                  made. The{" "}
+                  <StaticText text={"Attending [University Name] was one of the best decisions I've made. The"} />{" "}
                 </p>
                 <ul className='flex-align gap-8 mb-16'>
                   <li className='text-warning-600 text-xl d-flex'>
@@ -92,8 +93,8 @@ const TestimonialsThree = () => {
                     <i className='ph-fill ph-star-half' />
                   </li>
                 </ul>
-                <h4 className='mb-16 text-lg'>Ronald Richards</h4>
-                <span className='text-neutral-500'>Student</span>
+                <h4 className='mb-16 text-lg'><StaticText text={"Ronald Richards"} /></h4>
+                <span className='text-neutral-500'><StaticText text={"Student"} /></span>
               </div>
               <div className='testimonials-three-item bg-white p-24 rounded-12 box-shadow-md'>
                 <div className='w-90 h-90 rounded-circle position-relative mb-4'>
@@ -107,8 +108,7 @@ const TestimonialsThree = () => {
                   </span>
                 </div>
                 <p className='text-neutral-500 my-24'>
-                  "The faculty at are not only experts in their fields but
-                  teaching students."
+                  <StaticText text={"\"The faculty at are not only experts in their fields but teaching students.\""} />
                 </p>
                 <ul className='flex-align gap-8 mb-16'>
                   <li className='text-warning-600 text-xl d-flex'>
@@ -127,8 +127,8 @@ const TestimonialsThree = () => {
                     <i className='ph-fill ph-star-half' />
                   </li>
                 </ul>
-                <h4 className='mb-16 text-lg'>Brooklyn Simmons</h4>
-                <span className='text-neutral-500'>Student</span>
+                <h4 className='mb-16 text-lg'><StaticText text={"Brooklyn Simmons"} /></h4>
+                <span className='text-neutral-500'><StaticText text={"Student"} /></span>
               </div>
               <div className='testimonials-three-item bg-white p-24 rounded-12 box-shadow-md'>
                 <div className='w-90 h-90 rounded-circle position-relative mb-4'>
@@ -142,8 +142,7 @@ const TestimonialsThree = () => {
                   </span>
                 </div>
                 <p className='text-neutral-500 my-24'>
-                  As a faculty member at [University Name], I've had the
-                  privilege of working
+                  <StaticText text={"As a faculty member at [University Name], I've had the privilege of working"} />
                 </p>
                 <ul className='flex-align gap-8 mb-16'>
                   <li className='text-warning-600 text-xl d-flex'>
@@ -162,8 +161,8 @@ const TestimonialsThree = () => {
                     <i className='ph-fill ph-star-half' />
                   </li>
                 </ul>
-                <h4 className='mb-16 text-lg'>Courtney Henry</h4>
-                <span className='text-neutral-500'>Student</span>
+                <h4 className='mb-16 text-lg'><StaticText text={"Courtney Henry"} /></h4>
+                <span className='text-neutral-500'><StaticText text={"Student"} /></span>
               </div>
               <div className='testimonials-three-item bg-white p-24 rounded-12 box-shadow-md'>
                 <div className='w-90 h-90 rounded-circle position-relative mb-4'>
@@ -177,8 +176,7 @@ const TestimonialsThree = () => {
                   </span>
                 </div>
                 <p className='text-neutral-500 my-24'>
-                  "The faculty at are not only experts in their fields but
-                  teaching students."
+                  <StaticText text={"\"The faculty at are not only experts in their fields but teaching students.\""} />
                 </p>
                 <ul className='flex-align gap-8 mb-16'>
                   <li className='text-warning-600 text-xl d-flex'>
@@ -197,8 +195,8 @@ const TestimonialsThree = () => {
                     <i className='ph-fill ph-star-half' />
                   </li>
                 </ul>
-                <h4 className='mb-16 text-lg'>Brooklyn Simmons</h4>
-                <span className='text-neutral-500'>Student</span>
+                <h4 className='mb-16 text-lg'><StaticText text={"Brooklyn Simmons"} /></h4>
+                <span className='text-neutral-500'><StaticText text={"Student"} /></span>
               </div>
             </Slider>
           </div>
@@ -207,14 +205,11 @@ const TestimonialsThree = () => {
               <span className='text-main-600 text-2xl d-flex'>
                 <i className='ph-bold ph-book-open' />
               </span>
-              <h5 className='text-main-600 mb-0'>Testimonials</h5>
+              <h5 className='text-main-600 mb-0'><StaticText text={"Testimonials"} /></h5>
             </div>
-            <h2 className='mb-24 wow bounceInRight'>What Our Community Says</h2>
+            <h2 className='mb-24 wow bounceInRight'><StaticText text={"What Our Community Says"} /></h2>
             <p className='text-neutral-500 text-line-4 wow bounceInUp'>
-              Welcome to our testimonial section, where members of our
-              university community share their experiences and insights about
-              life at EduAll. We invite you to join us and be part of our
-              inspiring journey of learning, growth, and achievement.
+              <StaticText text={"Welcome to our testimonial section, where members of our university community share their experiences and insights about life at EduAll. We invite you to join us and be part of our inspiring journey of learning, growth, and achievement."} />
             </p>
             <div className='flex-align gap-16 mt-40'>
               <button

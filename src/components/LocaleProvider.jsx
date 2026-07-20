@@ -3,7 +3,12 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { DEFAULT_LOCALE, getStaticTextTranslations, setActiveLocale, SUPPORTED_LOCALES, translate } from "@/lib/i18n";
 
-const LocaleContext = createContext({ locale: DEFAULT_LOCALE, setLocale: () => {}, t: (key) => key });
+const LocaleContext = createContext({
+  locale: DEFAULT_LOCALE,
+  setLocale: () => {},
+  t: (key) => key,
+  tx: (text) => text,
+});
 const translatableAttributes = ["placeholder", "title", "aria-label", "alt"];
 const excludedParents = new Set(["SCRIPT", "STYLE", "NOSCRIPT", "TEXTAREA"]);
 const originalText = new WeakMap();
@@ -15,6 +20,7 @@ const localizeStaticContent = (root, translations) => {
   while (walker.nextNode()) nodes.push(walker.currentNode);
   nodes.forEach((node) => {
     if (!node.parentElement || excludedParents.has(node.parentElement.tagName)) return;
+    if (node.parentElement.closest("[data-i18n-managed='true']")) return;
     const original = originalText.get(node) ?? node.nodeValue;
     originalText.set(node, original);
     const trimmed = original.trim();
@@ -43,7 +49,13 @@ export default function LocaleProvider({ children }) {
     updateLocale(next);
     window.localStorage.setItem("eduall.locale", next);
   }, []);
-  const value = useMemo(() => ({ locale, setLocale, t: (key, params) => translate(key, params, locale) }), [locale, setLocale]);
+  const staticTranslations = useMemo(() => getStaticTextTranslations(locale), [locale]);
+  const value = useMemo(() => ({
+    locale,
+    setLocale,
+    t: (key, params) => translate(key, params, locale),
+    tx: (text) => staticTranslations[text] || text,
+  }), [locale, setLocale, staticTranslations]);
 
   useEffect(() => {
     const savedLocale = window.localStorage.getItem("eduall.locale");
@@ -55,9 +67,12 @@ export default function LocaleProvider({ children }) {
 
   useEffect(() => {
     if (!isHydrated) return undefined;
-    const translations = getStaticTextTranslations(locale);
+    const translations = staticTranslations;
     const root = document.body;
     document.documentElement.lang = locale;
+    const originalTitle = document.documentElement.dataset.originalTitle || document.title;
+    document.documentElement.dataset.originalTitle = originalTitle;
+    document.title = translations[originalTitle] || originalTitle;
     let observer;
     const timeout = window.setTimeout(() => {
       localizeStaticContent(root, translations);
@@ -68,7 +83,7 @@ export default function LocaleProvider({ children }) {
       window.clearTimeout(timeout);
       observer?.disconnect();
     };
-  }, [isHydrated, locale]);
+  }, [isHydrated, locale, staticTranslations]);
 
   return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;
 }

@@ -8,6 +8,10 @@ import AdminRowActions from "@/components/admin/AdminRowActions";
 import AdminSearchSelect from "@/components/admin/AdminSearchSelect";
 import AdminStatusBadge from "@/components/admin/AdminStatusBadge";
 import { activateTopic, createTopic, deactivateTopic, fetchTopics, updateTopic } from "@/lib/api";
+import StaticText from "@/components/StaticText";
+import StaticOption from "@/components/StaticOption";
+
+
 
 const AdminTopicsPage = ({ subjectId }) => {
   const [topics, setTopics] = useState([]);
@@ -130,11 +134,11 @@ const AdminTopicsPage = ({ subjectId }) => {
       <div className='bg-white rounded-10 px-24 py-24'>
         <div className='d-flex flex-wrap align-items-center justify-content-between gap-16 mb-24'>
           <div>
-            <h4 className='fw-semibold text-neutral-500 text-20 mb-4'>Topics</h4>
-            <p className='text-14 text-neutral-400 mb-0'>Subject ID: {subjectId}</p>
+            <h4 className='fw-semibold text-neutral-500 text-20 mb-4'><StaticText text={"Topics"} /></h4>
+            <p className='text-14 text-neutral-400 mb-0'><StaticText text={"Subject ID:"} /> {subjectId}</p>
           </div>
           <div className='d-flex flex-wrap align-items-center gap-8'>
-            <Link href={`/admin/courses/${subjectId}/topics/new`} className='btn btn-main rounded-pill px-20'>Create Topic</Link>
+            <Link href={`/admin/courses/${subjectId}/topics/new`} className='btn btn-main rounded-pill px-20'><StaticText text={"Create Topic"} /></Link>
             <AdminRefreshButton isLoading={isLoading} onClick={() => loadTopics(meta.page)} />
           </div>
         </div>
@@ -151,16 +155,16 @@ const AdminTopicsPage = ({ subjectId }) => {
             onChange={setParentTopic}
             minWidthClass='min-w-220-px'
           />
-          <button type='submit' className='btn btn-main rounded-pill px-24' disabled={isSubmitting}>{isSubmitting ? "Creating..." : "Create"}</button>
+          <button type='submit' className='btn btn-main rounded-pill px-24' disabled={isSubmitting}>{isSubmitting ? <StaticText text={"Creating..."} /> : <StaticText text={"Create"} />}</button>
         </form>
 
         <div className='d-flex flex-wrap align-items-center gap-12 mb-24'>
           <input className='common-input rounded-pill flex-grow-1 min-w-220-px' placeholder='Search topics...' value={search} onChange={(event) => setSearch(event.target.value)} />
           <AdminGradeSelect value={gradeId} onChange={setGradeId} minWidthClass='min-w-140-px' />
           <select className='form-select rounded-pill border-neutral-40 text-14 py-11 px-16 w-auto min-w-160-px' value={active} onChange={(event) => setActive(event.target.value)}>
-            <option value=''>All statuses</option>
-            <option value='true'>Active</option>
-            <option value='false'>Inactive</option>
+            <StaticOption value='' text={"All statuses"} />
+            <StaticOption value='true' text={"Active"} />
+            <StaticOption value='false' text={"Inactive"} />
           </select>
         </div>
 
@@ -170,16 +174,16 @@ const AdminTopicsPage = ({ subjectId }) => {
           <table className='table mb-0'>
             <thead>
               <tr>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Topic</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Code</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Grade</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Status</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20 text-end'>Action</th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Topic"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Code"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Grade"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Status"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20 text-end'><StaticText text={"Action"} /></th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='5'>Loading...</td></tr>
+                <tr><td className='py-20 px-20 text-neutral-400' colSpan='5'><StaticText text={"Loading..."} /></td></tr>
               ) : topics.length ? (
                 topics.map((topic) => (
                   <tr key={topic.id}>
@@ -191,16 +195,16 @@ const AdminTopicsPage = ({ subjectId }) => {
                   </tr>
                 ))
               ) : (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='5'>No topics found.</td></tr>
+                <tr><td className='py-20 px-20 text-neutral-400' colSpan='5'><StaticText text={"No topics found."} /></td></tr>
               )}
             </tbody>
           </table>
         </div>
 
         <div className='d-flex align-items-center justify-content-end gap-8 mt-24'>
-          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page <= 1} onClick={() => loadTopics(Math.max(meta.page - 1, 1))}>Previous</button>
+          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page <= 1} onClick={() => loadTopics(Math.max(meta.page - 1, 1))}><StaticText text={"Previous"} /></button>
           <span className='text-14 text-neutral-400'>{meta.page} / {meta.totalPages}</span>
-          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page >= meta.totalPages} onClick={() => loadTopics(Math.min(meta.page + 1, meta.totalPages))}>Next</button>
+          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page >= meta.totalPages} onClick={() => loadTopics(Math.min(meta.page + 1, meta.totalPages))}><StaticText text={"Next"} /></button>
         </div>
       </div>
     </div>

@@ -13,6 +13,8 @@ import {
   revokeExamAssignment,
   unarchiveExam,
 } from "@/lib/api";
+import StaticText from "@/components/StaticText";
+
 
 const formatDate = (value) => {
   if (!value) return "-";
@@ -142,20 +144,20 @@ const AdminExamDetailPage = ({ examId }) => {
       <div className='bg-white rounded-10 px-24 py-24'>
         <div className='d-flex flex-wrap align-items-center justify-content-between gap-16 mb-24'>
           <div>
-            <h4 className='fw-semibold text-neutral-500 text-20 mb-4'>Exam Detail</h4>
+            <h4 className='fw-semibold text-neutral-500 text-20 mb-4'><StaticText text={"Exam Detail"} /></h4>
             <p className='text-14 text-neutral-400 mb-0'>{examId}</p>
           </div>
           <div className='d-flex flex-wrap align-items-center gap-8'>
-            <Link href='/admin/exams' className='px-18 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white'>Exams</Link>
-            <Link href={`/admin/exams/${examId}/statistics`} className='px-18 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white'>Statistics</Link>
-            <Link href={`/admin/exams/${examId}/attempts`} className='btn btn-main rounded-pill px-20'>Attempts</Link>
+            <Link href='/admin/exams' className='px-18 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white'><StaticText text={"Exams"} /></Link>
+            <Link href={`/admin/exams/${examId}/statistics`} className='px-18 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white'><StaticText text={"Statistics"} /></Link>
+            <Link href={`/admin/exams/${examId}/attempts`} className='btn btn-main rounded-pill px-20'><StaticText text={"Attempts"} /></Link>
             {exam ? (
               <>
                 <button type='button' className='px-18 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' disabled={isActing} onClick={changeArchiveState}>
-                  {exam.status === "ARCHIVED" ? "Restore" : "Archive"}
+                  {exam.status === "ARCHIVED" ? <StaticText text={"Restore"} /> : <StaticText text={"Archive"} />}
                 </button>
                 <button type='button' className='px-18 py-10 border border-danger-200 rounded-pill text-14 text-danger bg-white' disabled={isActing} onClick={removeExam}>
-                  Delete
+                  <StaticText text={"Delete"} />
                 </button>
               </>
             ) : null}
@@ -163,7 +165,7 @@ const AdminExamDetailPage = ({ examId }) => {
           </div>
         </div>
 
-        {isLoading ? <p className='text-14 text-neutral-400 mb-0'>Loading...</p> : null}
+        {isLoading ? <p className='text-14 text-neutral-400 mb-0'><StaticText text={"Loading..."} /></p> : null}
         {notice ? <div className='alert alert-success text-14 py-10 mb-16'>{notice}</div> : null}
         {error ? <div className='alert alert-danger text-14 py-10 mb-16'>{error}</div> : null}
 
@@ -172,26 +174,26 @@ const AdminExamDetailPage = ({ examId }) => {
             <div className='row gy-3 mb-24'>
               <div className='col-md-6'>
                 <div className='border border-neutral-30 rounded-12 p-16 h-100'>
-                  <span className='text-13 text-neutral-400 d-block mb-4'>Title</span>
-                  <strong className='text-16 text-neutral-500'>{exam.title || "Untitled exam"}</strong>
+                  <span className='text-13 text-neutral-400 d-block mb-4'><StaticText text={"Title"} /></span>
+                  <strong className='text-16 text-neutral-500'>{exam.title || <StaticText text={"Untitled exam"} />}</strong>
                   {exam.description ? <p className='text-14 text-neutral-400 mt-8 mb-0'>{exam.description}</p> : null}
                 </div>
               </div>
-              <div className='col-md-2'><div className='border border-neutral-30 rounded-12 p-16 h-100'><span className='text-13 text-neutral-400 d-block mb-4'>Status</span><AdminStatusBadge status={exam.status} /></div></div>
-              <div className='col-md-2'><div className='border border-neutral-30 rounded-12 p-16 h-100'><span className='text-13 text-neutral-400 d-block mb-4'>Questions</span><strong className='text-16 text-neutral-500'>{exam.totalQuestions ?? "-"}</strong></div></div>
-              <div className='col-md-2'><div className='border border-neutral-30 rounded-12 p-16 h-100'><span className='text-13 text-neutral-400 d-block mb-4'>Max score</span><strong className='text-16 text-neutral-500'>{exam.totalMaxScore ?? "-"}</strong></div></div>
-              <div className='col-md-3'><div className='border border-neutral-30 rounded-12 p-16 h-100'><span className='text-13 text-neutral-400 d-block mb-4'>Visibility</span><strong className='text-15 text-neutral-500'>{exam.visibility || "-"}</strong></div></div>
-              <div className='col-md-3'><div className='border border-neutral-30 rounded-12 p-16 h-100'><span className='text-13 text-neutral-400 d-block mb-4'>Scoring</span><strong className='text-15 text-neutral-500'>{exam.scoringPolicy || "-"}</strong></div></div>
-              <div className='col-md-3'><div className='border border-neutral-30 rounded-12 p-16 h-100'><span className='text-13 text-neutral-400 d-block mb-4'>Duration</span><strong className='text-15 text-neutral-500'>{exam.durationMinutes ? `${exam.durationMinutes} min` : "Untimed"}</strong></div></div>
-              <div className='col-md-3'><div className='border border-neutral-30 rounded-12 p-16 h-100'><span className='text-13 text-neutral-400 d-block mb-4'>Created</span><strong className='text-15 text-neutral-500'>{formatDate(exam.createdAt)}</strong></div></div>
+              <div className='col-md-2'><div className='border border-neutral-30 rounded-12 p-16 h-100'><span className='text-13 text-neutral-400 d-block mb-4'><StaticText text={"Status"} /></span><AdminStatusBadge status={exam.status} /></div></div>
+              <div className='col-md-2'><div className='border border-neutral-30 rounded-12 p-16 h-100'><span className='text-13 text-neutral-400 d-block mb-4'><StaticText text={"Questions"} /></span><strong className='text-16 text-neutral-500'>{exam.totalQuestions ?? "-"}</strong></div></div>
+              <div className='col-md-2'><div className='border border-neutral-30 rounded-12 p-16 h-100'><span className='text-13 text-neutral-400 d-block mb-4'><StaticText text={"Max score"} /></span><strong className='text-16 text-neutral-500'>{exam.totalMaxScore ?? "-"}</strong></div></div>
+              <div className='col-md-3'><div className='border border-neutral-30 rounded-12 p-16 h-100'><span className='text-13 text-neutral-400 d-block mb-4'><StaticText text={"Visibility"} /></span><strong className='text-15 text-neutral-500'>{exam.visibility || "-"}</strong></div></div>
+              <div className='col-md-3'><div className='border border-neutral-30 rounded-12 p-16 h-100'><span className='text-13 text-neutral-400 d-block mb-4'><StaticText text={"Scoring"} /></span><strong className='text-15 text-neutral-500'>{exam.scoringPolicy || "-"}</strong></div></div>
+              <div className='col-md-3'><div className='border border-neutral-30 rounded-12 p-16 h-100'><span className='text-13 text-neutral-400 d-block mb-4'><StaticText text={"Duration"} /></span><strong className='text-15 text-neutral-500'>{exam.durationMinutes ? `${exam.durationMinutes} min` : <StaticText text={"Untimed"} />}</strong></div></div>
+              <div className='col-md-3'><div className='border border-neutral-30 rounded-12 p-16 h-100'><span className='text-13 text-neutral-400 d-block mb-4'><StaticText text={"Created"} /></span><strong className='text-15 text-neutral-500'>{formatDate(exam.createdAt)}</strong></div></div>
             </div>
 
             <div className='mb-24'>
-              <label className='text-14 text-neutral-500 fw-medium mb-8'>Exam link</label>
+              <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Exam link"} /></label>
               <div className='d-flex flex-wrap align-items-center gap-10'>
                 <input className='common-input rounded-pill flex-grow-1 min-w-240-px' readOnly value={getPreviewUrl(exam)} onFocus={(event) => event.target.select()} />
                 <button type='button' className='btn btn-main rounded-pill px-20' onClick={copyLink}>
-                  Copy link
+                  <StaticText text={"Copy link"} />
                 </button>
               </div>
               {copyStatus ? <p className='text-14 text-neutral-400 mt-8 mb-0'>{copyStatus}</p> : null}
@@ -200,12 +202,12 @@ const AdminExamDetailPage = ({ examId }) => {
             <div className='border border-neutral-30 rounded-12 p-20 mb-24'>
               <div className='d-flex flex-wrap align-items-start justify-content-between gap-12 mb-16'>
                 <div>
-                  <h5 className='text-16 fw-semibold text-neutral-500 mb-4'>Assigned learners</h5>
+                  <h5 className='text-16 fw-semibold text-neutral-500 mb-4'><StaticText text={"Assigned learners"} /></h5>
                   <p className='text-13 text-neutral-400 mb-0'>
-                    Adding learners switches the exam to assigned visibility.
+                    <StaticText text={"Adding learners switches the exam to assigned visibility."} />
                   </p>
                 </div>
-                <span className='text-13 text-neutral-400'>{exam.assignedUserIds?.length || 0} assigned</span>
+                <span className='text-13 text-neutral-400'>{exam.assignedUserIds?.length || 0} <StaticText text={"assigned"} /></span>
               </div>
               <form className='d-flex flex-wrap align-items-center gap-10 mb-16' onSubmit={addAssignments}>
                 <input
@@ -215,7 +217,7 @@ const AdminExamDetailPage = ({ examId }) => {
                   onChange={(event) => setAssignmentInput(event.target.value)}
                 />
                 <button type='submit' className='btn btn-main rounded-pill px-20' disabled={isActing}>
-                  Add assignments
+                  <StaticText text={"Add assignments"} />
                 </button>
               </form>
               {exam.assignedUserIds?.length ? (
@@ -236,21 +238,21 @@ const AdminExamDetailPage = ({ examId }) => {
                   ))}
                 </div>
               ) : (
-                <p className='text-14 text-neutral-400 mb-0'>No learners are assigned.</p>
+                <p className='text-14 text-neutral-400 mb-0'><StaticText text={"No learners are assigned."} /></p>
               )}
             </div>
 
-            <h5 className='text-16 fw-semibold text-neutral-500 mb-12'>Sections</h5>
+            <h5 className='text-16 fw-semibold text-neutral-500 mb-12'><StaticText text={"Sections"} /></h5>
             <div className='table-responsive admin-users-table'>
               <table className='table mb-0'>
                 <thead>
                   <tr>
-                    <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Section</th>
-                    <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Subject</th>
-                    <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Type</th>
-                    <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Difficulty</th>
-                    <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Questions</th>
-                    <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Points</th>
+                    <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Section"} /></th>
+                    <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Subject"} /></th>
+                    <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Type"} /></th>
+                    <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Difficulty"} /></th>
+                    <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Questions"} /></th>
+                    <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Points"} /></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -266,7 +268,7 @@ const AdminExamDetailPage = ({ examId }) => {
                       </tr>
                     ))
                   ) : (
-                    <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'>No sections found.</td></tr>
+                    <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'><StaticText text={"No sections found."} /></td></tr>
                   )}
                 </tbody>
               </table>

@@ -1,4 +1,6 @@
 import Link from "next/link";
+import StaticText from "@/components/StaticText";
+
 
 const AboutTwo = () => {
   return (
@@ -30,8 +32,8 @@ const AboutTwo = () => {
                     <i className='ph ph-watch' />
                   </span>
                   <div>
-                    <h6 className='mb-4'>20% ENDİRİM</h6>
-                    <span className=''>Bütün planlarda</span>
+                    <h6 className='mb-4'><StaticText text={"20% ENDİRİM"} /></h6>
+                    <span className=''><StaticText text={"Bütün planlarda"} /></span>
                   </div>
                 </div>
                 <div className='offer-message style-two d-none me-lg-0 me-24 px-24 py-12 rounded-12 bg-white fw-medium flex-align d-inline-flex gap-16 box-shadow-lg animation-upDown'>
@@ -40,10 +42,10 @@ const AboutTwo = () => {
                   </span>
                   <div>
                     <span className='text-lg text-neutral-700 d-block'>
-                      4.6
-                      <span className='text-neutral-100'>(2.4k)</span>
+                      <StaticText text={"4.6"} />
+                      <span className='text-neutral-100'><StaticText text={"(2.4k)"} /></span>
                     </span>
-                    <span className='text-neutral-500'>Rəy ortalaması</span>
+                    <span className='text-neutral-500'><StaticText text={"Rəy ortalaması"} /></span>
                   </div>
                 </div>
                 <div className='position-absolute inset-block-end-0 inset-inline-end-0 me-lg-0 me-24 px-24 py-12 rounded-12 bg-white fw-medium flex-align d-inline-flex gap-16 box-shadow-lg animation-upDown'>
@@ -53,9 +55,9 @@ const AboutTwo = () => {
                       className='d-sm-flex d-none mb-24'
                       alt=''
                     />
-                    <h6 className='mb-4 text-neutral-700 text-2xl'>Aydın</h6>
+                    <h6 className='mb-4 text-neutral-700 text-2xl'><StaticText text={"Aydın"} /></h6>
                     <span className='text-sm text-neutral-500'>
-                      Ölçülə bilən inkişaf
+                      <StaticText text={"Ölçülə bilən inkişaf"} />
                     </span>
                   </div>
                 </div>
@@ -68,17 +70,13 @@ const AboutTwo = () => {
                     <span className='text-main-600 text-2xl d-flex'>
                       <i className='ph-bold ph-book' />
                     </span>
-                    <h5 className='text-main-600 mb-0'>Niyə biz?</h5>
+                    <h5 className='text-main-600 mb-0'><StaticText text={"Niyə biz?"} /></h5>
                   </div>
                   <h2 className='mb-24 wow bounceIn'>
-                    Məqsədimiz biliyi ölçmək, inkişafı görünən etməkdir
+                    <StaticText text={"Məqsədimiz biliyi ölçmək, inkişafı görünən etməkdir"} />
                   </h2>
                   <p className='text-neutral-500 text-line-2 wow bounceInUp'>
-                    Missiyamız valideynlərə və tələbələrə real bilik səviyyəsini
-                    aydın göstərən, süni intellektlə dəstəklənən sınaq və analiz
-                    sistemi təqdim etməkdir. Vizyonumuz hər uşağın hazırlığını
-                    vaxtında izləyə bildiyi, zəif mövzuları sürətlə gücləndirdiyi
-                    şəffaf və əlçatan təhsil mühiti qurmaqdır.
+                    <StaticText text={"Missiyamız valideynlərə və tələbələrə real bilik səviyyəsini aydın göstərən, süni intellektlə dəstəklənən sınaq və analiz sistemi təqdim etməkdir. Vizyonumuz hər uşağın hazırlığını vaxtında izləyə bildiyi, zəif mövzuları sürətlə gücləndirdiyi şəffaf və əlçatan təhsil mühiti qurmaqdır."} />
                   </p>
                 </div>
                 <div className='grid-cols-2'>
@@ -96,10 +94,10 @@ const AboutTwo = () => {
                     </span>
                     <div className='flex-grow-1'>
                       <h6 className='text-neutral-800 text-xl fw-medium mb-8'>
-                        Dəqiq sınaqlar
+                        <StaticText text={"Dəqiq sınaqlar"} />
                       </h6>
                       <p className='text-neutral-500 text-line-2'>
-                        Mövzuya uyğun testlər bilik səviyyəsini obyektiv ölçür.
+                        <StaticText text={"Mövzuya uyğun testlər bilik səviyyəsini obyektiv ölçür."} />
                       </p>
                     </div>
                   </div>
@@ -117,10 +115,10 @@ const AboutTwo = () => {
                     </span>
                     <div className='flex-grow-1'>
                       <h6 className='text-neutral-800 text-xl fw-medium mb-8'>
-                        Süni intellektli suallar
+                        <StaticText text={"Süni intellektli suallar"} />
                       </h6>
                       <p className='text-neutral-500 text-line-2'>
-                        Hər sınaqda yeni və məqsədli suallar hazırlanır.
+                        <StaticText text={"Hər sınaqda yeni və məqsədli suallar hazırlanır."} />
                       </p>
                     </div>
                   </div>
@@ -138,10 +136,10 @@ const AboutTwo = () => {
                     </span>
                     <div className='flex-grow-1'>
                       <h6 className='text-neutral-800 text-xl fw-medium mb-8'>
-                        Nəticə analizi
+                        <StaticText text={"Nəticə analizi"} />
                       </h6>
                       <p className='text-neutral-500 text-line-2'>
-                        Güclü və zəif mövzular hesabatlarda aydın görünür.
+                        <StaticText text={"Güclü və zəif mövzular hesabatlarda aydın görünür."} />
                       </p>
                     </div>
                   </div>
@@ -159,10 +157,10 @@ const AboutTwo = () => {
                     </span>
                     <div className='flex-grow-1'>
                       <h6 className='text-neutral-800 text-xl fw-medium mb-8'>
-                        Valideyn nəzarəti
+                        <StaticText text={"Valideyn nəzarəti"} />
                       </h6>
                       <p className='text-neutral-500 text-line-2'>
-                        Valideynlər inkişafı izləyir və düzgün qərar verir.
+                        <StaticText text={"Valideynlər inkişafı izləyir və düzgün qərar verir."} />
                       </p>
                     </div>
                   </div>
@@ -172,7 +170,7 @@ const AboutTwo = () => {
                     href='/course'
                     className='btn btn-main rounded-pill flex-align d-inline-flex gap-8'
                   >
-                    Daha çox
+                    <StaticText text={"Daha çox"} />
                     <i className='ph-bold ph-arrow-up-right d-flex text-lg' />
                   </Link>
                 </div>

@@ -5,6 +5,10 @@ import AdminRefreshButton from "@/components/admin/AdminRefreshButton";
 import AdminRowActions from "@/components/admin/AdminRowActions";
 import AdminStatusBadge from "@/components/admin/AdminStatusBadge";
 import { dismissAdminReport, fetchAdminReports, resolveAdminReport } from "@/lib/api";
+import StaticText from "@/components/StaticText";
+import StaticOption from "@/components/StaticOption";
+
+
 
 const statuses = ["OPEN", "RESOLVED", "DISMISSED"];
 
@@ -61,8 +65,8 @@ const AdminReportsPage = () => {
       <div className='bg-white rounded-10 px-24 py-24'>
         <div className='d-flex flex-wrap align-items-center justify-content-between gap-16 mb-24'>
           <div>
-            <h4 className='fw-semibold text-neutral-500 text-20 mb-4'>Reports</h4>
-            <p className='text-14 text-neutral-400 mb-0'>Question report queue and moderation actions.</p>
+            <h4 className='fw-semibold text-neutral-500 text-20 mb-4'><StaticText text={"Reports"} /></h4>
+            <p className='text-14 text-neutral-400 mb-0'><StaticText text={"Question report queue and moderation actions."} /></p>
           </div>
           <AdminRefreshButton isLoading={isLoading} onClick={() => loadReports({ page: meta.page })} />
         </div>
@@ -73,7 +77,7 @@ const AdminReportsPage = () => {
             value={status}
             onChange={(event) => setStatus(event.target.value)}
           >
-            <option value=''>All statuses</option>
+            <StaticOption value='' text={"All statuses"} />
             {statuses.map((item) => (
               <option value={item} key={item}>{item}</option>
             ))}
@@ -86,16 +90,16 @@ const AdminReportsPage = () => {
           <table className='table mb-0'>
             <thead>
               <tr>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Reason</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Comment</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Question</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Status</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20 text-end'>Action</th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Reason"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Comment"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Question"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Status"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20 text-end'><StaticText text={"Action"} /></th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='5'>Loading...</td></tr>
+                <tr><td className='py-20 px-20 text-neutral-400' colSpan='5'><StaticText text={"Loading..."} /></td></tr>
               ) : reports.length ? (
                 reports.map((report) => (
                   <tr key={report.id}>
@@ -107,16 +111,16 @@ const AdminReportsPage = () => {
                   </tr>
                 ))
               ) : (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='5'>No reports found.</td></tr>
+                <tr><td className='py-20 px-20 text-neutral-400' colSpan='5'><StaticText text={"No reports found."} /></td></tr>
               )}
             </tbody>
           </table>
         </div>
 
         <div className='d-flex align-items-center justify-content-end gap-8 mt-24'>
-          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page <= 1} onClick={() => loadReports({ page: Math.max(meta.page - 1, 1) })}>Previous</button>
+          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page <= 1} onClick={() => loadReports({ page: Math.max(meta.page - 1, 1) })}><StaticText text={"Previous"} /></button>
           <span className='text-14 text-neutral-400'>{meta.page} / {meta.totalPages}</span>
-          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page >= meta.totalPages} onClick={() => loadReports({ page: Math.min(meta.page + 1, meta.totalPages) })}>Next</button>
+          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page >= meta.totalPages} onClick={() => loadReports({ page: Math.min(meta.page + 1, meta.totalPages) })}><StaticText text={"Next"} /></button>
         </div>
       </div>
     </div>

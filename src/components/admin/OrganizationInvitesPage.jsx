@@ -14,6 +14,10 @@ import {
   fetchPublicSubjects,
   fetchPublicTopics,
 } from "@/lib/api";
+import StaticText from "@/components/StaticText";
+import StaticOption from "@/components/StaticOption";
+
+
 
 const emptyForm = {
   title: "",
@@ -330,10 +334,10 @@ const OrganizationInvitesPage = () => {
         <div className='d-flex flex-wrap align-items-start justify-content-between gap-16 mb-24'>
           <div>
             <h4 className='fw-semibold text-neutral-500 text-20 mb-4'>
-              Organization test invites
+              <StaticText text={"Organization test invites"} />
             </h4>
             <p className='text-14 text-neutral-400 mb-0'>
-              Build a fixed test, share its code and review member results.
+              <StaticText text={"Build a fixed test, share its code and review member results."} />
             </p>
           </div>
           <div className='d-flex flex-wrap gap-8'>
@@ -342,7 +346,7 @@ const OrganizationInvitesPage = () => {
                 href={`/admin/members?orgId=${encodeURIComponent(selectedOrganizationId)}`}
                 className='px-16 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white'
               >
-                View members
+                <StaticText text={"View members"} />
               </Link>
             ) : null}
             <AdminRefreshButton isLoading={isRefreshing} onClick={refreshPage} />
@@ -373,7 +377,7 @@ const OrganizationInvitesPage = () => {
           <div className='col-lg-4'>
             <div className='border border-neutral-30 rounded-10 px-16 py-12'>
               <span className='text-12 text-neutral-400 d-block mb-2'>
-                Selected organization
+                <StaticText text={"Selected organization"} />
               </span>
               <span className='text-14 fw-medium text-neutral-500'>
                 {selectedOrganization?.name || "-"}
@@ -385,10 +389,10 @@ const OrganizationInvitesPage = () => {
         {!isLoadingOrganizations && !organizations.length ? (
           <div className='border border-neutral-30 rounded-10 px-20 py-24 text-center'>
             <p className='text-14 text-neutral-400 mb-12'>
-              Create an organization before generating an invite.
+              <StaticText text={"Create an organization before generating an invite."} />
             </p>
             <Link href='/admin/organizations' className='btn btn-main rounded-pill px-20'>
-              Go to organizations
+              <StaticText text={"Go to organizations"} />
             </Link>
           </div>
         ) : (
@@ -396,7 +400,7 @@ const OrganizationInvitesPage = () => {
             <div className='row gy-3'>
               <div className='col-lg-6'>
                 <label className='text-14 text-neutral-500 fw-medium mb-8'>
-                  Title
+                  <StaticText text={"Title"} />
                 </label>
                 <input
                   name='title'
@@ -410,7 +414,7 @@ const OrganizationInvitesPage = () => {
               </div>
               <div className='col-lg-6'>
                 <label className='text-14 text-neutral-500 fw-medium mb-8'>
-                  Subject
+                  <StaticText text={"Subject"} />
                 </label>
                 <select
                   name='subjectId'
@@ -419,9 +423,10 @@ const OrganizationInvitesPage = () => {
                   disabled={isLoadingTaxonomy || isSubmitting}
                   onChange={handleFormChange}
                 >
-                  <option value=''>
-                    {isLoadingTaxonomy ? "Loading subjects..." : "Select subject"}
-                  </option>
+                  <StaticOption
+                    value=''
+                    text={isLoadingTaxonomy ? "Loading subjects..." : "Select subject"}
+                  />
                   {subjects.map((subject) => (
                     <option value={subject.id} key={subject.id}>
                       {subject.name || subject.nameAz || subject.code}
@@ -432,7 +437,7 @@ const OrganizationInvitesPage = () => {
               </div>
               <div className='col-12'>
                 <label className='text-14 text-neutral-500 fw-medium mb-8'>
-                  Description
+                  <StaticText text={"Description"} />
                 </label>
                 <textarea
                   name='description'
@@ -447,7 +452,7 @@ const OrganizationInvitesPage = () => {
               </div>
               <div className='col-lg-3 col-md-6'>
                 <label className='text-14 text-neutral-500 fw-medium mb-8'>
-                  Grade
+                  <StaticText text={"Grade"} />
                 </label>
                 <select
                   name='gradeId'
@@ -456,7 +461,7 @@ const OrganizationInvitesPage = () => {
                   disabled={isLoadingTaxonomy || isSubmitting}
                   onChange={handleFormChange}
                 >
-                  <option value=''>All grades</option>
+                  <StaticOption value='' text={"All grades"} />
                   {grades.map((grade) => (
                     <option value={grade.id} key={grade.id}>
                       {grade.nameAz || grade.code || `Grade ${grade.level || grade.id}`}
@@ -466,7 +471,7 @@ const OrganizationInvitesPage = () => {
               </div>
               <div className='col-lg-3 col-md-6'>
                 <label className='text-14 text-neutral-500 fw-medium mb-8'>
-                  Topic
+                  <StaticText text={"Topic"} />
                 </label>
                 <select
                   name='topicId'
@@ -475,9 +480,10 @@ const OrganizationInvitesPage = () => {
                   disabled={!form.subjectId || isLoadingTopics || isSubmitting}
                   onChange={handleFormChange}
                 >
-                  <option value=''>
-                    {isLoadingTopics ? "Loading topics..." : "All topics"}
-                  </option>
+                  <StaticOption
+                    value=''
+                    text={isLoadingTopics ? "Loading topics..." : "All topics"}
+                  />
                   {topics.map((topic) => (
                     <option value={topic.id} key={topic.id}>
                       {topic.name || topic.nameAz || topic.code}
@@ -488,7 +494,7 @@ const OrganizationInvitesPage = () => {
               </div>
               <div className='col-lg-3 col-md-6'>
                 <label className='text-14 text-neutral-500 fw-medium mb-8'>
-                  Difficulty
+                  <StaticText text={"Difficulty"} />
                 </label>
                 <select
                   name='difficulty'
@@ -497,14 +503,14 @@ const OrganizationInvitesPage = () => {
                   disabled={isSubmitting}
                   onChange={handleFormChange}
                 >
-                  <option value='EASY'>Easy</option>
-                  <option value='MEDIUM'>Medium</option>
-                  <option value='HARD'>Hard</option>
+                  <StaticOption value='EASY' text={"Easy"} />
+                  <StaticOption value='MEDIUM' text={"Medium"} />
+                  <StaticOption value='HARD' text={"Hard"} />
                 </select>
               </div>
               <div className='col-lg-3 col-md-6'>
                 <label className='text-14 text-neutral-500 fw-medium mb-8'>
-                  Questions
+                  <StaticText text={"Questions"} />
                 </label>
                 <input
                   name='questionCount'
@@ -519,7 +525,7 @@ const OrganizationInvitesPage = () => {
               </div>
               <div className='col-lg-4 col-md-6'>
                 <label className='text-14 text-neutral-500 fw-medium mb-8'>
-                  Duration (minutes)
+                  <StaticText text={"Duration (minutes)"} />
                 </label>
                 <input
                   name='durationMinutes'
@@ -534,7 +540,7 @@ const OrganizationInvitesPage = () => {
               </div>
               <div className='col-lg-4 col-md-6'>
                 <label className='text-14 text-neutral-500 fw-medium mb-8'>
-                  Maximum uses
+                  <StaticText text={"Maximum uses"} />
                 </label>
                 <input
                   name='maxUses'
@@ -549,7 +555,7 @@ const OrganizationInvitesPage = () => {
               </div>
               <div className='col-lg-4 col-md-6'>
                 <label className='text-14 text-neutral-500 fw-medium mb-8'>
-                  Invite lifetime (hours)
+                  <StaticText text={"Invite lifetime (hours)"} />
                 </label>
                 <input
                   name='ttlHours'
@@ -570,7 +576,7 @@ const OrganizationInvitesPage = () => {
                 className='btn btn-main rounded-pill px-24'
                 disabled={isSubmitting || !selectedOrganizationId}
               >
-                {isSubmitting ? "Creating invite..." : "Create test invite"}
+                {isSubmitting ? <StaticText text={"Creating invite..."} /> : <StaticText text={"Create test invite"} />}
               </button>
             </div>
           </form>
@@ -582,10 +588,10 @@ const OrganizationInvitesPage = () => {
           <div className='d-flex flex-wrap align-items-start justify-content-between gap-16 mb-20'>
             <div>
               <span className='text-12 fw-semibold text-success-600 d-block mb-4'>
-                INVITE READY
+                <StaticText text={"INVITE READY"} />
               </span>
               <h5 className='text-18 fw-semibold text-neutral-500 mb-0'>
-                Share this code with learners
+                <StaticText text={"Share this code with learners"} />
               </h5>
             </div>
             <AdminStatusBadge status={createdInvite.status || "ACTIVE"} />
@@ -593,7 +599,7 @@ const OrganizationInvitesPage = () => {
 
           <div className='row gy-3'>
             <div className='col-lg-6'>
-              <label className='text-13 text-neutral-400 mb-6'>Invite code</label>
+              <label className='text-13 text-neutral-400 mb-6'><StaticText text={"Invite code"} /></label>
               <div className='d-flex gap-8'>
                 <input
                   className='common-input rounded-pill font-monospace'
@@ -606,7 +612,7 @@ const OrganizationInvitesPage = () => {
                   disabled={!createdInvite.code}
                   onClick={copyInviteCode}
                 >
-                  Copy
+                  <StaticText text={"Copy"} />
                 </button>
               </div>
               {copyStatus ? (
@@ -616,7 +622,7 @@ const OrganizationInvitesPage = () => {
               ) : null}
             </div>
             <div className='col-lg-6'>
-              <label className='text-13 text-neutral-400 mb-6'>Test ID</label>
+              <label className='text-13 text-neutral-400 mb-6'><StaticText text={"Test ID"} /></label>
               <input
                 className='common-input rounded-pill font-monospace'
                 value={createdInvite.testId || ""}
@@ -624,19 +630,19 @@ const OrganizationInvitesPage = () => {
               />
             </div>
             <div className='col-md-4'>
-              <span className='text-13 text-neutral-400 d-block'>Usage</span>
+              <span className='text-13 text-neutral-400 d-block'><StaticText text={"Usage"} /></span>
               <span className='text-14 fw-medium text-neutral-500'>
                 {createdInvite.usedCount ?? 0} / {createdInvite.maxUses ?? "-"}
               </span>
             </div>
             <div className='col-md-4'>
-              <span className='text-13 text-neutral-400 d-block'>Expires</span>
+              <span className='text-13 text-neutral-400 d-block'><StaticText text={"Expires"} /></span>
               <span className='text-14 fw-medium text-neutral-500'>
                 {formatDate(createdInvite.expiresAt)}
               </span>
             </div>
             <div className='col-md-4'>
-              <span className='text-13 text-neutral-400 d-block'>Invite ID</span>
+              <span className='text-13 text-neutral-400 d-block'><StaticText text={"Invite ID"} /></span>
               <span className='text-14 fw-medium text-neutral-500 font-monospace'>
                 {createdInvite.id || "-"}
               </span>
@@ -649,10 +655,10 @@ const OrganizationInvitesPage = () => {
         <div className='d-flex flex-wrap align-items-start justify-content-between gap-16 mb-20'>
           <div>
             <h5 className='text-18 fw-semibold text-neutral-500 mb-4'>
-              Test results
+              <StaticText text={"Test results"} />
             </h5>
             <p className='text-14 text-neutral-400 mb-0'>
-              Enter a test ID created for the selected organization.
+              <StaticText text={"Enter a test ID created for the selected organization."} />
             </p>
           </div>
         </div>
@@ -660,7 +666,7 @@ const OrganizationInvitesPage = () => {
         <form className='row gy-3 align-items-end mb-20' onSubmit={handleResultSubmit}>
           <div className='col-lg-9'>
             <label className='text-14 text-neutral-500 fw-medium mb-8'>
-              Test ID
+              <StaticText text={"Test ID"} />
             </label>
             <input
               className='common-input rounded-pill font-monospace'
@@ -681,7 +687,7 @@ const OrganizationInvitesPage = () => {
               className='btn btn-main rounded-pill w-100'
               disabled={isLoadingResults || !selectedOrganizationId}
             >
-              {isLoadingResults ? "Loading..." : "View results"}
+              {isLoadingResults ? <StaticText text={"Loading..."} /> : <StaticText text={"View results"} />}
             </button>
           </div>
         </form>
@@ -695,19 +701,19 @@ const OrganizationInvitesPage = () => {
             <thead>
               <tr>
                 <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>
-                  Student
+                  <StaticText text={"Student"} />
                 </th>
                 <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>
-                  Type
+                  <StaticText text={"Type"} />
                 </th>
                 <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>
-                  Score
+                  <StaticText text={"Score"} />
                 </th>
                 <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>
-                  Correct
+                  <StaticText text={"Correct"} />
                 </th>
                 <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>
-                  Scored at
+                  <StaticText text={"Scored at"} />
                 </th>
               </tr>
             </thead>
@@ -715,7 +721,7 @@ const OrganizationInvitesPage = () => {
               {isLoadingResults ? (
                 <tr>
                   <td className='py-20 px-20 text-neutral-400' colSpan='5'>
-                    Loading test results...
+                    <StaticText text={"Loading test results..."} />
                   </td>
                 </tr>
               ) : results.length ? (
@@ -749,8 +755,8 @@ const OrganizationInvitesPage = () => {
                 <tr>
                   <td className='py-20 px-20 text-neutral-400' colSpan='5'>
                     {hasLoadedResults
-                      ? "No results found for this test."
-                      : "Enter a test ID to load results."}
+                      ? <StaticText text={"No results found for this test."} />
+                      : <StaticText text={"Enter a test ID to load results."} />}
                   </td>
                 </tr>
               )}
@@ -760,7 +766,7 @@ const OrganizationInvitesPage = () => {
 
         <div className='d-flex flex-wrap align-items-center justify-content-between gap-12 mt-24'>
           <span className='text-13 text-neutral-400'>
-            {resultMeta.total} result{resultMeta.total === 1 ? "" : "s"}
+            {resultMeta.total} <StaticText text={"result"} />{resultMeta.total === 1 ? "" : <StaticText text={"s"} />}
           </span>
           <div className='d-flex align-items-center gap-8'>
             <button
@@ -769,7 +775,7 @@ const OrganizationInvitesPage = () => {
               disabled={isLoadingResults || resultMeta.page <= 1}
               onClick={() => loadResults(Math.max(resultMeta.page - 1, 1))}
             >
-              Previous
+              <StaticText text={"Previous"} />
             </button>
             <span className='text-14 text-neutral-400'>
               {resultMeta.page} / {Math.max(resultMeta.totalPages, 1)}
@@ -788,7 +794,7 @@ const OrganizationInvitesPage = () => {
                 )
               }
             >
-              Next
+              <StaticText text={"Next"} />
             </button>
           </div>
         </div>

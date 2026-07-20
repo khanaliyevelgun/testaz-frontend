@@ -3,6 +3,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import StaticText from "@/components/StaticText";
+
 
 const SignInInner = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -55,9 +57,9 @@ const SignInInner = () => {
           <div className='col-lg-6'>
             <div className='auth-card bg-main-25 border border-neutral-30 rounded-8 p-32'>
               <div className='mb-40'>
-                <h3 className='mb-16 text-neutral-500'>Xoş gəlmisiniz!</h3>
+                <h3 className='mb-16 text-neutral-500'><StaticText text={"Xoş gəlmisiniz!"} /></h3>
                 <p className='text-neutral-500'>
-                  Hesabınıza daxil olun və bizə qoşulun
+                  <StaticText text={"Hesabınıza daxil olun və bizə qoşulun"} />
                 </p>
               </div>
               <form onSubmit={handleSubmit}>
@@ -66,7 +68,7 @@ const SignInInner = () => {
                     htmlFor='email'
                     className='fw-medium text-lg text-neutral-500 mb-16'
                   >
-                    Email ünvanınızı daxil edin
+                    <StaticText text={"Email ünvanınızı daxil edin"} />
                   </label>
                   <input
                     type='email'
@@ -84,7 +86,7 @@ const SignInInner = () => {
                     htmlFor='password'
                     className='fw-medium text-lg text-neutral-500 mb-16'
                   >
-                    Şifrənizi daxil edin
+                    <StaticText text={"Şifrənizi daxil edin"} />
                   </label>
                   <div className='position-relative'>
                     <input
@@ -110,17 +112,17 @@ const SignInInner = () => {
                     href='/forgot-password'
                     className='text-warning-600 hover-text-decoration-underline'
                   >
-                    Şifrəni unutmusunuz?
+                    <StaticText text={"Şifrəni unutmusunuz?"} />
                   </Link>
                 </div>
                 <div className='mb-16'>
                   <p className='text-neutral-500'>
-                    Hesabınız yoxdur?
+                    <StaticText text={"Hesabınız yoxdur?"} />
                     <Link
                       href='/sign-up'
                       className='fw-semibold text-main-600 hover-text-decoration-underline'
                     >
-                      Qeydiyyatdan keçin
+                      <StaticText text={"Qeydiyyatdan keçin"} />
                     </Link>
                   </p>
                 </div>
@@ -132,7 +134,7 @@ const SignInInner = () => {
                     className='btn btn-main rounded-pill d-flex align-items-center justify-content-center gap-8 mt-40'
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ? "Daxil olunur..." : "Daxil ol"}
+                    {isSubmitting ? <StaticText text={"Daxil olunur..."} /> : <StaticText text={"Daxil ol"} />}
                     <i className='ph-bold ph-arrow-up-right d-flex text-lg' />
                   </button>
                 </div>

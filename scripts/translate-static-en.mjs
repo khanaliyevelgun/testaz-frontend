@@ -1,9 +1,7 @@
-import { readFile, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { readStaticLocale, writeStaticLocale } from "./i18n-static-utils.mjs";
 
-const localesRoot = join(process.cwd(), "src", "locales");
-const sourceTexts = JSON.parse(await readFile(join(localesRoot, "static.source.json"), "utf8"));
-const translations = JSON.parse(await readFile(join(localesRoot, "static.en.json"), "utf8").catch(() => "{}"));
+const sourceTexts = await readStaticLocale("source", "static.source.json");
+const translations = await readStaticLocale("en", "static.en.json");
 const separator = "@@@EDUSINAQ_NEXT@@@";
 const maxBatches = Number(process.env.I18N_BATCHES || 0);
 
@@ -41,7 +39,7 @@ const translateBatch = async (entries) => {
 const selectedBatches = maxBatches > 0 ? batches.slice(0, maxBatches) : batches;
 for (const [index, entries] of selectedBatches.entries()) {
   await translateBatch(entries);
-  await writeFile(join(localesRoot, "static.en.json"), `${JSON.stringify(translations, null, 2)}\n`, "utf8");
+  await writeStaticLocale("en", translations);
   console.log(`Translated batch ${index + 1}/${selectedBatches.length}`);
   await new Promise((resolve) => setTimeout(resolve, 120));
 }

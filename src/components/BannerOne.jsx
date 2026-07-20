@@ -1,4 +1,6 @@
 import Link from "next/link";
+import StaticText from "@/components/StaticText";
+
 
 const BannerOne = () => {
   return (
@@ -36,30 +38,29 @@ const BannerOne = () => {
                 <span className='w-8 h-8 bg-main-600 rounded-circle' />
                 <h5 className='text-main-600 mb-0'>
                   {" "}
-                  Biliyini yoxla, inkişafını izlə
+                  <StaticText text={"Biliyini yoxla, inkişafını izlə"} />
                 </h5>
               </div>
               <h1 className='display2 mb-24 wow bounceInLeft'>
-                Övladınız üçün {" "}
+                <StaticText text={"Övladınız üçün"} /> {" "}
                 <span
                   className='text-main-two-600 wow bounceInLeft'
                   data-wow-duration='2s'
                   data-wow-delay='.5s'
                 >
-                  Doğru
+                  <StaticText text={"Doğru"} />
                 </span>
-                {" "} Sınaqlar, Güclü {" "}
+                {" "} <StaticText text={"Sınaqlar, Güclü"} /> {" "}
                 <span
                   className='text-main-600 wow bounceInUp'
                   data-wow-duration='1s'
                   data-wow-delay='.5s'
                 >
-                  Nəticələr
+                  <StaticText text={"Nəticələr"} />
                 </span>
               </h1>
               <p className='text-neutral-500 wow bounceInUp'>
-                Övladınız oxuyur deyir, amma əmin deyilsiniz? Evdə, telefondan, mövzu seçin və övladınızı sınaqdan keçirin. 
-                Süni intellekt hər dəfə yeni suallar yaradır.
+                <StaticText text={"Övladınız oxuyur deyir, amma əmin deyilsiniz? Evdə, telefondan, mövzu seçin və övladınızı sınaqdan keçirin. Süni intellekt hər dəfə yeni suallar yaradır."} />
               </p>
               <div className='buttons-wrapper flex-align flex-wrap gap-24 mt-40'>
                 <Link
@@ -67,7 +68,7 @@ const BannerOne = () => {
                   className='btn btn-main rounded-pill flex-align gap-8'
                   data-aos='fade-right'
                 >
-                  Qeydiyyatdan keç
+                  <StaticText text={"Qeydiyyatdan keç"} />
                   <i className='ph-bold ph-arrow-up-right d-flex text-lg' />
                 </Link>
                 <Link
@@ -75,7 +76,7 @@ const BannerOne = () => {
                   className='btn btn-outline-main rounded-pill flex-align gap-8'
                   data-aos='fade-left'
                 >
-                  Əlaqə
+                  <StaticText text={"Əlaqə"} />
                   <i className='ph ph-envelope d-flex text-lg' />
                 </Link>
               </div>
@@ -105,7 +106,7 @@ const BannerOne = () => {
                 className='banner-box one px-24 py-12 rounded-12 bg-white fw-medium box-shadow-lg d-inline-block'
                 data-aos='fade-down'
               >
-                <span className='text-main-600'>36k+</span> Suallıq test bazası
+                <span className='text-main-600'><StaticText text={"36k+"} /></span> <StaticText text={"Suallıq test bazası"} />
               </div>
               <div
                 className='banner-box two px-24 py-12 rounded-12 bg-white fw-medium box-shadow-lg flex-align d-inline-flex gap-16'
@@ -115,8 +116,8 @@ const BannerOne = () => {
                   <i className='ph ph-watch' />
                 </span>
                 <div>
-                  <h6 className='mb-4'>20% ENDİRİM</h6>
-                  <span className=''>Bütün planlarda</span>
+                  <h6 className='mb-4'><StaticText text={"20% ENDİRİM"} /></h6>
+                  <span className=''><StaticText text={"Bütün planlarda"} /></span>
                 </div>
               </div>
               <div
@@ -127,12 +128,12 @@ const BannerOne = () => {
                   <i className='ph ph-phone-call' />
                 </span>
                 <div>
-                  <span className=''>Əlaqə</span>
+                  <span className=''><StaticText text={"Əlaqə"} /></span>
                   <a
                     href='tel:(704)555-0127'
                     className='mt-8 fw-medium text-xl d-block text-main-600 hover-text-main-500'
                   >
-                    (050) 879-3791
+                    <StaticText text={"(050) 879-3791"} />
                   </a>
                 </div>
               </div>

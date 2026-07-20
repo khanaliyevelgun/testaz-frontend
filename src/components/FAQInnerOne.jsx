@@ -1,3 +1,4 @@
+import StaticText from "@/components/StaticText";
 const FAQInnerOne = () => {
   return (
     <section className='faq-page py-120'>
@@ -7,12 +8,11 @@ const FAQInnerOne = () => {
             <span className='text-main-600 text-2xl d-flex'>
               <i className='ph-bold ph-book' />
             </span>
-            <h5 className='text-main-600 mb-0'>FAQs</h5>
+            <h5 className='text-main-600 mb-0'><StaticText text={"FAQs"} /></h5>
           </div>
-          <h2 className='mb-24'>Find Answers to Your Questions</h2>
+          <h2 className='mb-24'><StaticText text={"Find Answers to Your Questions"} /></h2>
           <p className=''>
-            Welcome to our FAQs section! Here, we've compiled answers to some of
-            the most common questions our users ask.
+            <StaticText text={"Welcome to our FAQs section! Here, we've compiled answers to some of the most common questions our users ask."} />
           </p>
         </div>
         <div className='text-center mb-40'>
@@ -33,7 +33,7 @@ const FAQInnerOne = () => {
                 aria-selected='true'
               >
                 <i className='text-xl text-main-600 d-flex ph-bold ph-user' />
-                Online Education
+                <StaticText text={"Online Education"} />
               </button>
             </li>
             <li className='nav-item' role='presentation'>
@@ -48,7 +48,7 @@ const FAQInnerOne = () => {
                 aria-selected='false'
               >
                 <i className='text-xl text-main-600 d-flex ph-bold ph-graduation-cap' />
-                Payment Method
+                <StaticText text={"Payment Method"} />
               </button>
             </li>
             <li className='nav-item' role='presentation'>
@@ -63,7 +63,7 @@ const FAQInnerOne = () => {
                 aria-selected='false'
               >
                 <i className='text-xl text-main-600 d-flex ph-bold ph-star' />
-                Pricing Plan
+                <StaticText text={"Pricing Plan"} />
               </button>
             </li>
           </ul>
@@ -92,7 +92,7 @@ const FAQInnerOne = () => {
                         aria-expanded='true'
                         aria-controls='collapseOne'
                       >
-                        How do I enroll in a course?
+                        <StaticText text={"How do I enroll in a course?"} />
                       </button>
                     </h2>
                     <div
@@ -102,9 +102,7 @@ const FAQInnerOne = () => {
                     >
                       <div className='accordion-body'>
                         <p className='accordion-body__desc'>
-                          Once you enroll in a course, you'll have unlimited
-                          access to the course materials for as long as the
-                          course is available on our platform.
+                          <StaticText text={"Once you enroll in a course, you'll have unlimited access to the course materials for as long as the course is available on our platform."} />
                         </p>
                       </div>
                     </div>
@@ -119,7 +117,7 @@ const FAQInnerOne = () => {
                         aria-expanded='false'
                         aria-controls='collapseTwo'
                       >
-                        Can I access my courses on mobile devices?
+                        <StaticText text={"Can I access my courses on mobile devices?"} />
                       </button>
                     </h2>
                     <div
@@ -129,9 +127,7 @@ const FAQInnerOne = () => {
                     >
                       <div className='accordion-body'>
                         <p className='accordion-body__desc'>
-                          Once you enroll in a course, you'll have unlimited
-                          access to the course materials for as long as the
-                          course is available on our platform.
+                          <StaticText text={"Once you enroll in a course, you'll have unlimited access to the course materials for as long as the course is available on our platform."} />
                         </p>
                       </div>
                     </div>
@@ -146,7 +142,7 @@ const FAQInnerOne = () => {
                         aria-expanded='false'
                         aria-controls='collapseThree'
                       >
-                        How long do I have access to a course?
+                        <StaticText text={"How long do I have access to a course?"} />
                       </button>
                     </h2>
                     <div
@@ -156,9 +152,7 @@ const FAQInnerOne = () => {
                     >
                       <div className='accordion-body'>
                         <p className='accordion-body__desc'>
-                          Once you enroll in a course, you'll have unlimited
-                          access to the course materials for as long as the
-                          course is available on our platform.
+                          <StaticText text={"Once you enroll in a course, you'll have unlimited access to the course materials for as long as the course is available on our platform."} />
                         </p>
                       </div>
                     </div>
@@ -173,7 +167,7 @@ const FAQInnerOne = () => {
                         aria-expanded='false'
                         aria-controls='collapseFour'
                       >
-                        What if I need help or have questions during the course?
+                        <StaticText text={"What if I need help or have questions during the course?"} />
                       </button>
                     </h2>
                     <div
@@ -183,9 +177,7 @@ const FAQInnerOne = () => {
                     >
                       <div className='accordion-body'>
                         <p className='accordion-body__desc'>
-                          Once you enroll in a course, you'll have unlimited
-                          access to the course materials for as long as the
-                          course is available on our platform.
+                          <StaticText text={"Once you enroll in a course, you'll have unlimited access to the course materials for as long as the course is available on our platform."} />
                         </p>
                       </div>
                     </div>
@@ -200,7 +192,7 @@ const FAQInnerOne = () => {
                         aria-expanded='false'
                         aria-controls='collapseFive'
                       >
-                        Do you offer refunds if I'm not satisfied with a course?
+                        <StaticText text={"Do you offer refunds if I'm not satisfied with a course?"} />
                       </button>
                     </h2>
                     <div
@@ -210,9 +202,7 @@ const FAQInnerOne = () => {
                     >
                       <div className='accordion-body'>
                         <p className='accordion-body__desc'>
-                          Once you enroll in a course, you'll have unlimited
-                          access to the course materials for as long as the
-                          course is available on our platform.
+                          <StaticText text={"Once you enroll in a course, you'll have unlimited access to the course materials for as long as the course is available on our platform."} />
                         </p>
                       </div>
                     </div>
@@ -234,7 +224,7 @@ const FAQInnerOne = () => {
                         aria-expanded='false'
                         aria-controls='collapseTwoEducation'
                       >
-                        Can I access my courses on mobile devices?
+                        <StaticText text={"Can I access my courses on mobile devices?"} />
                       </button>
                     </h2>
                     <div
@@ -244,9 +234,7 @@ const FAQInnerOne = () => {
                     >
                       <div className='accordion-body'>
                         <p className='accordion-body__desc'>
-                          Once you enroll in a course, you'll have unlimited
-                          access to the course materials for as long as the
-                          course is available on our platform.
+                          <StaticText text={"Once you enroll in a course, you'll have unlimited access to the course materials for as long as the course is available on our platform."} />
                         </p>
                       </div>
                     </div>
@@ -261,7 +249,7 @@ const FAQInnerOne = () => {
                         aria-expanded='false'
                         aria-controls='collapseThreeEducation'
                       >
-                        How long do I have access to a course?
+                        <StaticText text={"How long do I have access to a course?"} />
                       </button>
                     </h2>
                     <div
@@ -271,9 +259,7 @@ const FAQInnerOne = () => {
                     >
                       <div className='accordion-body'>
                         <p className='accordion-body__desc'>
-                          Once you enroll in a course, you'll have unlimited
-                          access to the course materials for as long as the
-                          course is available on our platform.
+                          <StaticText text={"Once you enroll in a course, you'll have unlimited access to the course materials for as long as the course is available on our platform."} />
                         </p>
                       </div>
                     </div>
@@ -288,7 +274,7 @@ const FAQInnerOne = () => {
                         aria-expanded='true'
                         aria-controls='collapseOneEducation'
                       >
-                        How do I enroll in a course?
+                        <StaticText text={"How do I enroll in a course?"} />
                       </button>
                     </h2>
                     <div
@@ -298,9 +284,7 @@ const FAQInnerOne = () => {
                     >
                       <div className='accordion-body'>
                         <p className='accordion-body__desc'>
-                          Once you enroll in a course, you'll have unlimited
-                          access to the course materials for as long as the
-                          course is available on our platform.
+                          <StaticText text={"Once you enroll in a course, you'll have unlimited access to the course materials for as long as the course is available on our platform."} />
                         </p>
                       </div>
                     </div>
@@ -315,7 +299,7 @@ const FAQInnerOne = () => {
                         aria-expanded='false'
                         aria-controls='collapseFourEducation'
                       >
-                        What if I need help or have questions during the course?
+                        <StaticText text={"What if I need help or have questions during the course?"} />
                       </button>
                     </h2>
                     <div
@@ -325,9 +309,7 @@ const FAQInnerOne = () => {
                     >
                       <div className='accordion-body'>
                         <p className='accordion-body__desc'>
-                          Once you enroll in a course, you'll have unlimited
-                          access to the course materials for as long as the
-                          course is available on our platform.
+                          <StaticText text={"Once you enroll in a course, you'll have unlimited access to the course materials for as long as the course is available on our platform."} />
                         </p>
                       </div>
                     </div>
@@ -342,7 +324,7 @@ const FAQInnerOne = () => {
                         aria-expanded='false'
                         aria-controls='collapseFiveEducation'
                       >
-                        Do you offer refunds if I'm not satisfied with a course?
+                        <StaticText text={"Do you offer refunds if I'm not satisfied with a course?"} />
                       </button>
                     </h2>
                     <div
@@ -352,9 +334,7 @@ const FAQInnerOne = () => {
                     >
                       <div className='accordion-body'>
                         <p className='accordion-body__desc'>
-                          Once you enroll in a course, you'll have unlimited
-                          access to the course materials for as long as the
-                          course is available on our platform.
+                          <StaticText text={"Once you enroll in a course, you'll have unlimited access to the course materials for as long as the course is available on our platform."} />
                         </p>
                       </div>
                     </div>
@@ -386,7 +366,7 @@ const FAQInnerOne = () => {
                         aria-expanded='false'
                         aria-controls='collapseTwoPaymentOne'
                       >
-                        Can I access my courses on mobile devices?
+                        <StaticText text={"Can I access my courses on mobile devices?"} />
                       </button>
                     </h2>
                     <div
@@ -396,9 +376,7 @@ const FAQInnerOne = () => {
                     >
                       <div className='accordion-body'>
                         <p className='accordion-body__desc'>
-                          Once you enroll in a course, you'll have unlimited
-                          access to the course materials for as long as the
-                          course is available on our platform.
+                          <StaticText text={"Once you enroll in a course, you'll have unlimited access to the course materials for as long as the course is available on our platform."} />
                         </p>
                       </div>
                     </div>
@@ -413,7 +391,7 @@ const FAQInnerOne = () => {
                         aria-expanded='false'
                         aria-controls='collapseThreePaymentOne'
                       >
-                        How long do I have access to a course?
+                        <StaticText text={"How long do I have access to a course?"} />
                       </button>
                     </h2>
                     <div
@@ -423,9 +401,7 @@ const FAQInnerOne = () => {
                     >
                       <div className='accordion-body'>
                         <p className='accordion-body__desc'>
-                          Once you enroll in a course, you'll have unlimited
-                          access to the course materials for as long as the
-                          course is available on our platform.
+                          <StaticText text={"Once you enroll in a course, you'll have unlimited access to the course materials for as long as the course is available on our platform."} />
                         </p>
                       </div>
                     </div>
@@ -440,7 +416,7 @@ const FAQInnerOne = () => {
                         aria-expanded='false'
                         aria-controls='collapseFourPaymentOne'
                       >
-                        What if I need help or have questions during the course?
+                        <StaticText text={"What if I need help or have questions during the course?"} />
                       </button>
                     </h2>
                     <div
@@ -450,9 +426,7 @@ const FAQInnerOne = () => {
                     >
                       <div className='accordion-body'>
                         <p className='accordion-body__desc'>
-                          Once you enroll in a course, you'll have unlimited
-                          access to the course materials for as long as the
-                          course is available on our platform.
+                          <StaticText text={"Once you enroll in a course, you'll have unlimited access to the course materials for as long as the course is available on our platform."} />
                         </p>
                       </div>
                     </div>
@@ -467,7 +441,7 @@ const FAQInnerOne = () => {
                         aria-expanded='false'
                         aria-controls='collapseFivePaymentOne'
                       >
-                        Do you offer refunds if I'm not satisfied with a course?
+                        <StaticText text={"Do you offer refunds if I'm not satisfied with a course?"} />
                       </button>
                     </h2>
                     <div
@@ -477,9 +451,7 @@ const FAQInnerOne = () => {
                     >
                       <div className='accordion-body'>
                         <p className='accordion-body__desc'>
-                          Once you enroll in a course, you'll have unlimited
-                          access to the course materials for as long as the
-                          course is available on our platform.
+                          <StaticText text={"Once you enroll in a course, you'll have unlimited access to the course materials for as long as the course is available on our platform."} />
                         </p>
                       </div>
                     </div>
@@ -494,7 +466,7 @@ const FAQInnerOne = () => {
                         aria-expanded='true'
                         aria-controls='collapseOnePaymentOne'
                       >
-                        How do I enroll in a course?
+                        <StaticText text={"How do I enroll in a course?"} />
                       </button>
                     </h2>
                     <div
@@ -504,9 +476,7 @@ const FAQInnerOne = () => {
                     >
                       <div className='accordion-body'>
                         <p className='accordion-body__desc'>
-                          Once you enroll in a course, you'll have unlimited
-                          access to the course materials for as long as the
-                          course is available on our platform.
+                          <StaticText text={"Once you enroll in a course, you'll have unlimited access to the course materials for as long as the course is available on our platform."} />
                         </p>
                       </div>
                     </div>
@@ -528,7 +498,7 @@ const FAQInnerOne = () => {
                         aria-expanded='true'
                         aria-controls='collapseOnePaymentTwo'
                       >
-                        How do I enroll in a course?
+                        <StaticText text={"How do I enroll in a course?"} />
                       </button>
                     </h2>
                     <div
@@ -538,9 +508,7 @@ const FAQInnerOne = () => {
                     >
                       <div className='accordion-body'>
                         <p className='accordion-body__desc'>
-                          Once you enroll in a course, you'll have unlimited
-                          access to the course materials for as long as the
-                          course is available on our platform.
+                          <StaticText text={"Once you enroll in a course, you'll have unlimited access to the course materials for as long as the course is available on our platform."} />
                         </p>
                       </div>
                     </div>
@@ -555,7 +523,7 @@ const FAQInnerOne = () => {
                         aria-expanded='false'
                         aria-controls='collapseTwoPaymentTwo'
                       >
-                        Can I access my courses on mobile devices?
+                        <StaticText text={"Can I access my courses on mobile devices?"} />
                       </button>
                     </h2>
                     <div
@@ -565,9 +533,7 @@ const FAQInnerOne = () => {
                     >
                       <div className='accordion-body'>
                         <p className='accordion-body__desc'>
-                          Once you enroll in a course, you'll have unlimited
-                          access to the course materials for as long as the
-                          course is available on our platform.
+                          <StaticText text={"Once you enroll in a course, you'll have unlimited access to the course materials for as long as the course is available on our platform."} />
                         </p>
                       </div>
                     </div>
@@ -582,7 +548,7 @@ const FAQInnerOne = () => {
                         aria-expanded='false'
                         aria-controls='collapseThreePaymentTwo'
                       >
-                        How long do I have access to a course?
+                        <StaticText text={"How long do I have access to a course?"} />
                       </button>
                     </h2>
                     <div
@@ -592,9 +558,7 @@ const FAQInnerOne = () => {
                     >
                       <div className='accordion-body'>
                         <p className='accordion-body__desc'>
-                          Once you enroll in a course, you'll have unlimited
-                          access to the course materials for as long as the
-                          course is available on our platform.
+                          <StaticText text={"Once you enroll in a course, you'll have unlimited access to the course materials for as long as the course is available on our platform."} />
                         </p>
                       </div>
                     </div>
@@ -609,7 +573,7 @@ const FAQInnerOne = () => {
                         aria-expanded='false'
                         aria-controls='collapseFourPaymentTwo'
                       >
-                        What if I need help or have questions during the course?
+                        <StaticText text={"What if I need help or have questions during the course?"} />
                       </button>
                     </h2>
                     <div
@@ -619,9 +583,7 @@ const FAQInnerOne = () => {
                     >
                       <div className='accordion-body'>
                         <p className='accordion-body__desc'>
-                          Once you enroll in a course, you'll have unlimited
-                          access to the course materials for as long as the
-                          course is available on our platform.
+                          <StaticText text={"Once you enroll in a course, you'll have unlimited access to the course materials for as long as the course is available on our platform."} />
                         </p>
                       </div>
                     </div>
@@ -636,7 +598,7 @@ const FAQInnerOne = () => {
                         aria-expanded='false'
                         aria-controls='collapseFivePaymentTwo'
                       >
-                        Do you offer refunds if I'm not satisfied with a course?
+                        <StaticText text={"Do you offer refunds if I'm not satisfied with a course?"} />
                       </button>
                     </h2>
                     <div
@@ -646,9 +608,7 @@ const FAQInnerOne = () => {
                     >
                       <div className='accordion-body'>
                         <p className='accordion-body__desc'>
-                          Once you enroll in a course, you'll have unlimited
-                          access to the course materials for as long as the
-                          course is available on our platform.
+                          <StaticText text={"Once you enroll in a course, you'll have unlimited access to the course materials for as long as the course is available on our platform."} />
                         </p>
                       </div>
                     </div>
@@ -680,7 +640,7 @@ const FAQInnerOne = () => {
                         aria-expanded='false'
                         aria-controls='collapseTwoPricingOne'
                       >
-                        Can I access my courses on mobile devices?
+                        <StaticText text={"Can I access my courses on mobile devices?"} />
                       </button>
                     </h2>
                     <div
@@ -690,9 +650,7 @@ const FAQInnerOne = () => {
                     >
                       <div className='accordion-body'>
                         <p className='accordion-body__desc'>
-                          Once you enroll in a course, you'll have unlimited
-                          access to the course materials for as long as the
-                          course is available on our platform.
+                          <StaticText text={"Once you enroll in a course, you'll have unlimited access to the course materials for as long as the course is available on our platform."} />
                         </p>
                       </div>
                     </div>
@@ -707,7 +665,7 @@ const FAQInnerOne = () => {
                         aria-expanded='true'
                         aria-controls='collapseOnePricingOne'
                       >
-                        How do I enroll in a course?
+                        <StaticText text={"How do I enroll in a course?"} />
                       </button>
                     </h2>
                     <div
@@ -717,9 +675,7 @@ const FAQInnerOne = () => {
                     >
                       <div className='accordion-body'>
                         <p className='accordion-body__desc'>
-                          Once you enroll in a course, you'll have unlimited
-                          access to the course materials for as long as the
-                          course is available on our platform.
+                          <StaticText text={"Once you enroll in a course, you'll have unlimited access to the course materials for as long as the course is available on our platform."} />
                         </p>
                       </div>
                     </div>
@@ -734,7 +690,7 @@ const FAQInnerOne = () => {
                         aria-expanded='false'
                         aria-controls='collapseThreePricingOne'
                       >
-                        How long do I have access to a course?
+                        <StaticText text={"How long do I have access to a course?"} />
                       </button>
                     </h2>
                     <div
@@ -744,9 +700,7 @@ const FAQInnerOne = () => {
                     >
                       <div className='accordion-body'>
                         <p className='accordion-body__desc'>
-                          Once you enroll in a course, you'll have unlimited
-                          access to the course materials for as long as the
-                          course is available on our platform.
+                          <StaticText text={"Once you enroll in a course, you'll have unlimited access to the course materials for as long as the course is available on our platform."} />
                         </p>
                       </div>
                     </div>
@@ -761,7 +715,7 @@ const FAQInnerOne = () => {
                         aria-expanded='false'
                         aria-controls='collapseFourPricingOne'
                       >
-                        What if I need help or have questions during the course?
+                        <StaticText text={"What if I need help or have questions during the course?"} />
                       </button>
                     </h2>
                     <div
@@ -771,9 +725,7 @@ const FAQInnerOne = () => {
                     >
                       <div className='accordion-body'>
                         <p className='accordion-body__desc'>
-                          Once you enroll in a course, you'll have unlimited
-                          access to the course materials for as long as the
-                          course is available on our platform.
+                          <StaticText text={"Once you enroll in a course, you'll have unlimited access to the course materials for as long as the course is available on our platform."} />
                         </p>
                       </div>
                     </div>
@@ -788,7 +740,7 @@ const FAQInnerOne = () => {
                         aria-expanded='false'
                         aria-controls='collapseFivePricingOne'
                       >
-                        Do you offer refunds if I'm not satisfied with a course?
+                        <StaticText text={"Do you offer refunds if I'm not satisfied with a course?"} />
                       </button>
                     </h2>
                     <div
@@ -798,9 +750,7 @@ const FAQInnerOne = () => {
                     >
                       <div className='accordion-body'>
                         <p className='accordion-body__desc'>
-                          Once you enroll in a course, you'll have unlimited
-                          access to the course materials for as long as the
-                          course is available on our platform.
+                          <StaticText text={"Once you enroll in a course, you'll have unlimited access to the course materials for as long as the course is available on our platform."} />
                         </p>
                       </div>
                     </div>
@@ -822,7 +772,7 @@ const FAQInnerOne = () => {
                         aria-expanded='false'
                         aria-controls='collapseTwoEducationPricingTwo'
                       >
-                        Can I access my courses on mobile devices?
+                        <StaticText text={"Can I access my courses on mobile devices?"} />
                       </button>
                     </h2>
                     <div
@@ -832,9 +782,7 @@ const FAQInnerOne = () => {
                     >
                       <div className='accordion-body'>
                         <p className='accordion-body__desc'>
-                          Once you enroll in a course, you'll have unlimited
-                          access to the course materials for as long as the
-                          course is available on our platform.
+                          <StaticText text={"Once you enroll in a course, you'll have unlimited access to the course materials for as long as the course is available on our platform."} />
                         </p>
                       </div>
                     </div>
@@ -849,7 +797,7 @@ const FAQInnerOne = () => {
                         aria-expanded='false'
                         aria-controls='collapseThreePricingTwo'
                       >
-                        How long do I have access to a course?
+                        <StaticText text={"How long do I have access to a course?"} />
                       </button>
                     </h2>
                     <div
@@ -859,9 +807,7 @@ const FAQInnerOne = () => {
                     >
                       <div className='accordion-body'>
                         <p className='accordion-body__desc'>
-                          Once you enroll in a course, you'll have unlimited
-                          access to the course materials for as long as the
-                          course is available on our platform.
+                          <StaticText text={"Once you enroll in a course, you'll have unlimited access to the course materials for as long as the course is available on our platform."} />
                         </p>
                       </div>
                     </div>
@@ -876,7 +822,7 @@ const FAQInnerOne = () => {
                         aria-expanded='false'
                         aria-controls='collapseFourPricingTwo'
                       >
-                        What if I need help or have questions during the course?
+                        <StaticText text={"What if I need help or have questions during the course?"} />
                       </button>
                     </h2>
                     <div
@@ -886,9 +832,7 @@ const FAQInnerOne = () => {
                     >
                       <div className='accordion-body'>
                         <p className='accordion-body__desc'>
-                          Once you enroll in a course, you'll have unlimited
-                          access to the course materials for as long as the
-                          course is available on our platform.
+                          <StaticText text={"Once you enroll in a course, you'll have unlimited access to the course materials for as long as the course is available on our platform."} />
                         </p>
                       </div>
                     </div>
@@ -903,7 +847,7 @@ const FAQInnerOne = () => {
                         aria-expanded='true'
                         aria-controls='collapseOnePricingTwo'
                       >
-                        How do I enroll in a course?
+                        <StaticText text={"How do I enroll in a course?"} />
                       </button>
                     </h2>
                     <div
@@ -913,9 +857,7 @@ const FAQInnerOne = () => {
                     >
                       <div className='accordion-body'>
                         <p className='accordion-body__desc'>
-                          Once you enroll in a course, you'll have unlimited
-                          access to the course materials for as long as the
-                          course is available on our platform.
+                          <StaticText text={"Once you enroll in a course, you'll have unlimited access to the course materials for as long as the course is available on our platform."} />
                         </p>
                       </div>
                     </div>
@@ -930,7 +872,7 @@ const FAQInnerOne = () => {
                         aria-expanded='false'
                         aria-controls='collapseFivePricingTwo'
                       >
-                        Do you offer refunds if I'm not satisfied with a course?
+                        <StaticText text={"Do you offer refunds if I'm not satisfied with a course?"} />
                       </button>
                     </h2>
                     <div
@@ -940,9 +882,7 @@ const FAQInnerOne = () => {
                     >
                       <div className='accordion-body'>
                         <p className='accordion-body__desc'>
-                          Once you enroll in a course, you'll have unlimited
-                          access to the course materials for as long as the
-                          course is available on our platform.
+                          <StaticText text={"Once you enroll in a course, you'll have unlimited access to the course materials for as long as the course is available on our platform."} />
                         </p>
                       </div>
                     </div>

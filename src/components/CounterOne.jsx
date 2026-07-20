@@ -1,6 +1,8 @@
 "use client";
 import CountUp from "react-countup";
 import VisibilitySensor from "react-visibility-sensor";
+import StaticText from "@/components/StaticText";
+
 const CounterOne = () => {
   return (
     <section className='counter py-120'>
@@ -19,12 +21,12 @@ const CounterOne = () => {
               <VisibilitySensor partialVisibility offset={{ bottom: 200 }}>
                 {({ isVisible }) => (
                   <h2 className='display-four mb-16 text-neutral-700 counter'>
-                    {isVisible ? <CountUp end={10} /> : null}K
+                    {isVisible ? <CountUp end={10} /> : null}<StaticText text={"K"} />
                   </h2>
                 )}
               </VisibilitySensor>
               <span className='text-neutral-500 text-lg'>
-                Aktiv tələbə və valideyn
+                <StaticText text={"Aktiv tələbə və valideyn"} />
               </span>
             </div>
           </div>
@@ -40,12 +42,12 @@ const CounterOne = () => {
               <VisibilitySensor partialVisibility offset={{ bottom: 200 }}>
                 {({ isVisible }) => (
                   <h2 className='display-four mb-16 text-neutral-700 counter'>
-                    {isVisible ? <CountUp end={22} /> : null}K
+                    {isVisible ? <CountUp end={22} /> : null}<StaticText text={"K"} />
                   </h2>
                 )}
               </VisibilitySensor>
               <span className='text-neutral-500 text-lg'>
-                Tamamlanmış sınaq
+                <StaticText text={"Tamamlanmış sınaq"} />
               </span>
             </div>
           </div>
@@ -61,12 +63,12 @@ const CounterOne = () => {
               <VisibilitySensor partialVisibility offset={{ bottom: 200 }}>
                 {({ isVisible }) => (
                   <h2 className='display-four mb-16 text-neutral-700 counter'>
-                    {isVisible ? <CountUp end={45} /> : null}K
+                    {isVisible ? <CountUp end={45} /> : null}<StaticText text={"K"} />
                   </h2>
                 )}
               </VisibilitySensor>
               <span className='text-neutral-500 text-lg'>
-                Analiz edilmiş nəticə
+                <StaticText text={"Analiz edilmiş nəticə"} />
               </span>
             </div>
           </div>
@@ -82,12 +84,12 @@ const CounterOne = () => {
               <VisibilitySensor partialVisibility offset={{ bottom: 200 }}>
                 {({ isVisible }) => (
                   <h2 className='display-four mb-16 text-neutral-700 counter'>
-                    {isVisible ? <CountUp end={55} /> : null}K
+                    {isVisible ? <CountUp end={55} /> : null}<StaticText text={"K"} />
                   </h2>
                 )}
               </VisibilitySensor>
               <span className='text-neutral-500 text-lg'>
-                Sual bazası potensialı
+                <StaticText text={"Sual bazası potensialı"} />
               </span>
             </div>
           </div>

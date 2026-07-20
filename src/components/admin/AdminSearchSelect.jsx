@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import StaticText from "@/components/StaticText";
+
 
 const AdminSearchSelect = ({
   label,
@@ -92,7 +94,7 @@ const AdminSearchSelect = ({
                   setIsOpen(false);
                 }}
               >
-                Clear selection
+                <StaticText text={"Clear selection"} />
               </button>
             ) : null}
             {isLoading ? <div className='px-12 py-8 text-14 text-neutral-400'>{loadingText}</div> : null}

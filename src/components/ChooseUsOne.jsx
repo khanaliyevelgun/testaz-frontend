@@ -2,6 +2,8 @@
 import Link from "next/link";
 import { useState } from "react";
 import ModalVideo from "react-modal-video";
+import StaticText from "@/components/StaticText";
+
 
 const ChooseUsOne = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -24,16 +26,13 @@ const ChooseUsOne = () => {
               <div className='mb-40'>
                 <div className='flex-align gap-8 mb-16 wow bounceInDown'>
                   <span className='w-8 h-8 bg-main-600 rounded-circle' />
-                  <h5 className='text-main-600 mb-0'>Why Choose Us</h5>
+                  <h5 className='text-main-600 mb-0'><StaticText text={"Why Choose Us"} /></h5>
                 </div>
                 <h2 className='mb-24  wow bounceIn'>
-                  Our Commitment to Excellence, Learn, Grow &amp; Success.
+                  <StaticText text={"Our Commitment to Excellence, Learn, Grow & Success."} />
                 </h2>
                 <p className='text-neutral-500 text-line-2  wow bounceInUp'>
-                  We are passionate about transforming lives through education.
-                  Founded with a vision to make learning accessible to all, we
-                  believe in the power of knowledge to unlock opportunities and
-                  shape the future.
+                  <StaticText text={"We are passionate about transforming lives through education. Founded with a vision to make learning accessible to all, we believe in the power of knowledge to unlock opportunities and shape the future."} />
                 </p>
               </div>
               <ul>
@@ -46,7 +45,7 @@ const ChooseUsOne = () => {
                     <i className='ph-bold ph-checks' />
                   </span>
                   <span className='flex-grow-1 text-neutral-500'>
-                    9/10 Average Satisfaction Rate
+                    <StaticText text={"9/10 Average Satisfaction Rate"} />
                   </span>
                 </li>
                 <li
@@ -58,7 +57,7 @@ const ChooseUsOne = () => {
                     <i className='ph-bold ph-checks' />
                   </span>
                   <span className='flex-grow-1 text-neutral-500'>
-                    96% Completitation Rate
+                    <StaticText text={"96% Completitation Rate"} />
                   </span>
                 </li>
                 <li
@@ -70,7 +69,7 @@ const ChooseUsOne = () => {
                     <i className='ph-bold ph-checks' />
                   </span>
                   <span className='flex-grow-1 text-neutral-500'>
-                    Friendly Environment &amp; Expert Teacher
+                    <StaticText text={"Friendly Environment & Expert Teacher"} />
                   </span>
                 </li>
               </ul>
@@ -79,7 +78,7 @@ const ChooseUsOne = () => {
                   href='/about'
                   className='btn btn-main rounded-pill flex-align d-inline-flex gap-8'
                 >
-                  Read More
+                  <StaticText text={"Read More"} />
                   <i className='ph-bold ph-arrow-up-right d-flex text-lg' />
                 </Link>
               </div>
@@ -93,17 +92,17 @@ const ChooseUsOne = () => {
                 </span>
                 <div>
                   <span className='text-lg text-neutral-700 d-block'>
-                    4.6
-                    <span className='text-neutral-100'>(2.4k)</span>
+                    <StaticText text={"4.6"} />
+                    <span className='text-neutral-100'><StaticText text={"(2.4k)"} /></span>
                   </span>
-                  <span className='text-neutral-500'>AVG Reviews</span>
+                  <span className='text-neutral-500'><StaticText text={"AVG Reviews"} /></span>
                 </div>
               </div>
               <div
                 className='banner-box one style-two px-24 py-12 rounded-12 bg-white fw-medium box-shadow-lg d-inline-block'
                 data-aos='fade-left'
               >
-                <span className='text-main-600'>36k+</span> Enrolled Students
+                <span className='text-main-600'><StaticText text={"36k+"} /></span> <StaticText text={"Enrolled Students"} />
                 <div className='enrolled-students mt-12'>
                   <img
                     src='assets/images/thumbs/enroll-student-img1.png'

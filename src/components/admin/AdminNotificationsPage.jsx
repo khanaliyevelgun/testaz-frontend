@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import AdminRefreshButton from "@/components/admin/AdminRefreshButton";
 import { fetchNotifications, markNotificationsRead } from "@/lib/api";
+import StaticText from "@/components/StaticText";
+
 
 const emptyState = (page = 1) => ({
   data: [],
@@ -71,16 +73,16 @@ const AdminNotificationsPage = () => {
       <div className='bg-white rounded-10 px-24 py-24'>
         <div className='d-flex align-items-center justify-content-between gap-16 mb-24'>
           <div>
-            <h4 className='fw-semibold text-neutral-500 text-20 mb-4'>Notifications</h4>
+            <h4 className='fw-semibold text-neutral-500 text-20 mb-4'><StaticText text={"Notifications"} /></h4>
             <p className='text-14 text-neutral-400 mb-0'>
-              Unread notifications: {state?.meta?.unreadCount || 0}
+              <StaticText text={"Unread notifications:"} /> {state?.meta?.unreadCount || 0}
             </p>
           </div>
           <AdminRefreshButton isLoading={isLoading} onClick={() => setRefreshKey((value) => value + 1)} />
         </div>
 
         {isLoading ? (
-          <p className='text-14 text-neutral-400 mb-0'>Loading...</p>
+          <p className='text-14 text-neutral-400 mb-0'><StaticText text={"Loading..."} /></p>
         ) : state.data.length ? (
           <div className='d-flex flex-column gap-12'>
             {state.data.map((notification) => (
@@ -97,7 +99,7 @@ const AdminNotificationsPage = () => {
                     <span className='text-15 text-neutral-500 fw-medium mb-0'>{notification.title}</span>
                     {!notification.isRead ? (
                       <span className='px-8 py-2 rounded-pill bg-danger-600 text-white text-10'>
-                        New
+                        <StaticText text={"New"} />
                       </span>
                     ) : null}
                   </span>
@@ -110,7 +112,7 @@ const AdminNotificationsPage = () => {
             ))}
           </div>
         ) : (
-          <p className='text-14 text-neutral-400 mb-0'>No notifications.</p>
+          <p className='text-14 text-neutral-400 mb-0'><StaticText text={"No notifications."} /></p>
         )}
 
         <div className='d-flex align-items-center justify-content-end gap-8 mt-24'>
@@ -120,7 +122,7 @@ const AdminNotificationsPage = () => {
             disabled={page <= 1}
             onClick={() => setPage((currentPage) => Math.max(currentPage - 1, 1))}
           >
-            Previous
+            <StaticText text={"Previous"} />
           </button>
           <span className='text-14 text-neutral-400'>
             {page} / {totalPages}
@@ -131,7 +133,7 @@ const AdminNotificationsPage = () => {
             disabled={page >= totalPages}
             onClick={() => setPage((currentPage) => Math.min(currentPage + 1, totalPages))}
           >
-            Next
+            <StaticText text={"Next"} />
           </button>
         </div>
       </div>

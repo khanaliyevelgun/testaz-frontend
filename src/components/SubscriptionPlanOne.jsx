@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { fetchSubscriptionPlans, startPaymentCheckout } from "@/lib/api";
+import StaticText from "@/components/StaticText";
+
 
 const fallbackPlans = [
   { id: "trial", code: "TRIAL", nameAz: "Sınaq", priceAmount: 0, currency: "AZN", periodDays: 30, coversLinkedChildren: false },
@@ -69,14 +71,14 @@ const SubscriptionPlanOne = ({ className = "" }) => {
         <div className='section-heading text-center'>
           <div className='flex-align d-inline-flex gap-8 mb-16'>
             <span className='text-main-600 text-2xl d-flex'><i className='ph-bold ph-book-open' /></span>
-          <h5 className='text-main-600 mb-0'>Planlarımız</h5>
+          <h5 className='text-main-600 mb-0'><StaticText text={"Planlarımız"} /></h5>
           </div>
-          <h2 className='mb-24'>Hər valideyn və tələbə üçün uyğun plan</h2>
-          <p>Aktiv abunəlik planlarını seçin və ödənişə keçin.</p>
+          <h2 className='mb-24'><StaticText text={"Hər valideyn və tələbə üçün uyğun plan"} /></h2>
+          <p><StaticText text={"Aktiv abunəlik planlarını seçin və ödənişə keçin."} /></p>
         </div>
 
         {error ? <p className='text-danger text-center mb-24'>{error}</p> : null}
-        {isLoading ? <p className='text-center text-neutral-400 mb-0'>Planlar yüklənir...</p> : null}
+        {isLoading ? <p className='text-center text-neutral-400 mb-0'><StaticText text={"Planlar yüklənir..."} /></p> : null}
 
         <div className='row gy-4 justify-content-center'>
           {plans.map((plan, index) => (
@@ -90,27 +92,27 @@ const SubscriptionPlanOne = ({ className = "" }) => {
                   <h1 className='display-5 fw-bold mb-0 text-neutral-700 transition-2'>
                     {formatPrice(plan.priceAmount, plan.currency)}
                   </h1>
-                  <span className='text-sm text-neutral-500 mt-8'>{plan.periodDays} gün</span>
+                  <span className='text-sm text-neutral-500 mt-8'>{plan.periodDays} <StaticText text={"gün"} /></span>
                   <span className='d-block border border-neutral-30 my-24 border-dashed' />
                   <ul className='d-flex flex-column gap-16 flex-grow-1'>
                     <li className='flex-align gap-12 text-neutral-700'>
                       <img src='assets/images/icons/check.png' alt='' />
-                      <span className='text-neutral-500 text-md fw-medium'>Aktiv test və nəticə funksiyaları</span>
+                      <span className='text-neutral-500 text-md fw-medium'><StaticText text={"Aktiv test və nəticə funksiyaları"} /></span>
                     </li>
                     <li className='flex-align gap-12 text-neutral-700'>
                       {plan.coversLinkedChildren ? <img src='assets/images/icons/check.png' alt='' /> : <i className='text-danger-600 ph-bold ph-x' />}
-                      <span className='text-neutral-500 text-md fw-medium'>Bağlı uşaqları əhatə edir</span>
+                      <span className='text-neutral-500 text-md fw-medium'><StaticText text={"Bağlı uşaqları əhatə edir"} /></span>
                     </li>
                   </ul>
                   <div className='mt-40'>
                     {Number(plan.priceAmount || 0) > 0 ? (
                       <button type='button' className='btn btn-main rounded-pill flex-align gap-8 w-100 justify-content-center' disabled={checkoutCode === plan.code} onClick={() => handleCheckout(plan.code)}>
-                        {checkoutCode === plan.code ? "Başladılır..." : "Ödənişə keç"}
+                        {checkoutCode === plan.code ? <StaticText text={"Başladılır..."} /> : <StaticText text={"Ödənişə keç"} />}
                         <i className='ph-bold ph-arrow-up-right d-flex text-lg' />
                       </button>
                     ) : (
                       <Link href='/sign-in' className='btn btn-main rounded-pill flex-align gap-8 w-100 justify-content-center'>
-                        Başla
+                        <StaticText text={"Başla"} />
                         <i className='ph-bold ph-arrow-up-right d-flex text-lg' />
                       </Link>
                     )}

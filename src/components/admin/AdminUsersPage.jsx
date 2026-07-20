@@ -6,6 +6,10 @@ import AdminRefreshButton from "@/components/admin/AdminRefreshButton";
 import AdminRowActions from "@/components/admin/AdminRowActions";
 import AdminStatusBadge from "@/components/admin/AdminStatusBadge";
 import { deleteUser, fetchUsers, restoreUser } from "@/lib/api";
+import StaticText from "@/components/StaticText";
+import StaticOption from "@/components/StaticOption";
+
+
 
 const roles = ["STUDENT", "PARENT", "COURSE", "PRIVATE_TUTOR", "SCHOOL_TEACHER", "ADMIN"];
 const statuses = ["PENDING", "ACTIVE", "SUSPENDED", "DELETED"];
@@ -69,11 +73,11 @@ const AdminUsersPage = () => {
       <div className='bg-white rounded-10 px-24 py-24'>
         <div className='d-flex flex-wrap align-items-center justify-content-between gap-16 mb-24'>
           <div>
-            <h4 className='fw-semibold text-neutral-500 text-20 mb-4'>Users</h4>
-            <p className='text-14 text-neutral-400 mb-0'>Admin user management from /admin/users.</p>
+            <h4 className='fw-semibold text-neutral-500 text-20 mb-4'><StaticText text={"Users"} /></h4>
+            <p className='text-14 text-neutral-400 mb-0'><StaticText text={"Admin user management from /admin/users."} /></p>
           </div>
           <div className='d-flex flex-wrap align-items-center gap-8'>
-            <Link href='/admin/users/new' className='btn btn-main rounded-pill px-20'>Create User</Link>
+            <Link href='/admin/users/new' className='btn btn-main rounded-pill px-20'><StaticText text={"Create User"} /></Link>
             <AdminRefreshButton isLoading={isLoading} onClick={() => loadUsers({ page: meta.page })} />
           </div>
         </div>
@@ -84,11 +88,11 @@ const AdminUsersPage = () => {
             <span className='position-absolute top-50 translate-middle-y inset-inline-end-0 me-16 text-neutral-400'><i className='ph ph-magnifying-glass'></i></span>
           </div>
           <select className='form-select rounded-pill border-neutral-40 text-14 py-11 px-16 w-auto min-w-180-px' value={roleFilter} onChange={(event) => setRoleFilter(event.target.value)}>
-            <option value=''>All roles</option>
+            <StaticOption value='' text={"All roles"} />
             {roles.map((role) => <option value={role} key={role}>{role.replaceAll("_", " ")}</option>)}
           </select>
           <select className='form-select rounded-pill border-neutral-40 text-14 py-11 px-16 w-auto min-w-160-px' value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
-            <option value=''>All statuses</option>
+            <StaticOption value='' text={"All statuses"} />
             {statuses.map((status) => <option value={status} key={status}>{status}</option>)}
           </select>
         </div>
@@ -99,16 +103,16 @@ const AdminUsersPage = () => {
           <table className='table mb-0'>
             <thead>
               <tr>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Name</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Email</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Role</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Status</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20 text-end'>Action</th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Name"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Email"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Role"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Status"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20 text-end'><StaticText text={"Action"} /></th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='5'>Loading...</td></tr>
+                <tr><td className='py-20 px-20 text-neutral-400' colSpan='5'><StaticText text={"Loading..."} /></td></tr>
               ) : users.length ? (
                 users.map((user) => (
                   <tr key={user.id}>
@@ -120,16 +124,16 @@ const AdminUsersPage = () => {
                   </tr>
                 ))
               ) : (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='5'>No users found.</td></tr>
+                <tr><td className='py-20 px-20 text-neutral-400' colSpan='5'><StaticText text={"No users found."} /></td></tr>
               )}
             </tbody>
           </table>
         </div>
 
         <div className='d-flex align-items-center justify-content-end gap-8 mt-24'>
-          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page <= 1} onClick={() => loadUsers({ page: Math.max(meta.page - 1, 1) })}>Previous</button>
+          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page <= 1} onClick={() => loadUsers({ page: Math.max(meta.page - 1, 1) })}><StaticText text={"Previous"} /></button>
           <span className='text-14 text-neutral-400'>{meta.page} / {meta.totalPages}</span>
-          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page >= meta.totalPages} onClick={() => loadUsers({ page: Math.min(meta.page + 1, meta.totalPages) })}>Next</button>
+          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page >= meta.totalPages} onClick={() => loadUsers({ page: Math.min(meta.page + 1, meta.totalPages) })}><StaticText text={"Next"} /></button>
         </div>
       </div>
     </div>

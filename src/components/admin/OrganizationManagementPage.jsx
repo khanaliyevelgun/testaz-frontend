@@ -11,6 +11,8 @@ import {
   createOrganization,
   updateOrganizationNotificationSetting,
 } from "@/lib/api";
+import StaticText from "@/components/StaticText";
+
 
 const organizationTypes = [
   { value: "COURSE", label: "Course" },
@@ -103,10 +105,10 @@ const OrganizationManagementPage = () => {
         <div className='d-flex flex-wrap align-items-start justify-content-between gap-16 mb-24'>
           <div>
             <h4 className='fw-semibold text-neutral-500 text-20 mb-4'>
-              Organizations
+              <StaticText text={"Organizations"} />
             </h4>
             <p className='text-14 text-neutral-400 mb-0'>
-              Create an organization and manage member-completion notifications.
+              <StaticText text={"Create an organization and manage member-completion notifications."} />
             </p>
           </div>
           <AdminRefreshButton
@@ -125,7 +127,7 @@ const OrganizationManagementPage = () => {
         <form className='row gy-3 align-items-end' onSubmit={handleCreate}>
           <div className='col-lg-6'>
             <label className='text-14 text-neutral-500 fw-medium mb-8'>
-              Organization name
+              <StaticText text={"Organization name"} />
             </label>
             <input
               name='name'
@@ -139,7 +141,7 @@ const OrganizationManagementPage = () => {
           </div>
           <div className='col-lg-3'>
             <label className='text-14 text-neutral-500 fw-medium mb-8'>
-              Type
+              <StaticText text={"Type"} />
             </label>
             <select
               name='type'
@@ -161,7 +163,7 @@ const OrganizationManagementPage = () => {
               className='btn btn-main rounded-pill w-100'
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Creating..." : "Create organization"}
+              {isSubmitting ? <StaticText text={"Creating..."} /> : <StaticText text={"Create organization"} />}
             </button>
           </div>
         </form>
@@ -184,13 +186,13 @@ const OrganizationManagementPage = () => {
                   href={`/admin/members?orgId=${encodeURIComponent(selectedOrganization.id)}`}
                   className='px-16 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white'
                 >
-                  View members
+                  <StaticText text={"View members"} />
                 </Link>
                 <Link
                   href={`/admin/invites?orgId=${encodeURIComponent(selectedOrganization.id)}`}
                   className='btn btn-main rounded-pill px-18 py-10'
                 >
-                  Create test invite
+                  <StaticText text={"Create test invite"} />
                 </Link>
               </div>
             </div>
@@ -198,7 +200,7 @@ const OrganizationManagementPage = () => {
         </div>
 
         {isLoadingOrganizations ? (
-          <p className='text-14 text-neutral-400 mb-0'>Loading organizations...</p>
+          <p className='text-14 text-neutral-400 mb-0'><StaticText text={"Loading organizations..."} /></p>
         ) : organizations.length ? (
           <div className='row gy-4'>
             {organizations.map((organization) => {
@@ -228,10 +230,10 @@ const OrganizationManagementPage = () => {
                     <div className='d-flex flex-wrap align-items-center justify-content-between gap-12 border-top border-neutral-30 pt-16'>
                       <div>
                         <span className='text-14 fw-medium text-neutral-500 d-block'>
-                          Completion notifications
+                          <StaticText text={"Completion notifications"} />
                         </span>
                         <span className='text-12 text-neutral-400'>
-                          Notify when a member completes an invited test.
+                          <StaticText text={"Notify when a member completes an invited test."} />
                         </span>
                       </div>
                       <div className='form-check form-switch mb-0'>
@@ -249,7 +251,7 @@ const OrganizationManagementPage = () => {
 
                     {isUpdating ? (
                       <span className='text-12 text-neutral-400 d-block mt-8'>
-                        Saving notification setting...
+                        <StaticText text={"Saving notification setting..."} />
                       </span>
                     ) : null}
                   </div>
@@ -261,7 +263,7 @@ const OrganizationManagementPage = () => {
           <div className='border border-neutral-30 rounded-10 px-20 py-24 text-center'>
             <i className='ph ph-buildings text-32 text-neutral-300 d-block mb-8'></i>
             <p className='text-14 text-neutral-400 mb-0'>
-              No organizations yet. Use the form above to create the first one.
+              <StaticText text={"No organizations yet. Use the form above to create the first one."} />
             </p>
           </div>
         )}

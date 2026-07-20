@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { fetchNotifications, markNotificationsRead } from "@/lib/api";
+import StaticText from "@/components/StaticText";
+
 
 const fallbackNotifications = {
   data: [],
@@ -82,14 +84,14 @@ const AdminNotificationDropdown = () => {
           style={{ insetInlineEnd: 0, insetInlineStart: "auto", minWidth: 340 }}
         >
           <li className='px-16 py-12 border-bottom border-neutral-30 d-flex align-items-center justify-content-between gap-12'>
-            <span className='fw-medium text-14 text-neutral-500'>Notifications</span>
+            <span className='fw-medium text-14 text-neutral-500'><StaticText text={"Notifications"} /></span>
             <button
               type='button'
               className='text-12 text-main-600 fw-medium bg-transparent text-end'
               disabled={!notifications.data.length}
               onClick={handleMarkVisibleRead}
             >
-              Mark visible as read
+              <StaticText text={"Mark visible as read"} />
             </button>
           </li>
           {notifications.data.length ? (
@@ -112,7 +114,7 @@ const AdminNotificationDropdown = () => {
               </li>
             ))
           ) : (
-            <li className='px-16 py-20 text-13 text-neutral-400'>No new notifications.</li>
+            <li className='px-16 py-20 text-13 text-neutral-400'><StaticText text={"No new notifications."} /></li>
           )}
           <li className='border-top border-neutral-30'>
             <Link
@@ -120,7 +122,7 @@ const AdminNotificationDropdown = () => {
               className='dropdown-item text-center text-main-600 fw-medium py-12'
               onClick={() => setIsOpen(false)}
             >
-              View all
+              <StaticText text={"View all"} />
             </Link>
           </li>
         </ul>

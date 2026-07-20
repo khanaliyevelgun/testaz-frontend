@@ -2,6 +2,8 @@
 import Link from "next/link";
 import { useRef } from "react";
 import Slider from "react-slick";
+import StaticText from "@/components/StaticText";
+
 
 const InstructorOne = () => {
   const instructorSliderRef = useRef(null);
@@ -54,10 +56,9 @@ const InstructorOne = () => {
       />
       <div className='container'>
         <div className='section-heading text-center'>
-          <h2 className='mb-24 wow bounceIn'>Course Instructors</h2>
+          <h2 className='mb-24 wow bounceIn'><StaticText text={"Course Instructors"} /></h2>
           <p className=' wow bounceInUp'>
-            Join us on this journey of discovery, growth, and transformation.
-            Together, let's shape a brighter future
+            <StaticText text={"Join us on this journey of discovery, growth, and transformation. Together, let's shape a brighter future"} />
           </p>
         </div>
         <Slider
@@ -117,7 +118,7 @@ const InstructorOne = () => {
               <div className=''>
                 <h4 className='mb-28 pb-24 border-bottom border-neutral-50 mb-24 border-dashed border-0'>
                   <Link href='/instructor-details' className='link text-line-2'>
-                    Devon Lane
+                    <StaticText text={"Devon Lane"} />
                   </Link>
                 </h4>
                 <div className='flex-between gap-8 flex-wrap mb-16'>
@@ -126,7 +127,7 @@ const InstructorOne = () => {
                       <i className='ph-bold ph-lightbulb' />
                     </span>
                     <span className='text-neutral-700 text-lg fw-medium'>
-                      Web Developer
+                      <StaticText text={"Web Developer"} />
                     </span>
                   </div>
                   <div className='flex-align gap-8'>
@@ -134,7 +135,7 @@ const InstructorOne = () => {
                       <i className='ph-bold ph-watch' />
                     </span>
                     <span className='text-neutral-700 text-lg fw-medium'>
-                      7 Course
+                      <StaticText text={"7 Course"} />
                     </span>
                   </div>
                 </div>
@@ -144,7 +145,7 @@ const InstructorOne = () => {
                       <i className='ph-bold ph-users' />
                     </span>
                     <span className='text-neutral-700 text-lg fw-medium'>
-                      15k Students
+                      <StaticText text={"15k Students"} />
                     </span>
                   </div>
                   <div className='flex-align gap-4'>
@@ -152,8 +153,8 @@ const InstructorOne = () => {
                       <i className='ph-fill ph-star' />
                     </span>
                     <span className='text-lg text-neutral-700'>
-                      4.6
-                      <span className='text-neutral-100'>(2.4k)</span>
+                      <StaticText text={"4.6"} />
+                      <span className='text-neutral-100'><StaticText text={"(2.4k)"} /></span>
                     </span>
                   </div>
                 </div>
@@ -164,7 +165,7 @@ const InstructorOne = () => {
                   className='flex-align gap-8 text-main-600 hover-text-decoration-underline transition-1 fw-semibold'
                   tabIndex={0}
                 >
-                  View Profile
+                  <StaticText text={"View Profile"} />
                   <i className='ph ph-arrow-right' />
                 </Link>
               </div>
@@ -222,7 +223,7 @@ const InstructorOne = () => {
               <div className=''>
                 <h4 className='mb-28 pb-24 border-bottom border-neutral-50 mb-24 border-dashed border-0'>
                   <Link href='/instructor-details' className='link text-line-2'>
-                    John Doe
+                    <StaticText text={"John Doe"} />
                   </Link>
                 </h4>
                 <div className='flex-between gap-8 flex-wrap mb-16'>
@@ -231,7 +232,7 @@ const InstructorOne = () => {
                       <i className='ph-bold ph-lightbulb' />
                     </span>
                     <span className='text-neutral-700 text-lg fw-medium'>
-                      WordPress Expert
+                      <StaticText text={"WordPress Expert"} />
                     </span>
                   </div>
                   <div className='flex-align gap-8'>
@@ -239,7 +240,7 @@ const InstructorOne = () => {
                       <i className='ph-bold ph-watch' />
                     </span>
                     <span className='text-neutral-700 text-lg fw-medium'>
-                      6 Course
+                      <StaticText text={"6 Course"} />
                     </span>
                   </div>
                 </div>
@@ -249,7 +250,7 @@ const InstructorOne = () => {
                       <i className='ph-bold ph-users' />
                     </span>
                     <span className='text-neutral-700 text-lg fw-medium'>
-                      55k Students
+                      <StaticText text={"55k Students"} />
                     </span>
                   </div>
                   <div className='flex-align gap-4'>
@@ -257,8 +258,8 @@ const InstructorOne = () => {
                       <i className='ph-fill ph-star' />
                     </span>
                     <span className='text-lg text-neutral-700'>
-                      4.6
-                      <span className='text-neutral-100'>(2.4k)</span>
+                      <StaticText text={"4.6"} />
+                      <span className='text-neutral-100'><StaticText text={"(2.4k)"} /></span>
                     </span>
                   </div>
                 </div>
@@ -269,7 +270,7 @@ const InstructorOne = () => {
                   className='flex-align gap-8 text-main-600 hover-text-decoration-underline transition-1 fw-semibold'
                   tabIndex={0}
                 >
-                  View Profile
+                  <StaticText text={"View Profile"} />
                   <i className='ph ph-arrow-right' />
                 </Link>
               </div>
@@ -327,7 +328,7 @@ const InstructorOne = () => {
               <div className=''>
                 <h4 className='mb-28 pb-24 border-bottom border-neutral-50 mb-24 border-dashed border-0'>
                   <Link href='/instructor-details' className='link text-line-2'>
-                    Alexandar
+                    <StaticText text={"Alexandar"} />
                   </Link>
                 </h4>
                 <div className='flex-between gap-8 flex-wrap mb-16'>
@@ -336,7 +337,7 @@ const InstructorOne = () => {
                       <i className='ph-bold ph-lightbulb' />
                     </span>
                     <span className='text-neutral-700 text-lg fw-medium'>
-                      UI/UX Designer
+                      <StaticText text={"UI/UX Designer"} />
                     </span>
                   </div>
                   <div className='flex-align gap-8'>
@@ -344,7 +345,7 @@ const InstructorOne = () => {
                       <i className='ph-bold ph-watch' />
                     </span>
                     <span className='text-neutral-700 text-lg fw-medium'>
-                      12 Course
+                      <StaticText text={"12 Course"} />
                     </span>
                   </div>
                 </div>
@@ -354,7 +355,7 @@ const InstructorOne = () => {
                       <i className='ph-bold ph-users' />
                     </span>
                     <span className='text-neutral-700 text-lg fw-medium'>
-                      36k Students
+                      <StaticText text={"36k Students"} />
                     </span>
                   </div>
                   <div className='flex-align gap-4'>
@@ -362,8 +363,8 @@ const InstructorOne = () => {
                       <i className='ph-fill ph-star' />
                     </span>
                     <span className='text-lg text-neutral-700'>
-                      4.6
-                      <span className='text-neutral-100'>(2.4k)</span>
+                      <StaticText text={"4.6"} />
+                      <span className='text-neutral-100'><StaticText text={"(2.4k)"} /></span>
                     </span>
                   </div>
                 </div>
@@ -374,7 +375,7 @@ const InstructorOne = () => {
                   className='flex-align gap-8 text-main-600 hover-text-decoration-underline transition-1 fw-semibold'
                   tabIndex={0}
                 >
-                  View Profile
+                  <StaticText text={"View Profile"} />
                   <i className='ph ph-arrow-right' />
                 </Link>
               </div>
@@ -432,7 +433,7 @@ const InstructorOne = () => {
               <div className=''>
                 <h4 className='mb-28 pb-24 border-bottom border-neutral-50 mb-24 border-dashed border-0'>
                   <Link href='/instructor-details' className='link text-line-2'>
-                    John Doe
+                    <StaticText text={"John Doe"} />
                   </Link>
                 </h4>
                 <div className='flex-between gap-8 flex-wrap mb-16'>
@@ -441,7 +442,7 @@ const InstructorOne = () => {
                       <i className='ph-bold ph-lightbulb' />
                     </span>
                     <span className='text-neutral-700 text-lg fw-medium'>
-                      WordPress Expert
+                      <StaticText text={"WordPress Expert"} />
                     </span>
                   </div>
                   <div className='flex-align gap-8'>
@@ -449,7 +450,7 @@ const InstructorOne = () => {
                       <i className='ph-bold ph-watch' />
                     </span>
                     <span className='text-neutral-700 text-lg fw-medium'>
-                      6 Course
+                      <StaticText text={"6 Course"} />
                     </span>
                   </div>
                 </div>
@@ -459,7 +460,7 @@ const InstructorOne = () => {
                       <i className='ph-bold ph-users' />
                     </span>
                     <span className='text-neutral-700 text-lg fw-medium'>
-                      55k Students
+                      <StaticText text={"55k Students"} />
                     </span>
                   </div>
                   <div className='flex-align gap-4'>
@@ -467,8 +468,8 @@ const InstructorOne = () => {
                       <i className='ph-fill ph-star' />
                     </span>
                     <span className='text-lg text-neutral-700'>
-                      4.6
-                      <span className='text-neutral-100'>(2.4k)</span>
+                      <StaticText text={"4.6"} />
+                      <span className='text-neutral-100'><StaticText text={"(2.4k)"} /></span>
                     </span>
                   </div>
                 </div>
@@ -479,7 +480,7 @@ const InstructorOne = () => {
                   className='flex-align gap-8 text-main-600 hover-text-decoration-underline transition-1 fw-semibold'
                   tabIndex={0}
                 >
-                  View Profile
+                  <StaticText text={"View Profile"} />
                   <i className='ph ph-arrow-right' />
                 </Link>
               </div>

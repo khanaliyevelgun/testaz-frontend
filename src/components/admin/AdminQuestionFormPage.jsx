@@ -7,6 +7,8 @@ import AdminRichTextEditor from "@/components/admin/AdminRichTextEditor";
 import AdminSearchSelect from "@/components/admin/AdminSearchSelect";
 import { createAdminQuestion, fetchAdminQuestion, fetchSubject, fetchSubjects, fetchTopic, fetchTopics, getApiAssetUrl, updateAdminQuestion, uploadAdminMedia } from "@/lib/api";
 import { getQuestionImageSrc, isImageOnlyQuestionHtml } from "@/lib/questionContent";
+import StaticText from "@/components/StaticText";
+
 
 const difficulties = ["EASY", "MEDIUM", "HARD"];
 const questionTypes = ["SINGLE_CHOICE", "MULTIPLE_CHOICE", "SHORT_TEXT"];
@@ -350,12 +352,12 @@ const AdminQuestionFormPage = ({ questionId }) => {
     <div className='px-24 py-24'>
       <div className='bg-white rounded-10 px-24 py-24'>
         <div className='mb-24'>
-          <h4 className='fw-semibold text-neutral-500 text-20 mb-4'>{isEdit ? "Sualı Redaktə Et" : "Sual Yarat"}</h4>
-          <p className='text-14 text-neutral-400 mb-0'>{isEdit ? "Məzmunu, məlumatları, variantları və qəbul edilən cavabları yenilə." : "Yeni qaralama sual yarat."}</p>
+          <h4 className='fw-semibold text-neutral-500 text-20 mb-4'>{isEdit ? <StaticText text={"Sualı Redaktə Et"} /> : <StaticText text={"Sual Yarat"} />}</h4>
+          <p className='text-14 text-neutral-400 mb-0'>{isEdit ? <StaticText text={"Məzmunu, məlumatları, variantları və qəbul edilən cavabları yenilə."} /> : <StaticText text={"Yeni qaralama sual yarat."} />}</p>
         </div>
 
         {isLoading ? (
-          <p className='text-14 text-neutral-400 mb-0'>Yüklənir...</p>
+          <p className='text-14 text-neutral-400 mb-0'><StaticText text={"Yüklənir..."} /></p>
         ) : (
           <form className='row gy-4' onSubmit={handleSubmit} noValidate>
             <div className='col-md-3'>
@@ -389,34 +391,34 @@ const AdminQuestionFormPage = ({ questionId }) => {
               />
             </div>
             <div className='col-md-3'>
-              <label className='text-14 text-neutral-500 fw-medium mb-8'>Dil</label>
+              <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Dil"} /></label>
               <input name='language' className='common-input rounded-pill' maxLength='2' value={form.language} onChange={handleChange} />
             </div>
 
             <div className='col-md-4'>
-              <label className='text-14 text-neutral-500 fw-medium mb-8'>Çətinlik</label>
+              <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Çətinlik"} /></label>
               <select name='difficulty' className='form-select rounded-pill border-neutral-40 text-14 py-11 px-16' value={form.difficulty} onChange={handleChange}>
                 {difficulties.map((difficulty) => <option value={difficulty} key={difficulty}>{difficultyLabels[difficulty]}</option>)}
               </select>
             </div>
             <div className='col-md-4'>
-              <label className='text-14 text-neutral-500 fw-medium mb-8'>Sual növü</label>
+              <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Sual növü"} /></label>
               <select name='type' className='form-select rounded-pill border-neutral-40 text-14 py-11 px-16' value={form.type} onChange={handleChange} disabled={isEdit}>
                 {questionTypes.map((type) => <option value={type} key={type}>{questionTypeLabels[type]}</option>)}
               </select>
             </div>
             <div className='col-12'>
-              <label className='text-14 text-neutral-500 fw-medium mb-8'>Sual mətni</label>
+              <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Sual mətni"} /></label>
               <AdminRichTextEditor value={form.stem} onChange={(stem) => setForm((current) => ({ ...current, stem }))} onUpload={handleStemImageUpload} />
-              {uploadingField === "stem" ? <p className='text-14 text-neutral-400 mt-8 mb-0'>Şəkil yüklənir...</p> : null}
+              {uploadingField === "stem" ? <p className='text-14 text-neutral-400 mt-8 mb-0'><StaticText text={"Şəkil yüklənir..."} /></p> : null}
             </div>
             <div className='col-12'>
-              <label className='text-14 text-neutral-500 fw-medium mb-8'>Sual şəkli</label>
+              <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Sual şəkli"} /></label>
               <div className='d-flex flex-wrap align-items-center gap-12'>
                 <input type='file' accept='image/*' className='common-input rounded-pill flex-grow-1 min-w-240-px' onChange={handleQuestionImageUpload} disabled={Boolean(uploadingField)} />
-                {form.mediaPath ? <button type='button' className='px-14 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={() => setForm((current) => ({ ...current, mediaPath: "", mediaType: "" }))}>Şəkli sil</button> : null}
+                {form.mediaPath ? <button type='button' className='px-14 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={() => setForm((current) => ({ ...current, mediaPath: "", mediaType: "" }))}><StaticText text={"Şəkli sil"} /></button> : null}
               </div>
-              {uploadingField === "question" ? <p className='text-14 text-neutral-400 mt-8 mb-0'>Şəkil yüklənir...</p> : null}
+              {uploadingField === "question" ? <p className='text-14 text-neutral-400 mt-8 mb-0'><StaticText text={"Şəkil yüklənir..."} /></p> : null}
               {form.mediaPath ? (
                 <div className='mt-12'>
                   <img src={getApiAssetUrl(form.mediaPath)} alt='Sual şəkli' className='max-w-320-px w-100 rounded-12 border border-neutral-30' />
@@ -424,15 +426,15 @@ const AdminQuestionFormPage = ({ questionId }) => {
               ) : null}
             </div>
             <div className='col-12'>
-              <label className='text-14 text-neutral-500 fw-medium mb-8'>İzah</label>
+              <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"İzah"} /></label>
               <textarea name='explanation' className='common-input rounded-12' rows='4' maxLength='4000' value={form.explanation} onChange={handleChange} />
             </div>
 
             {usesOptions ? (
               <div className='col-12'>
                 <div className='d-flex align-items-center justify-content-between gap-12 mb-12'>
-                  <h5 className='text-16 fw-semibold text-neutral-500 mb-0'>Variantlar</h5>
-                  <button type='button' className='px-14 py-8 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={addOption} disabled={options.length >= 10}>Variant əlavə et</button>
+                  <h5 className='text-16 fw-semibold text-neutral-500 mb-0'><StaticText text={"Variantlar"} /></h5>
+                  <button type='button' className='px-14 py-8 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={addOption} disabled={options.length >= 10}><StaticText text={"Variant əlavə et"} /></button>
                 </div>
                 <div className='d-flex flex-column gap-12'>
                   {options.map((option, index) => (
@@ -444,15 +446,15 @@ const AdminQuestionFormPage = ({ questionId }) => {
                           checked={option.correct}
                           onChange={(event) => setCorrectOption(index, event.target.checked)}
                         />
-                        Doğru
+                        <StaticText text={"Doğru"} />
                       </label>
                       <div className='option-editor-body'>
                         <div className='d-flex flex-wrap align-items-center justify-content-between gap-12 mb-12'>
-                          <span className='text-14 fw-medium text-neutral-500'>Variant {index + 1}</span>
+                          <span className='text-14 fw-medium text-neutral-500'><StaticText text={"Variant"} /> {index + 1}</span>
                           <div className='d-flex flex-wrap align-items-center gap-8'>
-                            <button type='button' className={`px-12 py-8 border rounded-pill text-14 ${option.mode !== "image" ? "btn-main text-white" : "border-neutral-40 text-neutral-500 bg-white"}`} onClick={() => setOptionMode(index, "text")}>Mətn</button>
-                            <button type='button' className={`px-12 py-8 border rounded-pill text-14 ${option.mode === "image" ? "btn-main text-white" : "border-neutral-40 text-neutral-500 bg-white"}`} onClick={() => setOptionMode(index, "image")}>Şəkil</button>
-                            <button type='button' className='px-12 py-8 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={() => setOptions((current) => current.filter((_, optionIndex) => optionIndex !== index))} disabled={options.length <= 1}>Sil</button>
+                            <button type='button' className={`px-12 py-8 border rounded-pill text-14 ${option.mode !== "image" ? "btn-main text-white" : "border-neutral-40 text-neutral-500 bg-white"}`} onClick={() => setOptionMode(index, "text")}><StaticText text={"Mətn"} /></button>
+                            <button type='button' className={`px-12 py-8 border rounded-pill text-14 ${option.mode === "image" ? "btn-main text-white" : "border-neutral-40 text-neutral-500 bg-white"}`} onClick={() => setOptionMode(index, "image")}><StaticText text={"Şəkil"} /></button>
+                            <button type='button' className='px-12 py-8 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={() => setOptions((current) => current.filter((_, optionIndex) => optionIndex !== index))} disabled={options.length <= 1}><StaticText text={"Sil"} /></button>
                           </div>
                         </div>
 
@@ -461,11 +463,11 @@ const AdminQuestionFormPage = ({ questionId }) => {
                             {getQuestionImageSrc(option.content) ? (
                               <div className='d-flex flex-wrap align-items-center gap-12'>
                                 <img src={getQuestionImageSrc(option.content)} alt={`Variant ${index + 1}`} className='option-image-preview' />
-                                <button type='button' className='px-12 py-8 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={() => updateOption(index, { content: "" })}>Şəkli sil</button>
+                                <button type='button' className='px-12 py-8 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={() => updateOption(index, { content: "" })}><StaticText text={"Şəkli sil"} /></button>
                               </div>
                             ) : (
                               <label className='option-image-drop border border-neutral-40 rounded-12 text-14 text-neutral-500 mb-0'>
-                                {uploadingField === `option-${index}` ? "Yüklənir..." : "Şəkil seç"}
+                                {uploadingField === `option-${index}` ? <StaticText text={"Yüklənir..."} /> : <StaticText text={"Şəkil seç"} />}
                                 <input type='file' accept='image/*' className='d-none' disabled={Boolean(uploadingField)} onChange={(event) => handleOptionImageUpload(index, event)} />
                               </label>
                             )}
@@ -481,8 +483,8 @@ const AdminQuestionFormPage = ({ questionId }) => {
             ) : (
               <div className='col-12'>
                 <div className='d-flex align-items-center justify-content-between gap-12 mb-12'>
-                  <h5 className='text-16 fw-semibold text-neutral-500 mb-0'>Qəbul edilən cavablar</h5>
-                  <button type='button' className='px-14 py-8 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={addAcceptedAnswer} disabled={acceptedAnswers.length >= 10}>Cavab əlavə et</button>
+                  <h5 className='text-16 fw-semibold text-neutral-500 mb-0'><StaticText text={"Qəbul edilən cavablar"} /></h5>
+                  <button type='button' className='px-14 py-8 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={addAcceptedAnswer} disabled={acceptedAnswers.length >= 10}><StaticText text={"Cavab əlavə et"} /></button>
                 </div>
                 <div className='d-flex flex-column gap-12'>
                   {acceptedAnswers.map((answer, index) => (
@@ -493,9 +495,9 @@ const AdminQuestionFormPage = ({ questionId }) => {
                       </select>
                       <label className='d-flex align-items-center gap-8 text-14 text-neutral-500 mb-0'>
                         <input type='checkbox' checked={answer.caseSensitive} onChange={(event) => updateAcceptedAnswer(index, { caseSensitive: event.target.checked })} />
-                        Böyük/kiçik hərfə həssas
+                        <StaticText text={"Böyük/kiçik hərfə həssas"} />
                       </label>
-                      <button type='button' className='px-12 py-8 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={() => setAcceptedAnswers((current) => current.filter((_, answerIndex) => answerIndex !== index))} disabled={acceptedAnswers.length <= 1}>Sil</button>
+                      <button type='button' className='px-12 py-8 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={() => setAcceptedAnswers((current) => current.filter((_, answerIndex) => answerIndex !== index))} disabled={acceptedAnswers.length <= 1}><StaticText text={"Sil"} /></button>
                     </div>
                   ))}
                 </div>
@@ -503,8 +505,8 @@ const AdminQuestionFormPage = ({ questionId }) => {
             )}
 
             <div className='col-12 d-flex align-items-center gap-12 mt-24'>
-              <button type='submit' className='btn btn-main rounded-pill px-24' disabled={isSubmitting || Boolean(uploadingField) || !canSubmit}>{isSubmitting ? "Yadda saxlanır..." : "Yadda saxla"}</button>
-              <button type='button' className='px-18 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={() => router.push("/admin/questions")}>Ləğv et</button>
+              <button type='submit' className='btn btn-main rounded-pill px-24' disabled={isSubmitting || Boolean(uploadingField) || !canSubmit}>{isSubmitting ? <StaticText text={"Yadda saxlanır..."} /> : <StaticText text={"Yadda saxla"} />}</button>
+              <button type='button' className='px-18 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={() => router.push("/admin/questions")}><StaticText text={"Ləğv et"} /></button>
             </div>
           </form>
         )}

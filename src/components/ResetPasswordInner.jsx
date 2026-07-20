@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { resetPassword } from "@/lib/api";
+import StaticText from "@/components/StaticText";
+
 
 const ResetPasswordInner = () => {
   const router = useRouter();
@@ -64,12 +66,12 @@ const ResetPasswordInner = () => {
           <div className='col-lg-6'>
             <div className='bg-main-25 border border-neutral-30 rounded-8 p-32'>
               <div className='mb-40'>
-                <h3 className='mb-16 text-neutral-500'>Yeni şifrə təyin edin</h3>
-                <p className='text-neutral-500'>Göndərilən kodu və yeni şifrənizi daxil edin.</p>
+                <h3 className='mb-16 text-neutral-500'><StaticText text={"Yeni şifrə təyin edin"} /></h3>
+                <p className='text-neutral-500'><StaticText text={"Göndərilən kodu və yeni şifrənizi daxil edin."} /></p>
               </div>
               <form onSubmit={handleSubmit}>
                 <div className='mb-24'>
-                  <label htmlFor='login' className='d-block fw-medium text-lg text-neutral-500 mb-16'>Email və ya telefon</label>
+                  <label htmlFor='login' className='d-block fw-medium text-lg text-neutral-500 mb-16'><StaticText text={"Email və ya telefon"} /></label>
                   <input
                     type='text'
                     name='login'
@@ -81,7 +83,7 @@ const ResetPasswordInner = () => {
                   />
                 </div>
                 <div className='mb-24'>
-                  <label htmlFor='code' className='d-block fw-medium text-lg text-neutral-500 mb-16'>Təsdiq kodu</label>
+                  <label htmlFor='code' className='d-block fw-medium text-lg text-neutral-500 mb-16'><StaticText text={"Təsdiq kodu"} /></label>
                   <input
                     type='text'
                     name='code'
@@ -94,7 +96,7 @@ const ResetPasswordInner = () => {
                   />
                 </div>
                 <div className='mb-24'>
-                  <label htmlFor='password' className='d-block fw-medium text-lg text-neutral-500 mb-16'>Yeni şifrə</label>
+                  <label htmlFor='password' className='d-block fw-medium text-lg text-neutral-500 mb-16'><StaticText text={"Yeni şifrə"} /></label>
                   <div className='position-relative'>
                     <input
                       type={passwordVisible ? "text" : "password"}
@@ -116,7 +118,7 @@ const ResetPasswordInner = () => {
                   </div>
                 </div>
                 <div className='mb-24'>
-                  <label htmlFor='confirmPassword' className='d-block fw-medium text-lg text-neutral-500 mb-16'>Şifrəni təsdiqləyin</label>
+                  <label htmlFor='confirmPassword' className='d-block fw-medium text-lg text-neutral-500 mb-16'><StaticText text={"Şifrəni təsdiqləyin"} /></label>
                   <input
                     type='password'
                     name='confirmPassword'
@@ -130,12 +132,12 @@ const ResetPasswordInner = () => {
                 {message ? <p className='text-success-600'>{message}</p> : null}
                 {error ? <p className='text-danger'>{error}</p> : null}
                 <button type='submit' className='btn btn-main rounded-pill flex-center gap-8 mt-20' disabled={isSubmitting}>
-                  {isSubmitting ? "Yenilənir..." : "Şifrəni yenilə"}
+                  {isSubmitting ? <StaticText text={"Yenilənir..."} /> : <StaticText text={"Şifrəni yenilə"} />}
                   <i className='ph-bold ph-arrow-up-right d-flex text-lg' />
                 </button>
                 <p className='text-neutral-500 mt-24 mb-0'>
-                  Şifrənizi xatırladınız?{" "}
-                  <Link href='/sign-in' className='fw-semibold text-main-600'>Daxil olun</Link>
+                  <StaticText text={"Şifrənizi xatırladınız?"} />{" "}
+                  <Link href='/sign-in' className='fw-semibold text-main-600'><StaticText text={"Daxil olun"} /></Link>
                 </p>
               </form>
             </div>

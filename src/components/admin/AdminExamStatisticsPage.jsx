@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { fetchExamStatistics } from "@/lib/api";
+import StaticText from "@/components/StaticText";
+
 
 const StatBox = ({ label, value }) => (
   <div className='col-md-3'>
@@ -43,16 +45,16 @@ const AdminExamStatisticsPage = ({ examId }) => {
       <div className='bg-white rounded-10 px-24 py-24'>
         <div className='d-flex flex-wrap align-items-center justify-content-between gap-16 mb-24'>
           <div>
-            <h4 className='fw-semibold text-neutral-500 text-20 mb-4'>Exam Statistics</h4>
+            <h4 className='fw-semibold text-neutral-500 text-20 mb-4'><StaticText text={"Exam Statistics"} /></h4>
             <p className='text-14 text-neutral-400 mb-0'>{examId}</p>
           </div>
           <div className='d-flex flex-wrap align-items-center gap-8'>
-            <Link href={`/admin/exams/${examId}`} className='px-18 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white'>Details</Link>
-            <Link href={`/admin/exams/${examId}/attempts`} className='btn btn-main rounded-pill px-20'>Attempts</Link>
+            <Link href={`/admin/exams/${examId}`} className='px-18 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white'><StaticText text={"Details"} /></Link>
+            <Link href={`/admin/exams/${examId}/attempts`} className='btn btn-main rounded-pill px-20'><StaticText text={"Attempts"} /></Link>
           </div>
         </div>
 
-        {isLoading ? <p className='text-14 text-neutral-400 mb-0'>Loading...</p> : null}
+        {isLoading ? <p className='text-14 text-neutral-400 mb-0'><StaticText text={"Loading..."} /></p> : null}
         {error ? <p className='text-danger mb-0'>{error}</p> : null}
 
         {statistics ? (

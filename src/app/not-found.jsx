@@ -1,4 +1,6 @@
 import Link from "next/link";
+import StaticText from "@/components/StaticText";
+
 
 export default function NotFound() {
   return (
@@ -6,14 +8,14 @@ export default function NotFound() {
       <div className='container'>
         <div className='row'>
           <div className='col-12 text-center'>
-            <h1 className='display-1'>404 Error</h1>
-            <h2>Page Not Found</h2>
+            <h1 className='display-1'><StaticText text={"404 Error"} /></h1>
+            <h2><StaticText text={"Page Not Found"} /></h2>
             <p>
-              We are sorry, the page you are looking for could not be found.
+              <StaticText text={"We are sorry, the page you are looking for could not be found."} />
             </p>
 
             <Link href='/' className='btn btn-main'>
-              Back to Home
+              <StaticText text={"Back to Home"} />
             </Link>
           </div>
         </div>

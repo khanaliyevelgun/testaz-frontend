@@ -97,6 +97,10 @@
   border-radius: 12px;
 }
 
+.i18n-static-text {
+  display: contents;
+}
+
 @media (max-width: 575px) {
   .account {
     padding-block: 48px !important;

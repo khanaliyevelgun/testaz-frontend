@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import StaticText from "@/components/StaticText";
+
 
 const AdminProfileDropdown = ({ user, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -47,7 +49,7 @@ const AdminProfileDropdown = ({ user, onLogout }) => {
               onClick={() => setIsOpen(false)}
             >
               <span><i className='ph ph-user-circle'></i></span>
-              <span>Profil</span>
+              <span><StaticText text={"Profil"} /></span>
             </Link>
           </li>
           <li>
@@ -57,7 +59,7 @@ const AdminProfileDropdown = ({ user, onLogout }) => {
               onClick={() => setIsOpen(false)}
             >
               <span><i className='ph ph-gear'></i></span>
-              <span>Tənzimləmələr</span>
+              <span><StaticText text={"Tənzimləmələr"} /></span>
             </Link>
           </li>
           <li>
@@ -67,7 +69,7 @@ const AdminProfileDropdown = ({ user, onLogout }) => {
               onClick={onLogout}
             >
               <span><i className='ph ph-power'></i></span>
-              <span>Çıxış</span>
+              <span><StaticText text={"Çıxış"} /></span>
             </button>
           </li>
         </ul>

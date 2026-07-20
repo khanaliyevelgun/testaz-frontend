@@ -11,6 +11,10 @@ import {
   reportQuestion,
 } from "@/lib/api";
 import { renderQuestionHtml } from "@/lib/questionContent";
+import StaticText from "@/components/StaticText";
+import StaticOption from "@/components/StaticOption";
+
+
 
 const formatDate = (value) => {
   if (!value) return "-";
@@ -103,8 +107,8 @@ const ChildResultsPage = () => {
       <div className='bg-white rounded-10 px-24 py-24'>
         <div className='d-flex flex-wrap align-items-center justify-content-between gap-16 mb-24'>
           <div>
-            <h4 className='fw-semibold text-neutral-500 text-20 mb-4'>Quiz Attempts</h4>
-            <p className='text-14 text-neutral-400 mb-0'>Submitted exam and practice results.</p>
+            <h4 className='fw-semibold text-neutral-500 text-20 mb-4'><StaticText text={"Quiz Attempts"} /></h4>
+            <p className='text-14 text-neutral-400 mb-0'><StaticText text={"Submitted exam and practice results."} /></p>
           </div>
           <AdminRefreshButton isLoading={isLoading} onClick={() => load(meta.page)} />
         </div>
@@ -116,17 +120,17 @@ const ChildResultsPage = () => {
           <table className='table mb-0'>
             <thead>
               <tr>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Type</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Score</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Percentage</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Correct</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Scored</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20 text-end'>Action</th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Type"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Score"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Percentage"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Correct"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Scored"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20 text-end'><StaticText text={"Action"} /></th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'>Loading...</td></tr>
+                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'><StaticText text={"Loading..."} /></td></tr>
               ) : results.length ? (
                 results.map((result) => (
                   <tr key={result.id || result.sessionId}>
@@ -137,34 +141,34 @@ const ChildResultsPage = () => {
                     <td className='py-16 px-20 text-14 text-neutral-500'>{formatDate(result.scoredAt)}</td>
                     <td className='py-16 px-20 text-end'>
                       <button type='button' className='px-14 py-8 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={() => openDetail(result.sessionId)}>
-                        Details
+                        <StaticText text={"Details"} />
                       </button>
                     </td>
                   </tr>
                 ))
               ) : (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'>No results found.</td></tr>
+                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'><StaticText text={"No results found."} /></td></tr>
               )}
             </tbody>
           </table>
         </div>
 
         <div className='d-flex align-items-center justify-content-end gap-8 mt-24'>
-          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page <= 1} onClick={() => load(Math.max(meta.page - 1, 1))}>Previous</button>
+          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page <= 1} onClick={() => load(Math.max(meta.page - 1, 1))}><StaticText text={"Previous"} /></button>
           <span className='text-14 text-neutral-400'>{meta.page} / {meta.totalPages}</span>
-          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page >= meta.totalPages} onClick={() => load(Math.min(meta.page + 1, meta.totalPages))}>Next</button>
+          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page >= meta.totalPages} onClick={() => load(Math.min(meta.page + 1, meta.totalPages))}><StaticText text={"Next"} /></button>
         </div>
       </div>
 
       <div className='row gy-4 mt-1'>
         <div className='col-xl-6'>
           <div className='bg-white rounded-10 px-24 py-24 h-100'>
-            <h5 className='text-16 fw-semibold text-neutral-500 mb-4'>Subject progress</h5>
-            <p className='text-13 text-neutral-400 mb-20'>Cumulative performance across submitted tests.</p>
-            {isLoading ? <p className='text-14 text-neutral-400 mb-0'>Loading...</p> : subjectTrends.length ? (
+            <h5 className='text-16 fw-semibold text-neutral-500 mb-4'><StaticText text={"Subject progress"} /></h5>
+            <p className='text-13 text-neutral-400 mb-20'><StaticText text={"Cumulative performance across submitted tests."} /></p>
+            {isLoading ? <p className='text-14 text-neutral-400 mb-0'><StaticText text={"Loading..."} /></p> : subjectTrends.length ? (
               <div className='table-responsive'>
                 <table className='table mb-0'>
-                  <thead><tr><th className='text-12 py-12'>Subject</th><th className='text-12 py-12'>Accuracy</th><th className='text-12 py-12'>Tests</th><th className='text-12 py-12'>Trend</th></tr></thead>
+                  <thead><tr><th className='text-12 py-12'><StaticText text={"Subject"} /></th><th className='text-12 py-12'><StaticText text={"Accuracy"} /></th><th className='text-12 py-12'><StaticText text={"Tests"} /></th><th className='text-12 py-12'><StaticText text={"Trend"} /></th></tr></thead>
                   <tbody>
                     {subjectTrends.map((item) => (
                       <tr key={item.subjectId}>
@@ -177,17 +181,17 @@ const ChildResultsPage = () => {
                   </tbody>
                 </table>
               </div>
-            ) : <p className='text-14 text-neutral-400 mb-0'>No subject trend data yet.</p>}
+            ) : <p className='text-14 text-neutral-400 mb-0'><StaticText text={"No subject trend data yet."} /></p>}
           </div>
         </div>
         <div className='col-xl-6'>
           <div className='bg-white rounded-10 px-24 py-24 h-100'>
-            <h5 className='text-16 fw-semibold text-neutral-500 mb-4'>Topics to improve</h5>
-            <p className='text-13 text-neutral-400 mb-20'>Weakest topics are returned first.</p>
-            {isLoading ? <p className='text-14 text-neutral-400 mb-0'>Loading...</p> : topicTrends.length ? (
+            <h5 className='text-16 fw-semibold text-neutral-500 mb-4'><StaticText text={"Topics to improve"} /></h5>
+            <p className='text-13 text-neutral-400 mb-20'><StaticText text={"Weakest topics are returned first."} /></p>
+            {isLoading ? <p className='text-14 text-neutral-400 mb-0'><StaticText text={"Loading..."} /></p> : topicTrends.length ? (
               <div className='table-responsive'>
                 <table className='table mb-0'>
-                  <thead><tr><th className='text-12 py-12'>Topic</th><th className='text-12 py-12'>Accuracy</th><th className='text-12 py-12'>Questions</th><th className='text-12 py-12'>Trend</th></tr></thead>
+                  <thead><tr><th className='text-12 py-12'><StaticText text={"Topic"} /></th><th className='text-12 py-12'><StaticText text={"Accuracy"} /></th><th className='text-12 py-12'><StaticText text={"Questions"} /></th><th className='text-12 py-12'><StaticText text={"Trend"} /></th></tr></thead>
                   <tbody>
                     {topicTrends.slice(0, 10).map((item) => (
                       <tr key={item.topicId}>
@@ -200,7 +204,7 @@ const ChildResultsPage = () => {
                   </tbody>
                 </table>
               </div>
-            ) : <p className='text-14 text-neutral-400 mb-0'>No topic trend data yet.</p>}
+            ) : <p className='text-14 text-neutral-400 mb-0'><StaticText text={"No topic trend data yet."} /></p>}
           </div>
         </div>
       </div>
@@ -211,19 +215,19 @@ const ChildResultsPage = () => {
             <div className='modal-content rounded-12 border-0'>
               <div className='modal-header border-neutral-30'>
                 <div>
-                  <h5 className='modal-title text-18 fw-semibold text-neutral-500'>Result details</h5>
+                  <h5 className='modal-title text-18 fw-semibold text-neutral-500'><StaticText text={"Result details"} /></h5>
                   {!isDetailLoading ? <span className='text-13 text-neutral-400'>{detail.sessionId}</span> : null}
                 </div>
                 <button type='button' className='btn-close' aria-label='Close' onClick={() => { setDetail(null); setReportForm(null); }} />
               </div>
               <div className='modal-body'>
-                {isDetailLoading ? <p className='text-14 text-neutral-400 mb-0'>Loading...</p> : (
+                {isDetailLoading ? <p className='text-14 text-neutral-400 mb-0'><StaticText text={"Loading..."} /></p> : (
                   <>
                     <div className='row gy-3 mb-24'>
-                      <div className='col-md-3'><div className='border border-neutral-30 rounded-8 p-14'><span className='text-12 text-neutral-400 d-block'>Score</span><strong>{detail.totalScore ?? "-"} / {detail.maxScore ?? "-"}</strong></div></div>
-                      <div className='col-md-3'><div className='border border-neutral-30 rounded-8 p-14'><span className='text-12 text-neutral-400 d-block'>Percentage</span><strong>{detail.percentage != null ? `${Math.round(detail.percentage)}%` : "-"}</strong></div></div>
-                      <div className='col-md-3'><div className='border border-neutral-30 rounded-8 p-14'><span className='text-12 text-neutral-400 d-block'>Correct / wrong / blank</span><strong>{detail.correctCount ?? 0} / {detail.wrongCount ?? 0} / {detail.blankCount ?? 0}</strong></div></div>
-                      <div className='col-md-3'><div className='border border-neutral-30 rounded-8 p-14'><span className='text-12 text-neutral-400 d-block'>Scoring</span><strong>{detail.scoringMode || "-"}</strong></div></div>
+                      <div className='col-md-3'><div className='border border-neutral-30 rounded-8 p-14'><span className='text-12 text-neutral-400 d-block'><StaticText text={"Score"} /></span><strong>{detail.totalScore ?? "-"} / {detail.maxScore ?? "-"}</strong></div></div>
+                      <div className='col-md-3'><div className='border border-neutral-30 rounded-8 p-14'><span className='text-12 text-neutral-400 d-block'><StaticText text={"Percentage"} /></span><strong>{detail.percentage != null ? `${Math.round(detail.percentage)}%` : "-"}</strong></div></div>
+                      <div className='col-md-3'><div className='border border-neutral-30 rounded-8 p-14'><span className='text-12 text-neutral-400 d-block'><StaticText text={"Correct / wrong / blank"} /></span><strong>{detail.correctCount ?? 0} / {detail.wrongCount ?? 0} / {detail.blankCount ?? 0}</strong></div></div>
+                      <div className='col-md-3'><div className='border border-neutral-30 rounded-8 p-14'><span className='text-12 text-neutral-400 d-block'><StaticText text={"Scoring"} /></span><strong>{detail.scoringMode || "-"}</strong></div></div>
                     </div>
 
                     <div className='d-flex flex-column gap-12'>
@@ -231,17 +235,17 @@ const ChildResultsPage = () => {
                         <div className='border border-neutral-30 rounded-10 p-16' key={`${item.questionId}-${index}`}>
                           <div className='d-flex flex-wrap align-items-center justify-content-between gap-10 mb-12'>
                             <div className='d-flex align-items-center gap-8'>
-                              <strong className='text-14 text-neutral-500'>Question {index + 1}</strong>
+                              <strong className='text-14 text-neutral-500'><StaticText text={"Question"} /> {index + 1}</strong>
                               <AdminStatusBadge status={item.correct ? "ACTIVE" : item.blank ? "PENDING" : "REJECTED"} label={item.correct ? "Correct" : item.blank ? "Blank" : "Wrong"} />
                             </div>
                             <button type='button' className='px-12 py-7 border border-neutral-40 rounded-pill text-13 text-neutral-500 bg-white' onClick={() => setReportForm({ questionId: item.questionId, reason: "WRONG_ANSWER", comment: "" })}>
-                              Report question
+                              <StaticText text={"Report question"} />
                             </button>
                           </div>
                           <div className='text-14 text-neutral-500 mb-12' dangerouslySetInnerHTML={renderQuestionHtml(item.stem || "")} />
                           <div className='row gy-2'>
-                            <div className='col-md-6'><span className='text-12 text-neutral-400 d-block'>Your answer</span><span className='text-14 text-neutral-500'>{item.studentAnswer || "-"}</span></div>
-                            <div className='col-md-6'><span className='text-12 text-neutral-400 d-block'>Correct answer</span><span className='text-14 text-neutral-500'>{item.correctAnswer || "-"}</span></div>
+                            <div className='col-md-6'><span className='text-12 text-neutral-400 d-block'><StaticText text={"Your answer"} /></span><span className='text-14 text-neutral-500'>{item.studentAnswer || "-"}</span></div>
+                            <div className='col-md-6'><span className='text-12 text-neutral-400 d-block'><StaticText text={"Correct answer"} /></span><span className='text-14 text-neutral-500'>{item.correctAnswer || "-"}</span></div>
                           </div>
                           {item.explanation ? <p className='text-13 text-neutral-400 mt-12 mb-0'>{item.explanation}</p> : null}
                         </div>
@@ -260,23 +264,23 @@ const ChildResultsPage = () => {
           <div className='modal-dialog modal-dialog-centered' role='document'>
             <form className='modal-content rounded-12 border-0' onSubmit={submitReport}>
               <div className='modal-header border-neutral-30'>
-                <h5 className='modal-title text-18 fw-semibold text-neutral-500'>Report question</h5>
+                <h5 className='modal-title text-18 fw-semibold text-neutral-500'><StaticText text={"Report question"} /></h5>
                 <button type='button' className='btn-close' aria-label='Close' onClick={() => setReportForm(null)} />
               </div>
               <div className='modal-body'>
-                <label className='text-14 text-neutral-500 fw-medium mb-8'>Reason</label>
+                <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Reason"} /></label>
                 <select className='form-select rounded-pill border-neutral-40 text-14 py-11 px-16 mb-16' value={reportForm.reason} onChange={(event) => setReportForm((current) => ({ ...current, reason: event.target.value }))}>
-                  <option value='WRONG_ANSWER'>Wrong answer</option>
-                  <option value='TYPO'>Typo</option>
-                  <option value='UNCLEAR'>Unclear</option>
-                  <option value='OTHER'>Other</option>
+                  <StaticOption value='WRONG_ANSWER' text={"Wrong answer"} />
+                  <StaticOption value='TYPO' text={"Typo"} />
+                  <StaticOption value='UNCLEAR' text={"Unclear"} />
+                  <StaticOption value='OTHER' text={"Other"} />
                 </select>
-                <label className='text-14 text-neutral-500 fw-medium mb-8'>Comment</label>
+                <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Comment"} /></label>
                 <textarea className='common-input rounded-8' rows='4' maxLength='2000' value={reportForm.comment} onChange={(event) => setReportForm((current) => ({ ...current, comment: event.target.value }))} />
               </div>
               <div className='modal-footer border-neutral-30'>
-                <button type='button' className='px-18 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={() => setReportForm(null)}>Cancel</button>
-                <button type='submit' className='btn btn-main rounded-pill px-20' disabled={isReporting}>{isReporting ? "Sending..." : "Send report"}</button>
+                <button type='button' className='px-18 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={() => setReportForm(null)}><StaticText text={"Cancel"} /></button>
+                <button type='submit' className='btn btn-main rounded-pill px-20' disabled={isReporting}>{isReporting ? <StaticText text={"Sending..."} /> : <StaticText text={"Send report"} />}</button>
               </div>
             </form>
           </div>

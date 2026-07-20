@@ -1,3 +1,4 @@
+import StaticText from "@/components/StaticText";
 const ContactInner = () => {
   return (
     <>
@@ -8,12 +9,11 @@ const ContactInner = () => {
               <span className='text-main-600 text-2xl d-flex'>
                 <i className='ph-bold ph-book' />
               </span>
-              <h5 className='text-main-600 mb-0'>Əlaqə</h5>
+              <h5 className='text-main-600 mb-0'><StaticText text={"Əlaqə"} /></h5>
             </div>
-            <h2 className='mb-24'>Sizə kömək etmək üçün buradayıq</h2>
+            <h2 className='mb-24'><StaticText text={"Sizə kömək etmək üçün buradayıq"} /></h2>
             <p className=''>
-              Sınaqlar, sual bazası, nəticə analizi və planlarla bağlı
-              suallarınız üçün bizimlə rahat əlaqə saxlaya bilərsiniz.
+              <StaticText text={"Sınaqlar, sual bazası, nəticə analizi və planlarla bağlı suallarınız üçün bizimlə rahat əlaqə saxlaya bilərsiniz."} />
             </p>
           </div>
           <div className='row gy-4'>
@@ -23,15 +23,15 @@ const ContactInner = () => {
                   <i className='ph ph-map-pin-line' />
                 </span>
                 <div className='flex-grow-1'>
-                  <h4 className='mb-12'>Ofis ünvanı</h4>
+                  <h4 className='mb-12'><StaticText text={"Ofis ünvanı"} /></h4>
                   <p className='text-neutral-500'>
-                    Bakı şəh., Suraxanı ray.
+                    <StaticText text={"Bakı şəh., Suraxanı ray."} />
                   </p>
                   <a
                     href='#'
                     className='text-main-600 fw-semibold text-decoration-underline mt-16'
                   >
-                    Ünvanı göstər
+                    <StaticText text={"Ünvanı göstər"} />
                   </a>
                 </div>
               </div>
@@ -42,14 +42,14 @@ const ContactInner = () => {
                   <i className='ph ph-envelope-open' />
                 </span>
                 <div className='flex-grow-1'>
-                  <h4 className='mb-12'>Email ünvanı</h4>
-                  <p className='text-neutral-500'>dwallo@gmail.com</p>
-                  <p className='text-neutral-500'>info@edusinaq.az</p>
+                  <h4 className='mb-12'><StaticText text={"Email ünvanı"} /></h4>
+                  <p className='text-neutral-500'><StaticText text={"dwallo@gmail.com"} /></p>
+                  <p className='text-neutral-500'><StaticText text={"info@edusinaq.az"} /></p>
                   <a
                     href='mailto:dwallo@gmail.com'
                     className='text-main-600 fw-semibold text-decoration-underline mt-16'
                   >
-                    Email göndər
+                    <StaticText text={"Email göndər"} />
                   </a>
                 </div>
               </div>
@@ -60,14 +60,14 @@ const ContactInner = () => {
                   <i className='ph ph-phone-call' />
                 </span>
                 <div className='flex-grow-1'>
-                  <h4 className='mb-12'>Telefon nömrəsi</h4>
-                  <p className='text-neutral-500'>(050) 879-3791</p>
-                  <p className='text-neutral-500'>(207) 555-0119</p>
+                  <h4 className='mb-12'><StaticText text={"Telefon nömrəsi"} /></h4>
+                  <p className='text-neutral-500'><StaticText text={"(050) 879-3791"} /></p>
+                  <p className='text-neutral-500'><StaticText text={"(207) 555-0119"} /></p>
                   <a
                     href='tel:+994508793791'
                     className='text-main-600 fw-semibold text-decoration-underline mt-16'
                   >
-                    Bizə zəng edin
+                    <StaticText text={"Bizə zəng edin"} />
                   </a>
                 </div>
               </div>
@@ -89,15 +89,13 @@ const ContactInner = () => {
                   <span className='text-main-600 text-2xl d-flex'>
                     <i className='ph-bold ph-book' />
                   </span>
-                  <h5 className='text-main-600 mb-0'>Bizimlə əlaqə</h5>
+                  <h5 className='text-main-600 mb-0'><StaticText text={"Bizimlə əlaqə"} /></h5>
                 </div>
                 <h2 className='mb-24'>
-                  Sualınız var? Bizə yazın
+                  <StaticText text={"Sualınız var? Bizə yazın"} />
                 </h2>
                 <p className='text-neutral-500 text-line-3 max-w-636'>
-                  EduSınaq valideynlərə və tələbələrə bilik səviyyəsini aydın
-                  görmək, zəif mövzuları müəyyən etmək və inkişafı izləmək üçün
-                  dəstək olur. Komandamız müraciətinizi qısa zamanda cavablandıracaq.
+                  <StaticText text={"EduSınaq valideynlərə və tələbələrə bilik səviyyəsini aydın görmək, zəif mövzuları müəyyən etmək və inkişafı izləmək üçün dəstək olur. Komandamız müraciətinizi qısa zamanda cavablandıracaq."} />
                 </p>
               </div>
               <div className='flex-align gap-40 flex-wrap'>
@@ -153,7 +151,7 @@ const ContactInner = () => {
                   </ul>
                   <span className='text-neutral-700 fw-medium'>
                     {" "}
-                    2.5k+ rəy (5 üzərindən 4.95)
+                    <StaticText text={"2.5k+ rəy (5 üzərindən 4.95)"} />
                   </span>
                 </div>
               </div>
@@ -162,14 +160,14 @@ const ContactInner = () => {
               <div className='p-24 bg-white rounded-12 box-shadow-md'>
                 <div className='border border-neutral-30 rounded-8 bg-main-25 p-24'>
                   <form action='#' id='commentForm'>
-                    <h4 className='mb-0'>Müraciət forması</h4>
+                    <h4 className='mb-0'><StaticText text={"Müraciət forması"} /></h4>
                     <span className='d-block border border-neutral-30 my-24 border-dashed' />
                     <div className='mb-24'>
                       <label
                         htmlFor='name'
                         className='text-neutral-700 text-lg fw-medium mb-12'
                       >
-                        Adınız{" "}
+                        <StaticText text={"Adınız"} />{" "}
                       </label>
                       <input
                         type='text'
@@ -183,7 +181,7 @@ const ContactInner = () => {
                         htmlFor='email'
                         className='text-neutral-700 text-lg fw-medium mb-12'
                       >
-                        Email{" "}
+                        <StaticText text={"Email"} />{" "}
                       </label>
                       <input
                         type='email'
@@ -197,7 +195,7 @@ const ContactInner = () => {
                         htmlFor='phone'
                         className='text-neutral-700 text-lg fw-medium mb-12'
                       >
-                        Telefon{" "}
+                        <StaticText text={"Telefon"} />{" "}
                       </label>
                       <input
                         type='tel'
@@ -211,7 +209,7 @@ const ContactInner = () => {
                         htmlFor='desc'
                         className='text-neutral-700 text-lg fw-medium mb-12'
                       >
-                        Mesaj
+                        <StaticText text={"Mesaj"} />
                       </label>
                       <textarea
                         id='desc'
@@ -225,7 +223,7 @@ const ContactInner = () => {
                         type='submit'
                         className='btn btn-main rounded-pill flex-center gap-8 mt-40'
                       >
-                        Mesaj göndər
+                        <StaticText text={"Mesaj göndər"} />
                         <i className='ph-bold ph-arrow-up-right d-flex text-lg' />
                       </button>
                     </div>

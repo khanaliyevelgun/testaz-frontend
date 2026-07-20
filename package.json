@@ -8,6 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "i18n:extract": "node scripts/extract-static-translations.mjs",
+    "i18n:audit": "node scripts/audit-i18n.mjs",
+    "i18n:migrate-components": "node scripts/migrate-components-i18n.mjs",
     "i18n:translate-az": "node scripts/translate-static-az.mjs",
     "i18n:translate-en": "node scripts/translate-static-en.mjs",
     "template:archive": "node scripts/archive-unused-template.mjs",

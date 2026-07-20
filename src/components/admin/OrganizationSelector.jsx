@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { fetchMyOrganizations } from "@/lib/api";
+import StaticOption from "@/components/StaticOption";
+
 
 const STORAGE_KEY = "eduall.selectedOrganizationId";
 
@@ -124,7 +126,10 @@ const OrganizationSelector = ({
       onChange={(event) => onChange?.(event.target.value)}
     >
       {!organizations.length ? (
-        <option value=''>{isLoading ? "Loading organizations..." : "No organizations"}</option>
+        <StaticOption
+          value=''
+          text={isLoading ? "Loading organizations..." : "No organizations"}
+        />
       ) : null}
       {organizations.map((organization) => (
         <option value={organization.id} key={organization.id}>

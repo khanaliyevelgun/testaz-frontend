@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { fetchSession, fetchSessionProgress, getApiAssetUrl, saveSessionAnswer, submitSession } from "@/lib/api";
 import { renderQuestionHtml } from "@/lib/questionContent";
+import StaticText from "@/components/StaticText";
+
 
 const TEXT_SAVE_DELAY_MS = 700;
 
@@ -238,7 +240,7 @@ const ExamSessionPage = ({ sessionId }) => {
   };
 
   if (isLoading) {
-    return <div className='px-24 py-24'><div className='bg-white rounded-10 px-24 py-24'><p className='text-14 text-neutral-400 mb-0'>Loading...</p></div></div>;
+    return <div className='px-24 py-24'><div className='bg-white rounded-10 px-24 py-24'><p className='text-14 text-neutral-400 mb-0'><StaticText text={"Loading..."} /></p></div></div>;
   }
 
   return (
@@ -246,24 +248,24 @@ const ExamSessionPage = ({ sessionId }) => {
       <div className='bg-white rounded-10 px-24 py-24'>
         <div className='d-flex flex-wrap align-items-center justify-content-between gap-16 mb-24'>
           <div>
-            <h4 className='fw-semibold text-neutral-500 text-20 mb-4'>Exam session</h4>
+            <h4 className='fw-semibold text-neutral-500 text-20 mb-4'><StaticText text={"Exam session"} /></h4>
             <p className='text-14 text-neutral-400 mb-0'>
-              {session?.totalQuestions ?? questions.length} questions / {progress?.answeredCount ?? session?.answeredCount ?? questions.filter(isAnswered).length} answered
+              {session?.totalQuestions ?? questions.length} <StaticText text={"questions /"} /> {progress?.answeredCount ?? session?.answeredCount ?? questions.filter(isAnswered).length} <StaticText text={"answered"} />
             </p>
             {!isActive && session?.status ? (
-              <p className='text-13 text-neutral-400 mb-0 mt-4'>Status: {session.status}</p>
+              <p className='text-13 text-neutral-400 mb-0 mt-4'><StaticText text={"Status:"} /> {session.status}</p>
             ) : null}
           </div>
           <div className='d-flex align-items-center gap-12'>
             <span className='px-16 py-10 rounded-8 bg-main-25 text-main-600 fw-semibold'>{formatRemaining(remainingMs)}</span>
             <button type='button' className='btn btn-main rounded-pill px-20' onClick={submit} disabled={isSubmitting || !session || !isActive}>
-              {isSubmitting ? "Ending..." : "End exam"}
+              {isSubmitting ? <StaticText text={"Ending..."} /> : <StaticText text={"End exam"} />}
             </button>
           </div>
         </div>
 
         {error ? <div className='alert alert-danger text-14 py-10 mb-16'>{error}</div> : null}
-        {isSaving ? <p className='text-13 text-neutral-400 mb-12'>Saving...</p> : null}
+        {isSaving ? <p className='text-13 text-neutral-400 mb-12'><StaticText text={"Saving..."} /></p> : null}
 
         <div className='d-flex flex-wrap gap-8 mb-24'>
           {questions.map((item, index) => (
@@ -281,13 +283,13 @@ const ExamSessionPage = ({ sessionId }) => {
         {question ? (
           <div className='border border-neutral-30 rounded-8 p-20'>
             <div className='d-flex justify-content-between gap-12 mb-16'>
-              <h5 className='text-16 fw-semibold text-neutral-500 mb-0'>Question {currentIndex + 1}</h5>
+              <h5 className='text-16 fw-semibold text-neutral-500 mb-0'><StaticText text={"Question"} /> {currentIndex + 1}</h5>
             </div>
 
             {question.mediaPath ? (
               question.mediaType?.startsWith("audio/") ? (
                 <audio controls className='w-100 mb-16' src={getApiAssetUrl(question.mediaPath)}>
-                  Your browser does not support audio playback.
+                  <StaticText text={"Your browser does not support audio playback."} />
                 </audio>
               ) : (
                 <img src={getApiAssetUrl(question.mediaPath)} alt='' className='mb-16 rounded-8 max-w-100' />
@@ -324,16 +326,16 @@ const ExamSessionPage = ({ sessionId }) => {
             )}
 
             <div className='d-flex justify-content-between gap-12 mt-24'>
-              <button type='button' className='px-18 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' disabled={currentIndex <= 0} onClick={() => goToIndex(currentIndex - 1)}>Previous</button>
+              <button type='button' className='px-18 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' disabled={currentIndex <= 0} onClick={() => goToIndex(currentIndex - 1)}><StaticText text={"Previous"} /></button>
               {currentIndex >= questions.length - 1 ? (
-                <button type='button' className='btn btn-main rounded-pill px-24' onClick={submit} disabled={isSubmitting || !isActive}>End exam</button>
+                <button type='button' className='btn btn-main rounded-pill px-24' onClick={submit} disabled={isSubmitting || !isActive}><StaticText text={"End exam"} /></button>
               ) : (
-                <button type='button' className='btn btn-main rounded-pill px-24' onClick={() => goToIndex(currentIndex + 1)}>Next</button>
+                <button type='button' className='btn btn-main rounded-pill px-24' onClick={() => goToIndex(currentIndex + 1)}><StaticText text={"Next"} /></button>
               )}
             </div>
           </div>
         ) : (
-          <p className='text-14 text-neutral-400 mb-0'>No questions found.</p>
+          <p className='text-14 text-neutral-400 mb-0'><StaticText text={"No questions found."} /></p>
         )}
       </div>
     </div>

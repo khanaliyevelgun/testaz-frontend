@@ -1,5 +1,7 @@
 "use client";
 import Slider from "react-slick";
+import StaticText from "@/components/StaticText";
+
 
 const BrandTwo = () => {
   const settings = {
@@ -60,7 +62,7 @@ const BrandTwo = () => {
       <div className='container container--lg'>
         <div className='brand-box py-80 px-16 '>
           <h5 className='mb-40 text-center text-neutral-500'>
-            TRUSTED BY OVER 17,300 GREAT TEAMS
+            <StaticText text={"TRUSTED BY OVER 17,300 GREAT TEAMS"} />
           </h5>
           <div className='container'>
             <Slider {...settings} className='brand-slider'>

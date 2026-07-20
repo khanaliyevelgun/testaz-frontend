@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { fetchExamAttempts } from "@/lib/api";
+import StaticText from "@/components/StaticText";
+
 
 const formatDate = (value) => {
   if (!value) return "-";
@@ -39,12 +41,12 @@ const AdminExamAttemptsPage = ({ examId }) => {
       <div className='bg-white rounded-10 px-24 py-24'>
         <div className='d-flex flex-wrap align-items-center justify-content-between gap-16 mb-24'>
           <div>
-            <h4 className='fw-semibold text-neutral-500 text-20 mb-4'>Exam Attempts</h4>
+            <h4 className='fw-semibold text-neutral-500 text-20 mb-4'><StaticText text={"Exam Attempts"} /></h4>
             <p className='text-14 text-neutral-400 mb-0'>{examId}</p>
           </div>
           <div className='d-flex flex-wrap align-items-center gap-8'>
-            <Link href={`/admin/exams/${examId}`} className='px-18 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white'>Details</Link>
-            <Link href={`/admin/exams/${examId}/statistics`} className='btn btn-main rounded-pill px-20'>Statistics</Link>
+            <Link href={`/admin/exams/${examId}`} className='px-18 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white'><StaticText text={"Details"} /></Link>
+            <Link href={`/admin/exams/${examId}/statistics`} className='btn btn-main rounded-pill px-20'><StaticText text={"Statistics"} /></Link>
           </div>
         </div>
 
@@ -54,17 +56,17 @@ const AdminExamAttemptsPage = ({ examId }) => {
           <table className='table mb-0'>
             <thead>
               <tr>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Student</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Session</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Score</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Percentage</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Correct</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Scored</th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Student"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Session"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Score"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Percentage"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Correct"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Scored"} /></th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'>Loading...</td></tr>
+                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'><StaticText text={"Loading..."} /></td></tr>
               ) : attempts.length ? (
                 attempts.map((attempt) => (
                   <tr key={attempt.id || attempt.sessionId}>
@@ -77,16 +79,16 @@ const AdminExamAttemptsPage = ({ examId }) => {
                   </tr>
                 ))
               ) : (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'>No attempts found.</td></tr>
+                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'><StaticText text={"No attempts found."} /></td></tr>
               )}
             </tbody>
           </table>
         </div>
 
         <div className='d-flex align-items-center justify-content-end gap-8 mt-24'>
-          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page <= 1} onClick={() => loadAttempts(Math.max(meta.page - 1, 1))}>Previous</button>
+          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page <= 1} onClick={() => loadAttempts(Math.max(meta.page - 1, 1))}><StaticText text={"Previous"} /></button>
           <span className='text-14 text-neutral-400'>{meta.page} / {meta.totalPages}</span>
-          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page >= meta.totalPages} onClick={() => loadAttempts(Math.min(meta.page + 1, meta.totalPages))}>Next</button>
+          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page >= meta.totalPages} onClick={() => loadAttempts(Math.min(meta.page + 1, meta.totalPages))}><StaticText text={"Next"} /></button>
         </div>
       </div>
     </div>

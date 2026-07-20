@@ -1,4 +1,6 @@
 "use client";
+import StaticText from "@/components/StaticText";
+
 
 const formatNumber = (value) => new Intl.NumberFormat("az-AZ").format(Number(value || 0));
 
@@ -8,7 +10,7 @@ const BarChart = ({ data, unit }) => {
   const items = data.filter((item) => Number.isFinite(Number(item.value))).slice(0, 8);
   const maxValue = Math.max(...items.map((item) => Number(item.value)), 1);
 
-  if (!items.length) return <p className='text-14 text-neutral-400 mb-0'>No chart data yet.</p>;
+  if (!items.length) return <p className='text-14 text-neutral-400 mb-0'><StaticText text={"No chart data yet."} /></p>;
 
   return (
     <div className='d-flex flex-column gap-12'>
@@ -46,7 +48,7 @@ const LineChart = ({ data, unit }) => {
     return { ...item, x, y };
   });
 
-  if (!items.length) return <p className='text-14 text-neutral-400 mb-0'>Complete a test to see your progress chart.</p>;
+  if (!items.length) return <p className='text-14 text-neutral-400 mb-0'><StaticText text={"Complete a test to see your progress chart."} /></p>;
 
   return (
     <div className='w-100 overflow-x-auto'>
@@ -70,7 +72,7 @@ const LineChart = ({ data, unit }) => {
           </g>
         ))}
       </svg>
-      <div className='text-12 text-neutral-400 mt-4'>Faiz: {formatValue(Math.min(Math.max(items[items.length - 1].value, 0), 100), unit)}</div>
+      <div className='text-12 text-neutral-400 mt-4'><StaticText text={"Faiz:"} /> {formatValue(Math.min(Math.max(items[items.length - 1].value, 0), 100), unit)}</div>
     </div>
   );
 };

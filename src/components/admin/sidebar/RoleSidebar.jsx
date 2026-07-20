@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import StaticText from "@/components/StaticText";
+
 
 const RoleSidebar = ({
   items,
@@ -26,7 +28,7 @@ const RoleSidebar = ({
       <div className='overflow-x-auto'>
         <div className='scrollbar min-w-max'>
           <span className='text-neutral-500 fw-normal text-14 mb-8 d-inline-block'>
-            Xoş gəlmisiniz, {userName}
+            <StaticText text={"Xoş gəlmisiniz,"} /> {userName}
           </span>
           <ul>
             {items.map((item) => {
@@ -62,7 +64,7 @@ const RoleSidebar = ({
           <span className='text-16 text-main-600 item-hover__text transition-03'>
             <i className='ph ph-sign-out'></i>
           </span>
-          Çıxış
+          <StaticText text={"Çıxış"} />
         </button>
       </div>
     </div>

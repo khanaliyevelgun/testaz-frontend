@@ -1,4 +1,6 @@
 "use client";
+import StaticText from "@/components/StaticText";
+
 
 const AdminRefreshButton = ({ isLoading = false, onClick, label = "Refresh" }) => (
   <button
@@ -8,7 +10,7 @@ const AdminRefreshButton = ({ isLoading = false, onClick, label = "Refresh" }) =
     onClick={onClick}
   >
     <i className={`ph ph-arrows-clockwise ${isLoading ? "ph-spin" : ""}`}></i>
-    {isLoading ? "Loading..." : label}
+    {isLoading ? <StaticText text={"Loading..."} /> : label}
   </button>
 );
 

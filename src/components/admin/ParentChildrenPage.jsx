@@ -12,6 +12,8 @@ import {
   unlinkChild,
 } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
+import StaticText from "@/components/StaticText";
+
 
 const formatDate = (value) => {
   if (!value) return "-";
@@ -125,8 +127,8 @@ const ParentChildrenPage = () => {
       <div className='bg-white rounded-10 px-24 py-24 mb-24'>
         <div className='d-flex flex-wrap align-items-center justify-content-between gap-16 mb-24'>
           <div>
-            <h4 className='fw-semibold text-neutral-500 text-20 mb-4'>Children</h4>
-            <p className='text-14 text-neutral-400 mb-0'>Search by username, name or email and send a parent-link invitation.</p>
+            <h4 className='fw-semibold text-neutral-500 text-20 mb-4'><StaticText text={"Children"} /></h4>
+            <p className='text-14 text-neutral-400 mb-0'><StaticText text={"Search by username, name or email and send a parent-link invitation."} /></p>
           </div>
           <AdminRefreshButton isLoading={isLoading} onClick={load} />
         </div>
@@ -136,16 +138,16 @@ const ParentChildrenPage = () => {
 
         <form className='row gy-3 align-items-end mb-20' onSubmit={handleSearch}>
           <div className='col-lg-5'>
-            <label className='text-14 text-neutral-500 fw-medium mb-8'>Learner search</label>
+            <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Learner search"} /></label>
             <input className='common-input rounded-pill' value={query} onChange={(event) => setQuery(event.target.value)} placeholder='Username, email or name' />
           </div>
           <div className='col-lg-5'>
-            <label className='text-14 text-neutral-500 fw-medium mb-8'>Message</label>
+            <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Message"} /></label>
             <input className='common-input rounded-pill' value={message} onChange={(event) => setMessage(event.target.value)} maxLength='500' placeholder='Optional note' />
           </div>
           <div className='col-lg-2'>
             <button type='submit' className='btn btn-main rounded-pill w-100' disabled={isSearching}>
-              {isSearching ? "Searching..." : "Search"}
+              {isSearching ? <StaticText text={"Searching..."} /> : <StaticText text={"Search"} />}
             </button>
           </div>
         </form>
@@ -155,9 +157,9 @@ const ParentChildrenPage = () => {
             <table className='table mb-0'>
               <thead>
                 <tr>
-                  <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Learner</th>
-                  <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Contact</th>
-                  <th className='text-12 fw-medium text-neutral-500 py-16 px-20 text-end'>Action</th>
+                  <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Learner"} /></th>
+                  <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Contact"} /></th>
+                  <th className='text-12 fw-medium text-neutral-500 py-16 px-20 text-end'><StaticText text={"Action"} /></th>
                 </tr>
               </thead>
               <tbody>
@@ -166,7 +168,7 @@ const ParentChildrenPage = () => {
                     <td className='py-16 px-20 text-14 text-neutral-500'>{learner.displayName || learner.id}</td>
                     <td className='py-16 px-20 text-14 text-neutral-500'>{learner.maskedContact || "-"}</td>
                     <td className='py-16 px-20 text-end'>
-                      <button type='button' className='btn btn-main rounded-pill px-18 py-8' onClick={() => invite(learner.id)}>Invite</button>
+                      <button type='button' className='btn btn-main rounded-pill px-18 py-8' onClick={() => invite(learner.id)}><StaticText text={"Invite"} /></button>
                     </td>
                   </tr>
                 ))}
@@ -178,13 +180,13 @@ const ParentChildrenPage = () => {
         <div className='row gy-3'>
           <div className='col-md-6'>
             <div className='border border-neutral-30 rounded-8 p-16 h-100'>
-              <span className='text-13 text-neutral-400 d-block mb-4'>Linked children</span>
+              <span className='text-13 text-neutral-400 d-block mb-4'><StaticText text={"Linked children"} /></span>
               <strong className='text-18 text-neutral-500'>{dashboard?.linkedLearnerCount ?? learners.length}</strong>
             </div>
           </div>
           <div className='col-md-6'>
             <div className='border border-neutral-30 rounded-8 p-16 h-100'>
-              <span className='text-13 text-neutral-400 d-block mb-4'>Pending invitations</span>
+              <span className='text-13 text-neutral-400 d-block mb-4'><StaticText text={"Pending invitations"} /></span>
               <strong className='text-18 text-neutral-500'>{dashboard?.pendingInvitationCount ?? invitations.length}</strong>
             </div>
           </div>
@@ -192,17 +194,17 @@ const ParentChildrenPage = () => {
       </div>
 
       <div className='bg-white rounded-10 px-24 py-24'>
-        <h5 className='text-16 fw-semibold text-neutral-500 mb-16'>Result page</h5>
-        {isLoading ? <p className='text-14 text-neutral-400 mb-0'>Loading...</p> : learners.length ? (
+        <h5 className='text-16 fw-semibold text-neutral-500 mb-16'><StaticText text={"Result page"} /></h5>
+        {isLoading ? <p className='text-14 text-neutral-400 mb-0'><StaticText text={"Loading..."} /></p> : learners.length ? (
           <div className='table-responsive admin-users-table'>
             <table className='table mb-0'>
               <thead>
                 <tr>
-                  <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Child</th>
-                  <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Average</th>
-                  <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Latest result</th>
-                  <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Scored at</th>
-                  <th className='text-12 fw-medium text-neutral-500 py-16 px-20 text-end'>Action</th>
+                  <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Child"} /></th>
+                  <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Average"} /></th>
+                  <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Latest result"} /></th>
+                  <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Scored at"} /></th>
+                  <th className='text-12 fw-medium text-neutral-500 py-16 px-20 text-end'><StaticText text={"Action"} /></th>
                 </tr>
               </thead>
               <tbody>
@@ -213,7 +215,7 @@ const ParentChildrenPage = () => {
                     <td className='py-16 px-20 text-14 text-neutral-500'>{formatResult(learner.latestResult)}</td>
                     <td className='py-16 px-20 text-14 text-neutral-500'>{formatDate(learner.latestResult?.scoredAt)}</td>
                     <td className='py-16 px-20 text-end'>
-                      <button type='button' className='px-14 py-8 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={() => removeChild(learner.learnerId)}>Unlink</button>
+                      <button type='button' className='px-14 py-8 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={() => removeChild(learner.learnerId)}><StaticText text={"Unlink"} /></button>
                     </td>
                   </tr>
                 ))}
@@ -221,12 +223,12 @@ const ParentChildrenPage = () => {
             </table>
           </div>
         ) : (
-          <p className='text-14 text-neutral-400 mb-0'>No linked children yet.</p>
+          <p className='text-14 text-neutral-400 mb-0'><StaticText text={"No linked children yet."} /></p>
         )}
 
         {invitations.length ? (
           <>
-            <h5 className='text-16 fw-semibold text-neutral-500 mt-24 mb-12'>Pending invitations</h5>
+            <h5 className='text-16 fw-semibold text-neutral-500 mt-24 mb-12'><StaticText text={"Pending invitations"} /></h5>
             <div className='d-flex flex-column gap-10'>
               {invitations.map((invitation) => (
                 <div className='border border-neutral-30 rounded-8 px-16 py-12 d-flex flex-wrap align-items-center justify-content-between gap-12' key={invitation.invitationId}>
@@ -235,7 +237,7 @@ const ParentChildrenPage = () => {
                     <span className='text-13 text-neutral-400'>{formatDate(invitation.createdAt)}</span>
                   </div>
                   <button type='button' className='px-14 py-8 border border-neutral-40 rounded-pill text-13 text-danger bg-white' onClick={() => cancelInvitation(invitation.invitationId)}>
-                    Cancel
+                    <StaticText text={"Cancel"} />
                   </button>
                 </div>
               ))}

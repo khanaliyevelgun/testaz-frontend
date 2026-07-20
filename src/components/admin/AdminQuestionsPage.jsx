@@ -16,6 +16,10 @@ import {
   rejectAdminQuestion,
 } from "@/lib/api";
 import { questionHtmlToText } from "@/lib/questionContent";
+import StaticText from "@/components/StaticText";
+import StaticOption from "@/components/StaticOption";
+
+
 
 const PAGE_SIZE = 10;
 
@@ -231,13 +235,13 @@ const AdminQuestionsPage = () => {
       <div className='bg-white rounded-10 px-24 py-24'>
         <div className='d-flex flex-wrap align-items-center justify-content-between gap-16 mb-24'>
           <div>
-            <h4 className='fw-semibold text-neutral-500 text-20 mb-4'>Questions</h4>
-            <p className='text-14 text-neutral-400 mb-0'>Question bank review and moderation.</p>
+            <h4 className='fw-semibold text-neutral-500 text-20 mb-4'><StaticText text={"Questions"} /></h4>
+            <p className='text-14 text-neutral-400 mb-0'><StaticText text={"Question bank review and moderation."} /></p>
           </div>
           <div className='d-flex flex-wrap align-items-center gap-8'>
-            <Link href='/admin/questions/new' className='btn btn-main rounded-pill px-20'>Create Question</Link>
+            <Link href='/admin/questions/new' className='btn btn-main rounded-pill px-20'><StaticText text={"Create Question"} /></Link>
             <button type='button' className='btn btn-main rounded-pill px-20' disabled={isApprovingAll} onClick={handleApproveAll}>
-              {isApprovingAll ? "Approving..." : "Approve All"}
+              {isApprovingAll ? <StaticText text={"Approving..."} /> : <StaticText text={"Approve All"} />}
             </button>
             <AdminRefreshButton isLoading={isLoading} onClick={() => loadQuestions({ nextPage: page, force: true })} />
           </div>
@@ -270,15 +274,15 @@ const AdminQuestionsPage = () => {
           />
           <AdminGradeSelect label='' placeholder='Grade' value={filters.gradeId} onChange={setGradeFilter} minWidthClass='min-w-140-px' />
           <select className='form-select rounded-pill border-neutral-40 text-14 py-11 px-16 w-auto min-w-160-px' value={filters.difficulty} onChange={(event) => setFilter("difficulty", event.target.value)}>
-            <option value=''>Difficulty</option>
+            <StaticOption value='' text={"Difficulty"} />
             {difficulties.map((item) => <option value={item} key={item}>{difficultyLabels[item]}</option>)}
           </select>
           <select className='form-select rounded-pill border-neutral-40 text-14 py-11 px-16 w-auto min-w-190-px' value={filters.type} onChange={(event) => setFilter("type", event.target.value)}>
-            <option value=''>Type</option>
+            <StaticOption value='' text={"Type"} />
             {types.map((item) => <option value={item} key={item}>{typeLabels[item]}</option>)}
           </select>
           <select className='form-select rounded-pill border-neutral-40 text-14 py-11 px-16 w-auto min-w-180-px' value={filters.status} onChange={(event) => setFilter("status", event.target.value)}>
-            <option value=''>Status</option>
+            <StaticOption value='' text={"Status"} />
             {statuses.map((item) => <option value={item} key={item}>{statusLabels[item]}</option>)}
           </select>
         </div>
@@ -289,18 +293,18 @@ const AdminQuestionsPage = () => {
           <table className='table mb-0'>
             <thead>
               <tr>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Question</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Subject</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Topic</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Difficulty</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Type</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'>Status</th>
-                <th className='text-12 fw-medium text-neutral-500 py-16 px-20 text-end'>Action</th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Question"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Subject"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Topic"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Difficulty"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Type"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20'><StaticText text={"Status"} /></th>
+                <th className='text-12 fw-medium text-neutral-500 py-16 px-20 text-end'><StaticText text={"Action"} /></th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='7'>Loading...</td></tr>
+                <tr><td className='py-20 px-20 text-neutral-400' colSpan='7'><StaticText text={"Loading..."} /></td></tr>
               ) : questions.length ? (
                 questions.map((question) => (
                   <tr key={question.id}>
@@ -317,7 +321,7 @@ const AdminQuestionsPage = () => {
                   </tr>
                 ))
               ) : (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='7'>No questions found.</td></tr>
+                <tr><td className='py-20 px-20 text-neutral-400' colSpan='7'><StaticText text={"No questions found."} /></td></tr>
               )}
             </tbody>
           </table>
@@ -330,7 +334,7 @@ const AdminQuestionsPage = () => {
             disabled={!canGoPrevious}
             onClick={() => setPage((current) => Math.max(current - 1, 1))}
           >
-            Previous
+            <StaticText text={"Previous"} />
           </button>
           <span className='text-14 text-neutral-400'>{page} / {meta.totalPages}</span>
           <button
@@ -339,7 +343,7 @@ const AdminQuestionsPage = () => {
             disabled={!canGoNext}
             onClick={() => setPage((current) => Math.min(current + 1, Math.max(meta.totalPages, current + 1)))}
           >
-            Next
+            <StaticText text={"Next"} />
           </button>
         </div>
       </div>

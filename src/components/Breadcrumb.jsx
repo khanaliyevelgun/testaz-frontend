@@ -1,4 +1,6 @@
 import Link from "next/link";
+import StaticText from "@/components/StaticText";
+
 
 const Breadcrumb = ({ title }) => {
   return (
@@ -48,7 +50,7 @@ const Breadcrumb = ({ title }) => {
                     className='breadcrumb__link text-neutral-500 hover-text-main-600 fw-medium'
                   >
                     <i className='text-lg d-inline-flex ph-bold ph-house' />{" "}
-                    Home
+                    <StaticText text={"Home"} />
                   </Link>
                 </li>
 

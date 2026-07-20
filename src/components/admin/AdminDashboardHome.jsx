@@ -14,6 +14,8 @@ import {
   fetchResultTrends,
 } from "@/lib/api";
 import { getPrimaryRole } from "@/lib/authRoles";
+import StaticText from "@/components/StaticText";
+
 
 const roleLabels = {
   admin: "Administration overview",
@@ -415,7 +417,7 @@ const StatCard = ({ stat }) => (
         </span>
       </div>
       <Link href={stat.href} className='text-12 fw-medium text-main-600 text-decoration-underline'>
-        View details
+        <StaticText text={"View details"} />
       </Link>
     </div>
   </div>
@@ -475,7 +477,7 @@ const AdminDashboardHome = () => {
       {error ? <div className='alert alert-danger text-14 py-10 mb-24'>{error}</div> : null}
 
       {isLoading ? (
-        <div className='bg-white rounded-10 px-24 py-24 text-neutral-400'>Loading dashboard...</div>
+        <div className='bg-white rounded-10 px-24 py-24 text-neutral-400'><StaticText text={"Loading dashboard..."} /></div>
       ) : (
         <>
           <div className='row gy-4 mb-24'>
@@ -491,7 +493,7 @@ const AdminDashboardHome = () => {
               <div className='bg-white rounded-10 px-24 py-24 h-100'>
                 <div className='d-flex align-items-center justify-content-between gap-16 mb-20'>
                   <h5 className='text-16 fw-semibold text-neutral-500 mb-0'>{dashboard.tableTitle}</h5>
-                  <span className='text-12 text-neutral-400'>{dashboard.rows.length} shown</span>
+                  <span className='text-12 text-neutral-400'>{dashboard.rows.length} <StaticText text={"shown"} /></span>
                 </div>
                 <div className='table-responsive admin-users-table'>
                   <table className='table mb-0'>
@@ -518,7 +520,7 @@ const AdminDashboardHome = () => {
                       ) : (
                         <tr>
                           <td className='py-24 px-20 text-neutral-400' colSpan={Math.max(dashboard.columns.length, 1)}>
-                            {dashboard.emptyText || "No dashboard data found."}
+                            {dashboard.emptyText || <StaticText text={"No dashboard data found."} />}
                           </td>
                         </tr>
                       )}
@@ -530,7 +532,7 @@ const AdminDashboardHome = () => {
 
             <div className='col-xl-4'>
               <div className='bg-white rounded-10 px-24 py-24 h-100'>
-                <h5 className='text-16 fw-semibold text-neutral-500 mb-20'>Quick access</h5>
+                <h5 className='text-16 fw-semibold text-neutral-500 mb-20'><StaticText text={"Quick access"} /></h5>
                 <div className='d-flex flex-column gap-12'>
                   {dashboard.quickLinks.map((item) => (
                     <Link
