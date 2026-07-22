@@ -13,6 +13,7 @@ import {
   fetchResults,
   fetchResultTrends,
 } from "@/lib/api";
+import { formatDate } from "@/lib/format";
 import { getPrimaryRole } from "@/lib/authRoles";
 import StaticText from "@/components/StaticText";
 
@@ -43,13 +44,6 @@ const numberValue = (value) => new Intl.NumberFormat("az-AZ").format(Number(valu
 
 const percentageValue = (value) =>
   value == null || Number.isNaN(Number(value)) ? "-" : `${Math.round(Number(value))}%`;
-
-const formatDate = (value) => {
-  if (!value) return "-";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "-";
-  return new Intl.DateTimeFormat("az-AZ", { dateStyle: "medium" }).format(date);
-};
 
 const sumObjectValues = (value) =>
   Object.values(value || {}).reduce((total, item) => total + Number(item || 0), 0);

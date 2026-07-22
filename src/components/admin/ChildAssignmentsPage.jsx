@@ -9,13 +9,9 @@ import {
   fetchStudentInvitations,
   respondStudentInvitation,
 } from "@/lib/api";
+import { formatDateTime as formatDate } from "@/lib/format";
 import StaticText from "@/components/StaticText";
 
-
-const formatDate = (value) => {
-  if (!value) return "-";
-  return new Intl.DateTimeFormat("az-AZ", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
-};
 
 const ChildAssignmentsPage = () => {
   const [exams, setExams] = useState([]);

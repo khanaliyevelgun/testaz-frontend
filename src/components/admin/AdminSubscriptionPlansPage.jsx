@@ -11,6 +11,7 @@ import {
   fetchAdminPlans,
   updateAdminPlan,
 } from "@/lib/api";
+import { formatDateTime as formatDate } from "@/lib/format";
 import StaticText from "@/components/StaticText";
 import StaticOption from "@/components/StaticOption";
 
@@ -34,13 +35,6 @@ const formatPrice = (amount, currency = "AZN") =>
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   }).format(Number(amount || 0));
-
-const formatDate = (value) => {
-  if (!value) return "-";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "-";
-  return new Intl.DateTimeFormat("az-AZ", { dateStyle: "medium", timeStyle: "short" }).format(date);
-};
 
 const AdminSubscriptionPlansPage = () => {
   const [plans, setPlans] = useState([]);

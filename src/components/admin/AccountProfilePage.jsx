@@ -15,15 +15,11 @@ import {
   updateParentProfile,
   updateStudentProfile,
 } from "@/lib/api";
+import { formatDateTime as formatDate } from "@/lib/format";
 import StaticText from "@/components/StaticText";
 import StaticOption from "@/components/StaticOption";
 
 
-
-const formatDate = (value) => {
-  if (!value) return "-";
-  return new Intl.DateTimeFormat("az-AZ", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
-};
 
 const AccountProfilePage = () => {
   const { user } = useAuth();

@@ -11,14 +11,10 @@ import {
   sendParentInvitation,
   unlinkChild,
 } from "@/lib/api";
+import { formatDateTime as formatDate } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
 import StaticText from "@/components/StaticText";
 
-
-const formatDate = (value) => {
-  if (!value) return "-";
-  return new Intl.DateTimeFormat("az-AZ", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
-};
 
 const formatResult = (result) => {
   if (!result) return "No result";

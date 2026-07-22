@@ -11,6 +11,7 @@ import {
   fetchChildTrends,
   fetchParentDashboard,
 } from "@/lib/api";
+import { formatDateTime as formatDate } from "@/lib/format";
 import { renderQuestionHtml } from "@/lib/questionContent";
 import StaticText from "@/components/StaticText";
 import StaticOption from "@/components/StaticOption";
@@ -18,11 +19,6 @@ import StaticOption from "@/components/StaticOption";
 
 
 const PAGE_SIZE = 10;
-
-const formatDate = (value) => {
-  if (!value) return "-";
-  return new Intl.DateTimeFormat("az-AZ", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
-};
 
 const trendIcon = (trend) => {
   if (trend === "IMPROVING") return "ph-bold ph-trend-up text-success-600";

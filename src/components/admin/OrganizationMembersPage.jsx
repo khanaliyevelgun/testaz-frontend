@@ -8,6 +8,7 @@ import OrganizationSelector, {
   useOrganizationSelection,
 } from "@/components/admin/OrganizationSelector";
 import { fetchOrganizationMembers } from "@/lib/api";
+import { formatDateTime as formatDate } from "@/lib/format";
 import StaticText from "@/components/StaticText";
 
 
@@ -17,18 +18,6 @@ const emptyMeta = {
   total: 0,
   totalPages: 1,
   hasNext: false,
-};
-
-const formatDate = (value) => {
-  if (!value) return "-";
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "-";
-
-  return new Intl.DateTimeFormat("az-AZ", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(date);
 };
 
 const OrganizationMembersPage = () => {

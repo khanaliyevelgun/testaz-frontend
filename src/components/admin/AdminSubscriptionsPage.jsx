@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import AdminRefreshButton from "@/components/admin/AdminRefreshButton";
 import AdminStatusBadge from "@/components/admin/AdminStatusBadge";
 import { fetchAdminSubscriptions } from "@/lib/api";
+import { formatDateTime as formatDate } from "@/lib/format";
 import StaticText from "@/components/StaticText";
 import StaticOption from "@/components/StaticOption";
 
@@ -13,13 +14,6 @@ const PAGE_SIZE = 10;
 const defaultMeta = { page: 1, perPage: PAGE_SIZE, total: 0, totalPages: 1 };
 const emptyFilters = { payerUserId: "", status: "", planId: "" };
 const statuses = ["PENDING", "ACTIVE", "EXPIRED", "CANCELED"];
-
-const formatDate = (value) => {
-  if (!value) return "-";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "-";
-  return new Intl.DateTimeFormat("az-AZ", { dateStyle: "medium", timeStyle: "short" }).format(date);
-};
 
 const AdminSubscriptionsPage = () => {
   const [subscriptions, setSubscriptions] = useState([]);

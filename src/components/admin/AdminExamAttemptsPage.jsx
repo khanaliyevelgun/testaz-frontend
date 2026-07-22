@@ -3,14 +3,10 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { fetchExamAttempts } from "@/lib/api";
+import { formatDateTime as formatDate } from "@/lib/format";
 import StaticText from "@/components/StaticText";
 import AdminPagination from "@/components/admin/AdminPagination";
 
-
-const formatDate = (value) => {
-  if (!value) return "-";
-  return new Intl.DateTimeFormat("az-AZ", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
-};
 
 const AdminExamAttemptsPage = ({ examId }) => {
   const [attempts, setAttempts] = useState([]);

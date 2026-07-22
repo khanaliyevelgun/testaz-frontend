@@ -14,6 +14,7 @@ import {
   fetchPublicSubjects,
   fetchPublicTopics,
 } from "@/lib/api";
+import { formatDateTime as formatDate } from "@/lib/format";
 import StaticText from "@/components/StaticText";
 import StaticOption from "@/components/StaticOption";
 
@@ -42,18 +43,6 @@ const emptyMeta = {
 
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-const formatDate = (value) => {
-  if (!value) return "-";
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "-";
-
-  return new Intl.DateTimeFormat("az-AZ", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(date);
-};
 
 const optionalPositiveInteger = (value) => {
   if (value === "") return undefined;
