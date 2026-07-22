@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { fetchSessionResult } from "@/lib/api";
+import { fetchSessionResult, fetchSessionResultDetails } from "@/lib/api";
 import { renderQuestionHtml } from "@/lib/questionContent";
 import StaticText from "@/components/StaticText";
 
@@ -28,7 +28,8 @@ const SessionResultPage = ({ sessionId }) => {
 
     try {
       const response = await fetchSessionResult(sessionId);
-      setResult(response);
+      const details = await fetchSessionResultDetails(sessionId);
+      setResult({ ...response, details });
       setIsScoring(false);
       setIsLoading(false);
     } catch (requestError) {

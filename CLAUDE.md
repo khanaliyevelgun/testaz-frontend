@@ -316,6 +316,24 @@ The app has **no automated test suite**, so verification is manual:
 
 ## 12. Change log (keep append-only; newest first)
 
+- **Data-correctness bug-fix pass** (verified against the DB for every integrated read
+  endpoint, all roles). Two real bugs fixed at the root:
+  - **i18n enum/role corruption (critical).** `localizeApiResponse` (`lib/i18n.js`) recursed
+    into every nested object/array and ran `translateApiMessage` on bare strings, rewriting
+    enum-like values — most damagingly `roles: ["STUDENT"]` from `/auth/me` — into the
+    `api.unknownKey` fallback error string. That broke role detection, so `RoleProtectedRoute`
+    bounced every authenticated user off their dashboard, and any `status`/`type`/`role`
+    badge in a list showed the error text. Fixed so only the named message fields
+    (`message`/`error`/`detail`/`title`/`errors`) are translated; structural recursion never
+    translates a bare data string. Error-message localization is unchanged (regression-tested).
+  - **Empty result breakdown.** The backend paginated the per-question breakdown out of
+    `/…/result` into `/…/result/details`, but `SessionResultPage`, `ChildResultsPage` and
+    `ParentProgressPage` still read the now-absent `result.details`, so the "Sual nəticələri"
+    list was always empty. Added `fetchSessionResultDetails` / `fetchChildSessionResultDetails`
+    (collect all detail pages) and wired all three screens. Verified card counts match the DB.
+  - Backend: fixed malformed `app.cors.allowed-origins` YAML in `application.yml` (three folded
+    lines yielded broken origin tokens; `localhost:3000`/`3001` were silently rejected).
+    Needs a backend restart to take effect.
 - **Code-quality refactor pass.** No behavior/visual change. Extracted `AdminPagination`
   (de-duplicated the identical pager footer across 10 admin list pages); consolidated
   `normalizeRole` (removed the duplicate in `api.js`, imported from `authRoles.js`) and

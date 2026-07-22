@@ -9,6 +9,7 @@ import {
   fetchResultTrends,
   fetchResults,
   fetchSessionResult,
+  fetchSessionResultDetails,
   reportQuestion,
 } from "@/lib/api";
 import { renderQuestionHtml } from "@/lib/questionContent";
@@ -66,7 +67,11 @@ const ChildResultsPage = () => {
     setReportForm(null);
     setError("");
     try {
-      setDetail(await fetchSessionResult(sessionId));
+      const [result, details] = await Promise.all([
+        fetchSessionResult(sessionId),
+        fetchSessionResultDetails(sessionId),
+      ]);
+      setDetail({ ...result, details });
     } catch (requestError) {
       setDetail(null);
       setError(requestError?.message || "Result details could not be loaded.");

@@ -660,10 +660,33 @@ export const fetchChildResults = (studentId, { page = 1, perPage = 10 } = {}) =>
   apiFetch(`/parents/me/children/${studentId}/results${toQueryString({ page: Math.max(page - 1, 0), size: perPage })}`)
     .then((response) => normalizePage(unwrapApiResponse(response), page, perPage));
 
+// The backend paginates the per-question breakdown behind a separate endpoint,
+// but the result screens render every question at once. Collect all pages into a
+// single ordered array so callers can attach it as `result.details`.
+const collectResultDetails = async (basePath) => {
+  const size = 100;
+  const details = [];
+
+  for (let page = 0; ; page += 1) {
+    const response = await apiFetch(`${basePath}${toQueryString({ page, size })}`);
+    const pageData = unwrapApiResponse(response);
+    const content = Array.isArray(pageData?.content) ? pageData.content : [];
+    details.push(...content);
+
+    if (!pageData?.hasNext && page + 1 >= (pageData?.totalPages || 1)) break;
+    if (content.length === 0) break;
+  }
+
+  return details;
+};
+
 export const fetchChildSessionResult = (studentId, sessionId) =>
   apiFetch(`/parents/me/children/${studentId}/sessions/${sessionId}/result`).then((response) =>
     unwrapApiResponse(response)
   );
+
+export const fetchChildSessionResultDetails = (studentId, sessionId) =>
+  collectResultDetails(`/parents/me/children/${studentId}/sessions/${sessionId}/result/details`);
 
 export const fetchChildTrends = (studentId) =>
   apiFetch(`/parents/me/children/${studentId}/trends`).then((response) => unwrapApiResponse(response) || []);
@@ -729,6 +752,8 @@ export const submitSession = (id) =>
 
 export const fetchSessionResult = (id) =>
   apiFetch(`/sessions/${id}/result`).then((response) => unwrapApiResponse(response));
+
+export const fetchSessionResultDetails = (id) => collectResultDetails(`/sessions/${id}/result/details`);
 
 export const fetchResults = ({ page = 1, perPage = 10 } = {}) =>
   apiFetch(`/results${toQueryString({ page: Math.max(page - 1, 0), size: perPage })}`).then((response) =>

@@ -61,23 +61,49 @@ export const translateApiMessage = (value, fallback = "api.unknownKey", locale =
   return looksLikeTranslationKey(raw) ? translate(fallback, undefined, locale) : raw;
 };
 
-/** Only presentation fields are localized; names and other user content are not changed. */
+const MESSAGE_FIELDS = ["message", "error", "detail", "title"];
+
+/**
+ * Only presentation fields are localized; names, enums, roles and other data
+ * values are never changed. We localize the known message fields (`message`,
+ * `error`, `detail`, `title`, `errors`) wherever they appear in the response
+ * tree, but we only recurse structurally into objects — we never translate a
+ * bare string that merely happens to sit in some other field. Blindly mapping
+ * every nested string through `translateApiMessage` would rewrite enum-like
+ * values such as a user's `roles: ["STUDENT"]` into a fallback error string.
+ */
 export const localizeApiResponse = (value, locale = activeLocale) => {
   if (typeof value === "string") return translateApiMessage(value, "api.unknownKey", locale);
-  if (Array.isArray(value)) return value.map((item) => localizeApiResponse(item, locale));
+  if (Array.isArray(value)) return value.map((item) => localizeStructure(item, locale));
+  return localizeStructure(value, locale);
+};
+
+const localizeStructure = (value, locale) => {
   if (!value || typeof value !== "object") return value;
+  if (Array.isArray(value)) return value.map((item) => localizeStructure(item, locale));
+
   const result = { ...value };
-  ["message", "error", "detail", "title"].forEach((field) => {
-    if (typeof result[field] === "string") result[field] = translateApiMessage(result[field], "api.unknownKey", locale);
+
+  MESSAGE_FIELDS.forEach((field) => {
+    if (typeof result[field] === "string") {
+      result[field] = translateApiMessage(result[field], "api.unknownKey", locale);
+    }
   });
+
   if (Array.isArray(result.errors)) {
-    result.errors = result.errors.map((error) => typeof error === "string"
-      ? translateApiMessage(error, "api.validation", locale)
-      : localizeApiResponse(error, locale));
+    result.errors = result.errors.map((error) =>
+      typeof error === "string"
+        ? translateApiMessage(error, "api.validation", locale)
+        : localizeStructure(error, locale)
+    );
   }
+
   Object.entries(result).forEach(([field, item]) => {
-    if (field !== "errors" && item && typeof item === "object") result[field] = localizeApiResponse(item, locale);
+    if (field !== "errors" && item && typeof item === "object") {
+      result[field] = localizeStructure(item, locale);
+    }
   });
+
   return result;
 };
 

@@ -6,6 +6,7 @@ import AdminStatusBadge from "@/components/admin/AdminStatusBadge";
 import {
   fetchChildResults,
   fetchChildSessionResult,
+  fetchChildSessionResultDetails,
   fetchChildTopicTrends,
   fetchChildTrends,
   fetchParentDashboard,
@@ -126,7 +127,11 @@ const ParentProgressPage = () => {
     setIsDetailLoading(true);
     setError("");
     try {
-      setDetail(await fetchChildSessionResult(selectedLearnerId, sessionId));
+      const [result, details] = await Promise.all([
+        fetchChildSessionResult(selectedLearnerId, sessionId),
+        fetchChildSessionResultDetails(selectedLearnerId, sessionId),
+      ]);
+      setDetail({ ...result, details });
     } catch (requestError) {
       setDetail(null);
       setError(requestError?.message || "Result detail could not be loaded.");
