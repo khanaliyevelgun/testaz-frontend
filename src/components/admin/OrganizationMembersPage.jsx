@@ -175,7 +175,14 @@ const OrganizationMembersPage = () => {
                     members.map((member) => (
                       <tr key={member.studentId}>
                         <td className='py-16 px-20 text-14 text-neutral-500'>
-                          <span className='font-monospace'>{member.studentId}</span>
+                          {member.studentName ? (
+                            <>
+                              <span className='d-block'>{member.studentName}</span>
+                              <span className='font-monospace text-12 text-neutral-400'>{member.studentId}</span>
+                            </>
+                          ) : (
+                            <span className='font-monospace'>{member.studentId}</span>
+                          )}
                         </td>
                         <td className='py-16 px-20 text-14 text-neutral-500'>
                           {member.gradeId || "-"}

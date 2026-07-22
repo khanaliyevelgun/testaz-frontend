@@ -67,7 +67,7 @@ const AdminExamAttemptsPage = ({ examId }) => {
               ) : attempts.length ? (
                 attempts.map((attempt) => (
                   <tr key={attempt.id || attempt.sessionId}>
-                    <td className='py-16 px-20 text-14 text-neutral-500'>{attempt.studentId || "-"}</td>
+                    <td className='py-16 px-20 text-14 text-neutral-500'>{attempt.studentName || attempt.studentId || "-"}</td>
                     <td className='py-16 px-20 text-14 text-neutral-500'>{attempt.sessionId || "-"}</td>
                     <td className='py-16 px-20 text-14 text-neutral-500'>{attempt.totalScore ?? "-"} / {attempt.maxScore ?? "-"}</td>
                     <td className='py-16 px-20 text-14 text-neutral-500'>{attempt.percentage != null ? `${attempt.percentage}%` : "-"}</td>
