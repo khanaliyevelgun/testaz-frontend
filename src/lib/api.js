@@ -287,7 +287,35 @@ export const resetPassword = (payload) =>
     }),
   });
 
-export const fetchProfile = () => apiFetch("/auth/me").then((response) => normalizeUser(unwrapApiResponse(response)));
+export const fetchMyProfile = () => apiFetch("/users/me").then((response) => unwrapApiResponse(response));
+
+// `/auth/me` is intentionally minimal (id + roles, straight from the JWT — no DB hit).
+// The display name/email/phone live on `/users/me`, so merge them in for the UI. A failed
+// `/users/me` (e.g. transient) must not break auth: fall back to the token-derived user.
+export const fetchProfile = () =>
+  apiFetch("/auth/me").then(async (response) => {
+    const user = normalizeUser(unwrapApiResponse(response));
+    if (!user) return user;
+
+    try {
+      const details = await fetchMyProfile();
+      if (details) {
+        return {
+          ...user,
+          fullName: details.fullName || user.fullName,
+          email: details.email || user.email,
+          phone: details.phone || user.phone,
+          emailVerified: details.emailVerified,
+          phoneVerified: details.phoneVerified,
+          name: user.fullName || details.fullName || user.email || details.email || user.name,
+        };
+      }
+    } catch {
+      // Keep the token-derived user; the display name just falls back.
+    }
+
+    return user;
+  });
 
 const normalizeNotification = (notification) => ({
   ...notification,
