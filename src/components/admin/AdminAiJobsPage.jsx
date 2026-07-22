@@ -5,6 +5,7 @@ import AdminGradeSelect from "@/components/admin/AdminGradeSelect";
 import AdminRefreshButton from "@/components/admin/AdminRefreshButton";
 import AdminSearchSelect from "@/components/admin/AdminSearchSelect";
 import AdminStatusBadge from "@/components/admin/AdminStatusBadge";
+import AdminPagination from "@/components/admin/AdminPagination";
 import { fetchAdminAiJob, fetchAdminAiJobs, fetchSubjects, fetchTopics, generateAdminAiQuestions } from "@/lib/api";
 import StaticText from "@/components/StaticText";
 import StaticOption from "@/components/StaticOption";
@@ -218,11 +219,7 @@ const AdminAiJobsPage = () => {
           </table>
         </div>
 
-        <div className='d-flex align-items-center justify-content-end gap-8 mt-24'>
-          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page <= 1} onClick={() => loadJobs(Math.max(meta.page - 1, 1))}><StaticText text={"Previous"} /></button>
-          <span className='text-14 text-neutral-400'>{meta.page} / {meta.totalPages}</span>
-          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page >= meta.totalPages} onClick={() => loadJobs(Math.min(meta.page + 1, meta.totalPages))}><StaticText text={"Next"} /></button>
-        </div>
+        <AdminPagination meta={meta} onPageChange={loadJobs} />
       </div>
 
       {selectedJob ? (

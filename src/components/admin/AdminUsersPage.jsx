@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import AdminRefreshButton from "@/components/admin/AdminRefreshButton";
 import AdminRowActions from "@/components/admin/AdminRowActions";
 import AdminStatusBadge from "@/components/admin/AdminStatusBadge";
+import AdminPagination from "@/components/admin/AdminPagination";
 import { deleteUser, fetchUsers, restoreUser } from "@/lib/api";
 import StaticText from "@/components/StaticText";
 import StaticOption from "@/components/StaticOption";
@@ -130,11 +131,7 @@ const AdminUsersPage = () => {
           </table>
         </div>
 
-        <div className='d-flex align-items-center justify-content-end gap-8 mt-24'>
-          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page <= 1} onClick={() => loadUsers({ page: Math.max(meta.page - 1, 1) })}><StaticText text={"Previous"} /></button>
-          <span className='text-14 text-neutral-400'>{meta.page} / {meta.totalPages}</span>
-          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page >= meta.totalPages} onClick={() => loadUsers({ page: Math.min(meta.page + 1, meta.totalPages) })}><StaticText text={"Next"} /></button>
-        </div>
+        <AdminPagination meta={meta} onPageChange={(page) => loadUsers({ page })} />
       </div>
     </div>
   );

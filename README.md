@@ -48,7 +48,7 @@ This frontend is prepared for a secure JWT auth model:
 - If refresh fails, client auth state is cleared and the user is redirected to `/sign-in`.
 - On app startup, `AuthProvider` calls `/api/v1/auth/refresh`; when successful it calls `/api/v1/auth/me` and fills the user state.
 - Public auth pages (`/sign-in`, `/sign-up`, `/forgot-password`) redirect authenticated users to `/` or the `next` URL.
-- Use `ProtectedRoute` from `src/components/auth/ProtectedRoute.jsx` to wrap protected pages or protected page sections.
+- Use `RoleProtectedRoute` from `src/components/auth/RoleProtectedRoute.jsx` to wrap protected pages or protected page sections, and `PublicOnlyRoute` from `src/components/auth/PublicOnlyRoute.jsx` to keep authenticated users off public auth pages.
 - Logout calls `/api/v1/auth/logout` and clears client state in a `finally` block.
 
 Set the backend origin with:

@@ -5,6 +5,7 @@ import {
   setTokens,
 } from "@/stores/authStore";
 import { localizeApiResponse, translateApiMessage } from "@/lib/i18n";
+import { normalizeRole } from "@/lib/authRoles";
 
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(/\/+$/, "");
 const API_PREFIX = "/api/v1";
@@ -44,12 +45,6 @@ const withMessage = (response) => {
   return data;
 };
 
-const normalizeRole = (role) => {
-  const normalizedRole = String(role || "").toLowerCase();
-  if (normalizedRole === "student") return "child";
-  return normalizedRole;
-};
-
 const normalizeUser = (user) => {
   if (!user) return null;
   const roles = Array.isArray(user.roles)
@@ -66,11 +61,6 @@ const normalizeUser = (user) => {
     name: user.fullName || user.name || user.email || user.login || "Istifadeci",
   };
 };
-
-const emptyPage = (page = 1, perPage = 10) => ({
-  data: [],
-  meta: { page, perPage, total: 0, totalPages: 1 },
-});
 
 const normalizePage = (pageResponse, page = 1, perPage = 10) => {
   const content = pageResponse?.content || pageResponse?.data || [];

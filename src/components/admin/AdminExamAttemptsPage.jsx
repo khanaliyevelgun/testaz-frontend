@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { fetchExamAttempts } from "@/lib/api";
 import StaticText from "@/components/StaticText";
+import AdminPagination from "@/components/admin/AdminPagination";
 
 
 const formatDate = (value) => {
@@ -85,11 +86,7 @@ const AdminExamAttemptsPage = ({ examId }) => {
           </table>
         </div>
 
-        <div className='d-flex align-items-center justify-content-end gap-8 mt-24'>
-          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page <= 1} onClick={() => loadAttempts(Math.max(meta.page - 1, 1))}><StaticText text={"Previous"} /></button>
-          <span className='text-14 text-neutral-400'>{meta.page} / {meta.totalPages}</span>
-          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page >= meta.totalPages} onClick={() => loadAttempts(Math.min(meta.page + 1, meta.totalPages))}><StaticText text={"Next"} /></button>
-        </div>
+        <AdminPagination meta={meta} onPageChange={loadAttempts} />
       </div>
     </div>
   );
