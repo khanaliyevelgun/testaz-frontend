@@ -329,6 +329,29 @@ The app has **no automated test suite**, so verification is manual:
 
 ## 12. Change log (keep append-only; newest first)
 
+- **Code review + API/E2E verification pass.** Refactor + three real bug fixes, all verified
+  against the live backend + DB, no UI/behavior redesign:
+  - **`formatDate` consolidation.** It was copy-pasted 15× across admin/dashboard components in
+    three slightly-different forms. Extracted `lib/format.js` (`formatDateTime` = date + short
+    time; `formatDate` = date only). Output unchanged for valid dates; the shared helpers add a
+    NaN guard so a bad timestamp renders "-" instead of "Invalid Date". `AdminPaymentsPage` keeps
+    its distinct `toLocaleString` variant (different output, intentionally not merged).
+  - **User name shown as "İstifadeci" everywhere (bug).** `/auth/me` is intentionally minimal
+    (id + roles from the JWT, no DB hit), so it never carried the display name — every screen fell
+    back to the generic placeholder. The name/email/phone live on `/users/me`, which the frontend
+    never called. `fetchProfile` now merges `/users/me` into the token-derived user (a failed
+    `/users/me` falls back, so auth never breaks). Fixes the name across all authenticated screens.
+  - **Org/exam tables showed raw student UUIDs (bug).** The org members list, org test-results
+    dashboard, and exam-owner attempts view all displayed the raw studentId. Fixed on the backend
+    (`MemberResponse`/`TestResultSummaryResponse` gain `studentName`, batch-resolved via
+    `UserService.findBasicInfoByIds` — no N+1, same pattern as the payer-name enrichment) and the
+    frontend now shows the name (UUID kept as small secondary text). New acyclic backend edges
+    `organization → user` and `result → user`.
+  - **Flags (not fixed — flagged for a product decision):** several backend endpoints have no
+    frontend integration yet (`startSession` ad-hoc practice, `redeemOrganizationInvite`,
+    `fetchExamDefinitions`, `regenerateExamShareToken`, `fetchLinkedChildren`); and the mock
+    payment checkout redirects to a non-existent `/payment/return` route (real payment is
+    vendor-blocked). See the review summary.
 - **Follow-up fixes from the bug-hunt (report identification, trend badges, mixed-language
   strings).** Three targeted fixes + one documented watch-item:
   - **Admin reports queue showed a raw `questionId` UUID.** Root cause was backend: the report
