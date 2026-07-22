@@ -250,7 +250,7 @@ const ExamSessionPage = ({ sessionId }) => {
           <div>
             <h4 className='fw-semibold text-neutral-500 text-20 mb-4'><StaticText text={"Exam session"} /></h4>
             <p className='text-14 text-neutral-400 mb-0'>
-              {session?.totalQuestions ?? questions.length} <StaticText text={"questions /"} /> {progress?.answeredCount ?? session?.answeredCount ?? questions.filter(isAnswered).length} <StaticText text={"answered"} />
+              {session?.totalQuestions ?? questions.length} <StaticText text={"questions"} /> / {progress?.answeredCount ?? session?.answeredCount ?? questions.filter(isAnswered).length} <StaticText text={"answered"} />
             </p>
             {!isActive && session?.status ? (
               <p className='text-13 text-neutral-400 mb-0 mt-4'><StaticText text={"Status:"} /> {session.status}</p>

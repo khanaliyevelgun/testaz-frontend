@@ -233,6 +233,19 @@ backend contract.
 `normalizeRole`, `getUserRoles`, `getPrimaryRole`, `hasAllowedRole`, `routeRoles`).
 `middleware.js` and the client guards both consume it — keep it the single source.
 
+**⚠️ Watch-item — possible refresh-token double-rotation.** While manually debugging in the
+browser (calling `POST /auth/refresh` directly, outside the app's own `apiFetch`/`AuthProvider`
+flow, in quick succession with the app's own startup refresh), a session got logged out: the
+backend's refresh-token rotation + reuse detection revoked the whole token family, because two
+refreshes raced on the same pre-rotation token. This was **not reproduced through normal app
+usage** (`apiFetch`'s single shared `refreshPromise` — see §5 — already dedupes concurrent
+refreshes within one tab), so it is not a confirmed bug, just a plausible mechanism if a
+future report surfaces as "random logouts" — for example, two tabs/windows both hitting a 401
+at nearly the same instant, each running its own `refreshPromise` (the dedupe is per-tab, not
+cross-tab). If that's ever reported, start by checking whether it correlates with multiple
+open tabs, and check the backend's `refresh_tokens` table for a family with many rows all
+`revoked_at` set close together (the reuse-detection signature) around the report time.
+
 ---
 
 ## 8. Admin dashboard conventions
@@ -316,6 +329,38 @@ The app has **no automated test suite**, so verification is manual:
 
 ## 12. Change log (keep append-only; newest first)
 
+- **Follow-up fixes from the bug-hunt (report identification, trend badges, mixed-language
+  strings).** Three targeted fixes + one documented watch-item:
+  - **Admin reports queue showed a raw `questionId` UUID.** Root cause was backend: the report
+    DTO only carried the id. Fixed on the backend (`QuestionReportResponse` gains
+    `questionStem`/`questionSubjectId`, batch-resolved via the existing `getPinnedForServing`
+    no-N+1 pattern — see `az.testifyaz.backend.report.service.QuestionReportServiceImpl`) and
+    wired here: the "Question" column is now the question's stem, truncated, linking to
+    `/admin/questions/{id}/edit`.
+  - **Trend badges (`IMPROVING`/`DECLINING`/`STEADY`/`INSUFFICIENT_DATA`) were unstyled and
+    untranslated.** Extended `AdminStatusBadge`'s `statusClasses` with sentiment colors
+    (improving=green, declining=red, steady/insufficient=neutral) and added an exported
+    `TREND_LABELS` map so the icon-led trend cells in `ChildResultsPage`/`ParentProgressPage`
+    show the same localized wording as the plain-badge usage in `AdminDashboardHome` — one
+    source of truth, no duplicated strings.
+  - **Mixed-language strings on language switch (§6b's core risk, realized).** Several visible
+    sentences were composed from multiple independently-keyed `StaticText` fragments where one
+    fragment's English translation was simply missing, so switching to English left part of
+    the sentence in Azerbaijani (e.g. the home-page hero heading, the marketing footer
+    copyright line). Root cause was always a **missing locale-file entry**, never the
+    JSX/component structure — so every fix was adding the missing `az`/`en` static-locale
+    entries (source strings + hashes computed with the same algorithm as
+    `scripts/extract-static-translations.mjs`, so a future extraction run won't collide).
+    The one real structural fix: `OrganizationInvitesPage`/`OrganizationMembersPage` built an
+    English plural by concatenating a stem + a bare `"s"` (`"result" + "s"`), which cannot work
+    in Azerbaijani (no plural suffix after a numeral); changed to a `count === 1 ? singular :
+    plural` branch with two independently-translated words (AZ: both branches translate to the
+    same singular noun, per Azerbaijani grammar). **Lesson for future `StaticText` usage:** a
+    sentence assembled from 2+ fragments is only as translatable as its least-covered fragment
+    — prefer one fragment per complete, grammatically-independent phrase, and never build a
+    plural by string-concatenating a suffix.
+  - **Watch-item recorded, not fixed** (couldn't reproduce through normal usage): see §7's
+    "possible refresh-token double-rotation" note.
 - **Data-correctness bug-fix pass** (verified against the DB for every integrated read
   endpoint, all roles). Two real bugs fixed at the root:
   - **i18n enum/role corruption (critical).** `localizeApiResponse` (`lib/i18n.js`) recursed

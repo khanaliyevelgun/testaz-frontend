@@ -1,15 +1,18 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import AdminRefreshButton from "@/components/admin/AdminRefreshButton";
 import AdminRowActions from "@/components/admin/AdminRowActions";
 import AdminStatusBadge from "@/components/admin/AdminStatusBadge";
 import AdminPagination from "@/components/admin/AdminPagination";
 import { dismissAdminReport, fetchAdminReports, resolveAdminReport } from "@/lib/api";
+import { questionHtmlToText } from "@/lib/questionContent";
 import StaticText from "@/components/StaticText";
 import StaticOption from "@/components/StaticOption";
 
-
+const truncate = (value, maxLength = 80) =>
+  value.length > maxLength ? `${value.slice(0, maxLength).trim()}…` : value;
 
 const statuses = ["OPEN", "RESOLVED", "DISMISSED"];
 
@@ -106,7 +109,15 @@ const AdminReportsPage = () => {
                   <tr key={report.id}>
                     <td className='py-16 px-20 text-14 text-neutral-500'>{report.reason || "-"}</td>
                     <td className='py-16 px-20 text-14 text-neutral-500'>{report.comment || "-"}</td>
-                    <td className='py-16 px-20 text-14 text-neutral-500'>{report.questionId || "-"}</td>
+                    <td className='py-16 px-20 text-14 text-neutral-500'>
+                      {report.questionId ? (
+                        <Link href={`/admin/questions/${report.questionId}/edit`} className='text-main-600 text-decoration-underline'>
+                          {report.questionStem
+                            ? truncate(questionHtmlToText(report.questionStem))
+                            : <StaticText text={"View question"} />}
+                        </Link>
+                      ) : "-"}
+                    </td>
                     <td className='py-16 px-20'><AdminStatusBadge status={report.status} /></td>
                     <td className='py-16 px-20'><div className='d-flex justify-content-end'><AdminRowActions items={actionsFor(report)} /></div></td>
                   </tr>

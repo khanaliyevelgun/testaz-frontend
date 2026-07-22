@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import AdminRefreshButton from "@/components/admin/AdminRefreshButton";
-import AdminStatusBadge from "@/components/admin/AdminStatusBadge";
+import AdminStatusBadge, { TREND_LABELS } from "@/components/admin/AdminStatusBadge";
 import AdminPagination from "@/components/admin/AdminPagination";
 import {
   fetchResultTopicTrends,
@@ -177,7 +177,7 @@ const ChildResultsPage = () => {
                         <td className='py-12 text-14 text-neutral-500'>{item.subjectName || `#${item.subjectId}`}</td>
                         <td className='py-12 text-14 text-neutral-500'>{Math.round(item.accuracy || 0)}%</td>
                         <td className='py-12 text-14 text-neutral-500'>{item.testsCount || 0}</td>
-                        <td className='py-12 text-14 text-neutral-500'><i className={`${trendIcon(item.trend)} me-6`} />{item.trend || "-"}</td>
+                        <td className='py-12 text-14 text-neutral-500'><i className={`${trendIcon(item.trend)} me-6`} />{TREND_LABELS[item.trend] ? <StaticText text={TREND_LABELS[item.trend]} /> : item.trend || "-"}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -200,7 +200,7 @@ const ChildResultsPage = () => {
                         <td className='py-12 text-14 text-neutral-500'>{item.topicName || `#${item.topicId}`}</td>
                         <td className='py-12 text-14 text-neutral-500'>{Math.round(item.accuracy || 0)}%</td>
                         <td className='py-12 text-14 text-neutral-500'>{item.totalQuestions || 0}</td>
-                        <td className='py-12 text-14 text-neutral-500'><i className={`${trendIcon(item.trend)} me-6`} />{item.trend || "-"}</td>
+                        <td className='py-12 text-14 text-neutral-500'><i className={`${trendIcon(item.trend)} me-6`} />{TREND_LABELS[item.trend] ? <StaticText text={TREND_LABELS[item.trend]} /> : item.trend || "-"}</td>
                       </tr>
                     ))}
                   </tbody>

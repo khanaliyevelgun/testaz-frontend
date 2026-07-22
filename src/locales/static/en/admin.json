@@ -11,5 +11,14 @@
   "components.admin.adminprofiledropdown.9y09i6": "Adjustments",
   "components.admin.adminrowactions.1vck7g3": "String operations",
   "components.admin.sidebar.rolesidebar.qoymd": "Exit",
-  "components.admin.sidebar.rolesidebar.1udql8v": "User"
+  "components.admin.sidebar.rolesidebar.1udql8v": "User",
+  "components.admin.organizationinvitespage.z4gk18": "result",
+  "components.admin.organizationinvitespage.mldhgf": "results",
+  "components.admin.organizationmemberspage.oa4l2t": "member",
+  "components.admin.organizationmemberspage.jxypt2": "members",
+  "components.admin.adminsubscriptionplanspage.yirre2": "days",
+  "components.admin.adminstatusbadge.5kyqpm": "Improving",
+  "components.admin.adminstatusbadge.iw1i3i": "Declining",
+  "components.admin.adminstatusbadge.3tsanc": "Steady",
+  "components.admin.adminstatusbadge.elqjyj": "Not enough data yet"
 }

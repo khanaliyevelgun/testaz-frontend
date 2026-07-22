@@ -766,7 +766,7 @@ const OrganizationInvitesPage = () => {
 
         <div className='d-flex flex-wrap align-items-center justify-content-between gap-12 mt-24'>
           <span className='text-13 text-neutral-400'>
-            {resultMeta.total} <StaticText text={"result"} />{resultMeta.total === 1 ? "" : <StaticText text={"s"} />}
+            {resultMeta.total} {resultMeta.total === 1 ? <StaticText text={"result"} /> : <StaticText text={"results"} />}
           </span>
           <div className='d-flex align-items-center gap-8'>
             <button
