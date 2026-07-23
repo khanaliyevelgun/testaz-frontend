@@ -50,6 +50,10 @@ const staticFallbackTranslations = {
     "Kod": "Code",
     "Say": "Count",
     "Sinif": "Grade",
+    // Org invite validation (localization follow-up)
+    "Nəticələri yükləməzdən əvvəl təşkilat seçin.": "Select an organization before loading results.",
+    "Düzgün test UUID-si daxil edin.": "Enter a valid test UUID.",
+    "Təşkilat seçin.": "Select an organization.",
     // Payment return page
     "Ödəniş yoxlanılır": "Verifying payment",
     "Ödənişiniz təsdiqlənir. Bu bir neçə saniyə çəkə bilər.":

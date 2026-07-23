@@ -164,7 +164,7 @@ const OrganizationInvitesPage = () => {
       setResultError("");
 
       if (!organizationId) {
-        setResultError("Select an organization before loading results.");
+        setResultError("Nəticələri yükləməzdən əvvəl təşkilat seçin.");
         return;
       }
 
@@ -174,7 +174,7 @@ const OrganizationInvitesPage = () => {
       }
 
       if (!uuidPattern.test(requestedTestId)) {
-        setResultError("Enter a valid test UUID.");
+        setResultError("Düzgün test UUID-si daxil edin.");
         return;
       }
 
@@ -224,7 +224,7 @@ const OrganizationInvitesPage = () => {
   };
 
   const validateInvite = () => {
-    if (!selectedOrganizationId) return "Select an organization.";
+    if (!selectedOrganizationId) return "Təşkilat seçin.";
     if (!form.subjectId) return "Fənn tələb olunur.";
     if (form.title.trim().length > 200) {
       return "Başlıq 200 simvoldan uzun ola bilməz.";

@@ -506,6 +506,16 @@ The app has **no automated test suite**, so verification is manual:
 
 ## 12. Change log (keep append-only; newest first)
 
+- **Finalization — merge to `main` + localization follow-up (2026-07-24).** The whole 2026-07-23 session
+  (remaining-issue fixes + the 5-batch UX/accessibility polish) was committed and **merged to `main`** via
+  `refactor/frontend-review-2` (`--no-ff`, branch deleted; build green, 50 routes). Two stale already-merged branches
+  were pruned; `main` is the single branch. **Backend side:** the three un-merged backend branches
+  (`feat/member-result-student-names`, `feat/report-question-identification`, `fix/cors-allowed-origins-yaml`) were
+  merged into backend `main` too (full `./gradlew build` green, 130 tests). **Localization follow-up:** a final sweep
+  caught 3 static English strings missed in Batch 1 (they used `setResultError` / a returned validation string in
+  `OrganizationInvitesPage`, which the Batch-1 `setError(` grep didn't match) — localized to AZ + EN fallback. A
+  full re-sweep now shows **zero** non-interpolated English UI strings remain; only the *dynamic* template-literal
+  strings are still English (deferred — §15). No layout/logic change.
 - **UX polish — Batch 5: placeholder localization + keyboard focus ring (2026-07-23).** No layout change; build +
   i18n audit green (50 routes, 182 files). **(1) Placeholders:** localized 26 mixed-English input placeholders across
   15 components to Azerbaijani source form (+ EN fallback entries in `staticFallbackTranslations`, since placeholders
