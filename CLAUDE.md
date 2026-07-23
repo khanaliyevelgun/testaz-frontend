@@ -1,25 +1,148 @@
-# CLAUDE.md — testaz Frontend
+# CLAUDE.md — testaz (Frontend repo, `eduall/`)
 
-> Architecture & convention memory for the **testaz** frontend (this repo, `eduall/`).
-> Any Claude instance working here should read this file first. It is the single
-> source of truth for how the frontend is built, the rules that must not be broken,
-> and where things live. It mirrors the role that `backend/CLAUDE.md` plays for the API.
+> **Project entry point + frontend single source of truth.** Any Claude instance working on the
+> frontend should read this file first. §0 gives the whole-project picture (product, architecture,
+> backend, database, progress) so a brand-new session understands the system without prior
+> conversation; §1–§11 are the detailed **frontend** reference (routing, auth, state, API layer,
+> i18n, shared components, conventions); §12 is the change log; §13–§18 are the handoff sections.
 >
-> Keep this file in sync when you change architecture, folder structure, state
-> management, the API layer, the i18n system, or shared conventions.
+> **The authoritative BACKEND document is `testaz-backend/CLAUDE.md`** (~3600 lines, the backend
+> SSOT). §0 here summarizes it and points to it; do not duplicate backend depth into this file.
 >
-> **New session? Start with §17 (Next Session Starting Instructions).** Handoff sections:
-> §13 review summary, §14 remaining issues, §15 future improvements, §16 the
-> intentionally-unimplemented backend APIs that must NOT be deleted.
+> **New session? Start with §17 (Next Session).** Then read §0 (project overview), then the
+> frontend detail (§1–§11). Handoff sections: §13 this-session summary (incl. repo-cleanliness
+> result), §14 remaining issues, §15 future improvements, §16 the intentionally-unimplemented
+> backend APIs that must NOT be deleted, §17 next-session starting instructions.
+>
+> Keep this file in sync when you change architecture, folder structure, state management, the API
+> layer, the i18n system, or shared conventions (§20-style doc-sync: update the change log + the
+> relevant section, then summarize in chat).
 
 ---
 
-## 1. What this is
+## 0. Project Overview (whole-system snapshot)
 
-The web client for **testaz** — a test/quiz platform for Azerbaijani 11th-grade
-students preparing for the Buraxılış (graduation) and Qəbul (university-entrance)
-exams. It talks to the Spring Boot backend documented in `openapi.yaml` /
-`docs/API_DOCUMENTATION.md`.
+### 0.1 Product
+**testaz** — a production test/quiz platform for **Azerbaijani 11th-grade students** preparing for
+the **Buraxılış** (graduation) and **Qəbul** (university-entrance) exams. Real product, real launch.
+
+- **Vision / problem→solution:** Parents pay tutors/courses but cannot verify their child is
+  actually learning. Students take tests and get a result page with per-question answers + weak
+  subject/topic analysis; parents optionally link to a child (with the child's consent) and see the
+  same breakdown + notifications; courses/tutors/schools test groups of students via a join code and
+  read a results dashboard. **AI (Claude) generates the question bank.**
+- **Business model:** **Parents pay; children never do.** A subscription entitlement gate meters
+  non-subscribers (free tier → 402) — a student is entitled by their own live subscription OR an
+  ACTIVE-linked parent's child-covering plan. Currency AZN.
+- **Target users:** 11th-grade students; their parents; and organizations (courses, private tutors,
+  schools). **Launch is az-sector only** (UI + content Azerbaijani; the schema/i18n are ready for
+  ru/en later).
+- **Supported roles** (backend `RoleCode` → UI role): `STUDENT`→`child`, `PARENT`→`parent`,
+  `ADMIN`→`admin`, and `COURSE`/`PRIVATE_TUTOR`/`SCHOOL_TEACHER`→ grouped as `organization`. A user
+  can hold several roles (e.g. STUDENT+PARENT). See frontend §7 for how roles drive routing/UI.
+- **Test categories:** single-subject practice, official exam simulations (Buraxılış = 85 q / 300
+  pts / no negative marking; Qəbul = 90 q / 400 pts / per-subject negative marking, 4 wrong cancel
+  1 correct on closed questions), and custom mixes. Question types: SINGLE_CHOICE, MULTIPLE_CHOICE,
+  SHORT_TEXT. (Full exam blueprints + scoring rules: backend CLAUDE.md §9.)
+- **Non-functional requirements:** stateless JWT (RS256) API behind a separate Next.js frontend;
+  every list endpoint paginated; no N+1; async scoring + notifications; graceful degradation when
+  Claude/payment providers are down (never a raw 500); structured logging with **zero PII** (UUIDs
+  only); secrets from ENV.
+- **Roadmap:** the backend MVP + a large deferred-feature run are **complete**; the only remaining
+  backend item is wiring **real Email/SMS + payment vendors** behind ready seams (vendor-blocked).
+  Frontend has UI for the implemented flows; several backend endpoints await frontend integration
+  (§16).
+
+### 0.2 Architecture (overall)
+Two repos, one product:
+- **Backend** (`testaz-backend/`) — a **modular-monolith** Spring Boot 3.5 / Java 21 REST API under
+  `az.testifyaz.backend`, Postgres + Redis, JWT (RS256) auth. **Stateless**; the frontend is a
+  separate client. Authoritative doc: `testaz-backend/CLAUDE.md`.
+- **Frontend** (`eduall/`, THIS repo) — a **Next.js 14 App Router** app (plain JS/JSX, no
+  TypeScript), Bootstrap 5 + SCSS on a purchased "EduAll/DP_Market" template, custom runtime i18n.
+  Talks to the backend only through `src/lib/api.js`. Detailed in §1–§11.
+- **Contract:** the backend wraps responses as `{ data, message }` and paginates as Spring `Page`
+  (`content`/`page`/`size`/`totalElements`/`totalPages`); the frontend normalizes this at the
+  boundary (§5). OpenAPI at the backend origin `/swagger-ui/index.html`; local copy `openapi.yaml`.
+
+### 0.3 Backend (summary — see `testaz-backend/CLAUDE.md` for depth)
+- **Status:** MVP build (steps 1–15) + a large hardening/deferred-feature run **complete & verified**
+  — builds, boots, passes **130 integration tests** on real Postgres + Redis (Testcontainers).
+- **Modules (17 domain + `seed`):** `common`, `auth`, `user`, `student`, `parent`, `organization`,
+  `subject`, `question`, `test`, `result`, `notification`, `ai`, `subscription`, `payment`, `report`,
+  `audit`, `admin` (thin orchestration), `seed` (dev-only). Rules: module isolation (call only via
+  public service interfaces, never another module's repo/entity — ArchUnit-enforced), controller →
+  service → repository layering, DTOs only at the boundary (MapStruct), SOLID/interfaces.
+- **Security:** BCrypt(12); JWT RS256 (access 15 min, refresh 7 days, rotation + reuse detection);
+  two `SecurityFilterChain`s (a stricter `/api/v1/admin/**` chain); Redis token blacklist on logout;
+  Bucket4j rate limiting; **authorization in depth** — `@PreAuthorize` + service-layer ownership +
+  **query-level enforcement for child data** (a non-linked parent's query returns nothing); OTP
+  attempt cap; append-only `audit_log`; zero-PII logging.
+- **Key patterns:** async scoring (AFTER_COMMIT `@Async`); transactional-outbox notifications;
+  DB-first question serving with AI fallback on exhaustion; provider-agnostic seams for Email/SMS
+  (`EmailSender`/`SmsSender`, `Logging*` fallbacks) and payment (`PaymentProvider`,
+  `MockPaymentProvider`) — real vendors drop in via `@ConditionalOnMissingBean` (vendor-blocked, so
+  not yet wired). Batch id→name enrichment (`UserService.findBasicInfoByIds`) for list DTOs (no N+1).
+- **API organization:** base `/api/v1`; public (auth, taxonomy, exam-defs, plans, media, webhook);
+  authenticated (sessions, results, students/parents, exams, notifications, subscriptions,
+  payments); admin `/api/v1/admin/**` (users, subjects, topics, questions, AI, reports, audit,
+  subscriptions, payments, plans, dashboard). Full list: backend §18.
+- **External integrations:** Anthropic Claude (`/v1/messages`, Resilience4j-guarded) for question
+  generation; Email/SMS + payment (Payriff planned) behind swappable seams.
+
+### 0.4 Database (summary — see backend CLAUDE.md §5/§17 for the full schema)
+- **Postgres**, schema owned by **Liquibase** only (`ddl-auto=validate`, never create/update);
+  **34 migrations (0001–0034)**, master changelog `db/changelog/db.changelog-master.yaml`.
+- **Conventions:** UUID v7 PKs for externally-exposed tables (no enumeration of children's data);
+  SMALLINT + unique `code` for small reference tables (grades, subjects, roles, plans); `TIMESTAMPTZ`
+  everywhere with `created_at`/`updated_at`/`version`; **every FK indexed**, composite indexes on hot
+  selection paths; enum columns persist as `@Enumerated(STRING)` VARCHAR **with a CHECK constraint**
+  (a bad enum value would otherwise 500 on the next read — schema-wide since migration 0027);
+  historical tables (`result_details`, `weak_areas`) store subject/topic/question ids as **snapshot
+  values (no FK)** so editing a question later never alters a past result; `students.id = users.id`
+  (shared PK — a profile IS a user).
+- **Important tables:** `users`/`roles`/`user_roles`; `refresh_tokens`/`one_time_tokens`;
+  `subjects`/`topics`/`grades` + `exam_definitions`/`exam_groups`/`exam_group_subjects`;
+  `questions`/`question_options`/`accepted_answers`; `tests`/`test_sections`/`test_questions`/
+  `test_assignments`/`exam_templates`; `test_sessions`/`…answers`/`results`/`result_details`/
+  `weak_areas`/`student_subject_stats`/`student_topic_stats`; `parents`/`parent_student_links`/
+  `parent_link_invitations`; `organizations`/`organization_members`/`test_invites`;
+  `notifications`/`notification_outbox`/`…preferences`/`…templates`; `subscription_plans`/
+  `subscriptions`/`subscription_usage`; `payments`/`payment_webhook_events`; `question_reports`;
+  `audit_log`; `ai_generation_jobs`/`ai_raw_responses`.
+- **Local dev data:** a `@Profile("seed")` `DevDataSeeder` fills the Docker Postgres with realistic
+  interconnected data through the service layer (real BCrypt users, webhook-activated subscriptions,
+  generated audit history). Seeded logins: admin `admin@testaz.local` / `Admin!2345`; everyone else
+  `<generated-email>` / `Parol!2345`. Regenerate: backend CLAUDE.md §27.
+
+### 0.5 Development Progress
+- **✅ Completed (backend):** all 17 modules; the full MVP build order (auth → taxonomy → question
+  bank → AI generation → test-taking + scoring → student/parent linking → organizations →
+  notifications → reports → subscriptions/payments → audit → admin → exam management) PLUS the
+  deferred-feature run (trends rollups, subscription lifecycle + plan CRUD, retention jobs, AI
+  runtime replenishment, org digest, exam owner lifecycle + retakes, security hardening, dev-data
+  seeder). 130 tests green.
+- **✅ Completed (frontend):** auth (sign-in/up, forgot/reset, refresh); role dashboards
+  (admin/parent/child/organization); student results (list + paginated detail modal) + question
+  reporting; exam-taking by share code (preview → start → answer/autosave → submit → scored result);
+  parent dashboard/children/progress/notifications; organization management/members/invites/results;
+  full admin panel (users, subjects, topics, questions + AI generation, reports, audit,
+  subscriptions, payments, plans, dashboard); subscriptions/entitlement/checkout (mock); i18n
+  (az/en). Production build green (49 routes).
+- **🔶 In progress / this session:** frontend code-review + API/E2E verification pass — see §13. No
+  in-flight partial work; all changes are committed.
+- **⛔ Not yet implemented (frontend — intentional, see §16):** ad-hoc practice-session start
+  (`startSession`), org-invite redemption UI (`redeemOrganizationInvite`), official exam-definition
+  browsing (`fetchExamDefinitions`/`fetchExamDefinition`), exam share-token regeneration
+  (`regenerateExamShareToken`). **Backend-blocked:** real Email/SMS + payment providers (vendor
+  accounts needed).
+
+---
+
+## 1. What this is (frontend specifics)
+
+The web client for **testaz** (product overview in §0). It talks to the Spring Boot backend
+documented in `openapi.yaml` / `docs/API_DOCUMENTATION.md`.
 
 - **Framework:** Next.js **14.1.4** (App Router), React 18, **plain JavaScript (JSX, no TypeScript)**.
 - **Styling:** Bootstrap 5 + SCSS (`app/globals.scss`), a purchased "EduAll / DP_Market"
@@ -333,6 +456,13 @@ The app has **no automated test suite**, so verification is manual:
 
 ## 12. Change log (keep append-only; newest first)
 
+- **Project handoff.** Documentation-only finalization: reworked this file into a whole-project
+  entry point — added **§0 Project Overview** (product / architecture / backend summary / database
+  summary / development progress) so a brand-new session understands the system without prior
+  context, pointing to `testaz-backend/CLAUDE.md` for backend depth (no duplication). Re-verified
+  builds/tests for handoff (frontend build + i18n audit GREEN; backend `./gradlew build` GREEN, 130
+  tests); ran a repo-cleanliness scan (nothing to remove); documented the multi-branch backend
+  deployment nuance (§13). No code change beyond docs.
 - **Code review + API/E2E verification pass.** Refactor + three real bug fixes, all verified
   against the live backend + DB, no UI/behavior redesign:
   - **`formatDate` consolidation.** It was copy-pasted 15× across admin/dashboard components in
@@ -510,6 +640,25 @@ Manual E2E in the in-app browser against the live backend (there is no automated
 - **Did NOT touch working, clean code** just to "improve" it — the review confirmed most of the
   codebase is already sound.
 
+### Session finalization (handoff verification)
+- **Builds/tests re-verified for handoff:** frontend `npm run build` GREEN (49/49 routes, no
+  warnings) + `i18n:audit` GREEN (178 source files, 3526 locale entries); backend
+  `feat/member-result-student-names` `./gradlew build` GREEN (all 130 tests). No in-flight partial
+  work — everything is committed.
+- **Repository cleanliness (step-8 scan):** no unused imports, no genuinely dead code, no obsolete
+  comments found to remove. The only "unused" `api.js` exports are the intentionally-deferred §16
+  endpoints (keep) plus `fetchMyProfile` (used internally by `fetchProfile`, and a valid public
+  wrapper for a future self-service profile-edit UI). **Nothing was deleted.**
+- **⚠️ Backend deployment nuance (important for a live demo / merge planning).** The three backend
+  fixes live on **three independent branches** (each branched separately from `main`); **no single
+  branch contains all three**. The running local backend serves the jar built from whichever branch
+  was last deployed (currently `feat/member-result-student-names` → so org/exam **student names are
+  live**, but the report `questionStem` and the CORS default are **not** in the running instance).
+  This is the expected state of un-merged feature branches, and **nothing is broken** because the
+  frontend falls back gracefully everywhere (`studentName ? name : uuid`, `questionStem ? stem :
+  uuid`). To get a fully-consistent running backend, **merge all three backend branches** (they do
+  not conflict — different files) and rebuild/redeploy the jar. That merge awaits your approval (§9).
+
 ---
 
 ## 14. Remaining Issues
@@ -582,9 +731,10 @@ Currently unimplemented (verified: zero component/app usage):
 
 **Every new Claude Code session working on this project MUST, before writing any code:**
 
-1. **Read this entire `CLAUDE.md`** (the frontend single source of truth) end to end.
-2. **Understand the backend architecture** — read `../testaz-backend/CLAUDE.md` (or wherever the
-   backend repo lives); it is the authoritative backend + business-rule reference.
+1. **Read this entire `CLAUDE.md`** end to end — §0 (project overview) first for the whole-system
+   picture, then §1–§11 (frontend detail), then the handoff sections §13–§17.
+2. **Understand the backend architecture** — read `testaz-backend/CLAUDE.md`; it is the
+   authoritative backend + business-rule reference (§0.3 here is only a summary).
 3. **Understand the frontend architecture** — §§1–11 here (routing, auth, state, API layer, i18n,
    shared components, conventions).
 4. **Understand completed features** — §13 (review summary) + the change log (§12).
@@ -599,5 +749,5 @@ Currently unimplemented (verified: zero component/app usage):
 
 Only after fully understanding the project — backend + frontend, completed + pending, and the
 hard rules in §9 — should implementation begin. Preserve the existing UI/UX (it is considered
-good); keep the production build green (§10); and keep this file in sync (§20.1-style doc-sync:
-update the change log + the relevant section, then summarize in chat).
+good); keep the production build green (§10); and keep this file in sync (doc-sync: update the
+change log §12 + the relevant section, then summarize in chat).
