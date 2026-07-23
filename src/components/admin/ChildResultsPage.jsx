@@ -15,6 +15,8 @@ import {
 import { formatDateTime as formatDate } from "@/lib/format";
 import { renderQuestionHtml } from "@/lib/questionContent";
 import StaticText from "@/components/StaticText";
+import AdminEmptyState from "@/components/admin/AdminEmptyState";
+import AdminTableSkeleton from "@/components/admin/AdminTableSkeleton";
 import StaticOption from "@/components/StaticOption";
 
 
@@ -46,7 +48,7 @@ const ChildResultsPage = () => {
       setSubjectTrends(nextSubjectTrends || []);
       setTopicTrends(nextTopicTrends || []);
     } catch (requestError) {
-      setError(requestError?.message || "Results could not be loaded.");
+      setError(requestError?.message || "Nəticələr yüklənmədi.");
       setResults([]);
     } finally {
       setIsLoading(false);
@@ -70,7 +72,7 @@ const ChildResultsPage = () => {
       setDetail({ ...result, details });
     } catch (requestError) {
       setDetail(null);
-      setError(requestError?.message || "Result details could not be loaded.");
+      setError(requestError?.message || "Nəticə təfərrüatları yüklənmədi.");
     } finally {
       setIsDetailLoading(false);
     }
@@ -89,10 +91,10 @@ const ChildResultsPage = () => {
         comment: reportForm.comment.trim() || undefined,
         sessionId: detail?.sessionId,
       });
-      setNotice("Question report sent to the review team.");
+      setNotice("Sual barədə şikayət baxış komandasına göndərildi.");
       setReportForm(null);
     } catch (requestError) {
-      setError(requestError?.message || "Question report could not be sent.");
+      setError(requestError?.message || "Sual barədə şikayət göndərilmədi.");
     } finally {
       setIsReporting(false);
     }
@@ -132,7 +134,7 @@ const ChildResultsPage = () => {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'><StaticText text={"Loading..."} /></td></tr>
+                <AdminTableSkeleton columns={6} />
               ) : results.length ? (
                 results.map((result) => (
                   <tr key={result.id || result.sessionId}>
@@ -149,7 +151,7 @@ const ChildResultsPage = () => {
                   </tr>
                 ))
               ) : (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'><StaticText text={"No results found."} /></td></tr>
+                <AdminEmptyState columns={6} icon='ph ph-chart-bar'><StaticText text={"No results found."} /></AdminEmptyState>
               )}
             </tbody>
           </table>

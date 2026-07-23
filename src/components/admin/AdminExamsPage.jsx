@@ -9,6 +9,8 @@ import AdminPagination from "@/components/admin/AdminPagination";
 import { fetchExams } from "@/lib/api";
 import { formatDateTime as formatDate } from "@/lib/format";
 import StaticText from "@/components/StaticText";
+import AdminEmptyState from "@/components/admin/AdminEmptyState";
+import AdminTableSkeleton from "@/components/admin/AdminTableSkeleton";
 
 
 const AdminExamsPage = () => {
@@ -25,7 +27,7 @@ const AdminExamsPage = () => {
       setExams(response.data || []);
       setMeta(response.meta || { page, perPage: 10, total: 0, totalPages: 1 });
     } catch (requestError) {
-      setError(requestError?.message || "Exams could not be loaded.");
+      setError(requestError?.message || "İmtahanlar yüklənmədi.");
       setExams([]);
     } finally {
       setIsLoading(false);
@@ -74,7 +76,7 @@ const AdminExamsPage = () => {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='7'><StaticText text={"Loading..."} /></td></tr>
+                <AdminTableSkeleton columns={7} />
               ) : exams.length ? (
                 exams.map((exam) => (
                   <tr key={exam.examId}>
@@ -91,7 +93,7 @@ const AdminExamsPage = () => {
                   </tr>
                 ))
               ) : (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='7'><StaticText text={"No exams found."} /></td></tr>
+                <AdminEmptyState columns={7} icon='ph ph-exam' action={{ href: "/admin/exams/new", label: <StaticText text={"Create Exam"} /> }}><StaticText text={"No exams found."} /></AdminEmptyState>
               )}
             </tbody>
           </table>

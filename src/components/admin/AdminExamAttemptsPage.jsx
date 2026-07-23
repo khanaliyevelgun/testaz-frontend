@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { fetchExamAttempts } from "@/lib/api";
 import { formatDateTime as formatDate } from "@/lib/format";
 import StaticText from "@/components/StaticText";
+import AdminEmptyState from "@/components/admin/AdminEmptyState";
+import AdminTableSkeleton from "@/components/admin/AdminTableSkeleton";
 import AdminPagination from "@/components/admin/AdminPagination";
 
 
@@ -22,7 +24,7 @@ const AdminExamAttemptsPage = ({ examId }) => {
       setAttempts(response.data || []);
       setMeta(response.meta || { page, perPage: 10, total: 0, totalPages: 1 });
     } catch (requestError) {
-      setError(requestError?.message || "Attempts could not be loaded.");
+      setError(requestError?.message || "Cəhdlər yüklənmədi.");
       setAttempts([]);
     } finally {
       setIsLoading(false);
@@ -63,7 +65,7 @@ const AdminExamAttemptsPage = ({ examId }) => {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'><StaticText text={"Loading..."} /></td></tr>
+                <AdminTableSkeleton columns={6} />
               ) : attempts.length ? (
                 attempts.map((attempt) => (
                   <tr key={attempt.id || attempt.sessionId}>
@@ -76,7 +78,7 @@ const AdminExamAttemptsPage = ({ examId }) => {
                   </tr>
                 ))
               ) : (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'><StaticText text={"No attempts found."} /></td></tr>
+                <AdminEmptyState columns={6} icon='ph ph-chart-bar'><StaticText text={"No attempts found."} /></AdminEmptyState>
               )}
             </tbody>
           </table>

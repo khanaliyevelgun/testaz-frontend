@@ -127,10 +127,15 @@ Two repos, one product:
   reporting; exam-taking by share code (preview → start → answer/autosave → submit → scored result);
   parent dashboard/children/progress/notifications; organization management/members/invites/results;
   full admin panel (users, subjects, topics, questions + AI generation, reports, audit,
-  subscriptions, payments, plans, dashboard); subscriptions/entitlement/checkout (mock); i18n
-  (az/en). Production build green (49 routes).
-- **🔶 In progress / this session:** frontend code-review + API/E2E verification pass — see §13. No
-  in-flight partial work; all changes are committed.
+  subscriptions, payments, plans, dashboard); subscriptions/entitlement/checkout (mock) +
+  **payment-return landing** (`/payment/return`); i18n (az/en). Production build green (**50 routes**).
+- **🔶 Recent sessions (2026-07-23; all in the change log §12):** a **remaining-issues fix pass** (payment
+  checkout 404 → new return page; one-shot-exam "already completed" UX; refresh-token cross-tab guard), then a
+  **5-batch UX/accessibility polish pass** that preserved the existing identity (no redesign): (1) localized
+  ~126 English error/feedback strings + (5) 26 placeholders to AZ (+ EN fallback in `i18n.js`
+  `staticFallbackTranslations`); (2) loading **skeletons** (`AdminTableSkeleton`, 19 tables); (3) **empty states**
+  (`AdminEmptyState`, 18 tables); (4) **accessibility** in shared primitives (pagination live-region/labels,
+  keyboard-operable row-action menu, `:focus-visible` rings, aria-labels). No in-flight partial work.
 - **⛔ Not yet implemented (frontend — intentional, see §16):** ad-hoc practice-session start
   (`startSession`), org-invite redemption UI (`redeemOrganizationInvite`), official exam-definition
   browsing (`fetchExamDefinitions`/`fetchExamDefinition`), exam share-token regeneration
@@ -163,7 +168,7 @@ auth/exam flows.
 
 ```bash
 npm run dev            # dev server on :3000
-npm run build          # production build — MUST stay green (49 routes)
+npm run build          # production build — MUST stay green (50 routes)
 npm run start          # serve the production build
 npm run lint           # next lint
 ```
@@ -197,15 +202,19 @@ app/                     App Router. Route files are THIN wrappers (§4).
   exam/[code]/           Public exam-take entry (by share code).
   exam-session/[id]/     Public exam-session runner.
   sessions/[id]/result/  Result page.
+  payment/return/        Payment provider return landing (reads ?ref/?status;
+                         verifying → active/pending/failed; polls subscriptions).
   sign-in / sign-up / forgot-password / new-password / reset-password
   about / blog / contact / faq / pricing-plan   Template marketing pages.
   api/openapi/route.js   Serves the local openapi.yaml.
 
 components/
   *.jsx                  Template + shared leaf components (Header, Footer, auth
-                         inner forms, StaticText/StaticOption, LocaleProvider, …).
+                         inner forms, PaymentReturnInner, StaticText/StaticOption,
+                         LocaleProvider, …).
   admin/                 ALL dashboard feature components (*Page.jsx) + admin
-                         primitives (AdminPagination, AdminStatusBadge, …).
+                         primitives (AdminPagination, AdminStatusBadge,
+                         AdminTableSkeleton [loading rows], AdminEmptyState, …).
   admin/sidebar/         Role sidebars (admin/parent/child/organization) + RoleSidebar
                          shell + sidebarItems.js (the nav definitions).
   auth/                  RoleProtectedRoute, PublicOnlyRoute (client-side route guards).
@@ -325,6 +334,27 @@ over the DOM plus a lookup keyed on the source string.
 - New static source strings must be added to the extraction/translation pipeline
   (`scripts/i18n:extract` → `locales/static/*`) or they won't have an en translation.
 
+### 6b-bis. Adding a translated string WITHOUT the extraction pipeline ⭐ (the practical path)
+The extraction pipeline keys translations by a computed hash, so hand-adding an entry means
+reproducing that hash. The simpler, hash-free path — used throughout the 2026-07-23 polish
+work — is **`staticFallbackTranslations`** in `lib/i18n.js`: a flat `{ az: {...}, en: {...} }`
+map keyed **directly by the AZ source string** → its translation. `getStaticTextTranslations`
+folds these in (and now also folds in fallback entries whose source string isn't in the
+extracted `staticSource` at all — see the function), so an entry here is picked up by BOTH
+`tx()` (for `StaticText`) and the DOM observer (for raw `{error}`/`{notice}` text and
+translated attributes like `placeholder`/`aria-label`).
+- **Convention for a new user-facing string:** write the literal in **Azerbaijani** (the
+  source/default locale — it renders correctly in AZ with no entry), then add
+  `"<az source>": "<english>"` to `staticFallbackTranslations.en`. That covers both directions.
+- This is how error/feedback messages (`setError("…AZ…")` rendered as raw `{error}`),
+  placeholders, and new aria-labels are localized — none go through the hash pipeline.
+- **Cannot be translated this way** (not in the DOM at toggle time): `window.confirm()` /
+  `window.alert()` dialog strings (write them in AZ — correct for the launch audience) and
+  **dynamic template-literal strings** (`` `${n} added.` ``) — those need a params-based
+  helper and are deliberately left English for now (flagged in §14/§15).
+- **Note on files:** `lib/i18n.js` is **CRLF** — a scripted multi-line insert must match
+  `marker + "\r\n"`, or `String.replace` silently no-ops (a bug hit + fixed during this work).
+
 ### 6c. API message localization
 `apiFetch` runs backend `message`/`error`/`detail`/`title` fields through
 `localizeApiResponse` / `translateApiMessage` (`lib/i18n.js`), which map backend message
@@ -360,18 +390,31 @@ backend contract.
 `normalizeRole`, `getUserRoles`, `getPrimaryRole`, `hasAllowedRole`, `routeRoles`).
 `middleware.js` and the client guards both consume it — keep it the single source.
 
-**⚠️ Watch-item — possible refresh-token double-rotation.** While manually debugging in the
-browser (calling `POST /auth/refresh` directly, outside the app's own `apiFetch`/`AuthProvider`
-flow, in quick succession with the app's own startup refresh), a session got logged out: the
-backend's refresh-token rotation + reuse detection revoked the whole token family, because two
-refreshes raced on the same pre-rotation token. This was **not reproduced through normal app
-usage** (`apiFetch`'s single shared `refreshPromise` — see §5 — already dedupes concurrent
-refreshes within one tab), so it is not a confirmed bug, just a plausible mechanism if a
-future report surfaces as "random logouts" — for example, two tabs/windows both hitting a 401
-at nearly the same instant, each running its own `refreshPromise` (the dedupe is per-tab, not
-cross-tab). If that's ever reported, start by checking whether it correlates with multiple
-open tabs, and check the backend's `refresh_tokens` table for a family with many rows all
-`revoked_at` set close together (the reuse-detection signature) around the report time.
+**Refresh-token double-rotation — cross-tab guard (IMPLEMENTED 2026-07-23).** Mechanism (confirmed
+against the live backend): `apiFetch`'s single shared `refreshPromise` (§5) dedupes concurrent
+refreshes **within one tab**, but not across tabs. Two tabs both hitting a 401 near-simultaneously
+each POST `/auth/refresh` with the same pre-rotation refresh token; the backend rotates on the first
+and flags the second as **"Refresh token reuse detected"** (401) → revokes the whole token family →
+both tabs get logged out on their next request. It was only ever triggered by manual out-of-band
+`/auth/refresh` calls during debugging, never through normal app usage.
+
+**The guard** (`stores/authStore.js` + `lib/api.js`), additive and behaviour-preserving:
+- `setAuthState` mirrors the access token to a `localStorage` signal key (`eduall.accessToken`);
+  writing it fires a `storage` event in **other** tabs.
+- `AuthProvider` listens for that `storage` event and **adopts** a sibling's freshly-rotated access
+  token into memory (`adoptAccessTokenFromOtherTab`) instead of running its own refresh — so a
+  staggered second tab never races. It also mirrors a cross-tab logout (a `refreshToken` removal in
+  one tab clears auth in the others).
+- `refreshAccessToken` **recovers** from a lost race: if its refresh fails but the shared signal now
+  holds a **different** access token (a sibling rotated during our attempt), it adopts that token
+  instead of calling `clearAuthState()` — turning a "reuse detected" logout into a silent recovery.
+
+**Limitation:** the truly-simultaneous same-tick race (both tabs POST before either writes the signal)
+is *narrowed*, not eliminated — deliberately **no cross-tab lock** was added (a stale/held lock after
+a tab crash is a worse failure mode than a rare logout). Still **not reproduced through normal usage**.
+If "random logouts" are ever reported, check whether they correlate with multiple open tabs, and look
+in the backend's `refresh_tokens` table for a family with many rows all `revoked_at` set close together
+(the reuse-detection signature) around the report time.
 
 ---
 
@@ -387,8 +430,15 @@ open tabs, and check the backend's `refresh_tokens` table for a family with many
   - **`AdminPagination`** (`components/admin/AdminPagination.jsx`) — the standard pager
     footer. Props: `meta` + `onPageChange(nextPage)` (already-clamped page). Use it for
     any new list page with the standard footer.
-  - **`AdminStatusBadge`**, **`AdminRowActions`** (kebab dropdown), **`AdminRefreshButton`**,
-    **`AdminSearchSelect`**, **`AdminGradeSelect`**, **`AdminRichTextEditor`** — reuse these.
+  - **`AdminStatusBadge`**, **`AdminRowActions`** (kebab dropdown — keyboard-operable: Esc
+    closes + returns focus, `role="menu"`), **`AdminRefreshButton`**, **`AdminSearchSelect`**,
+    **`AdminGradeSelect`**, **`AdminRichTextEditor`** — reuse these.
+  - **`AdminTableSkeleton`** (`columns` + optional `rows`) — the loading placeholder for a list
+    table; renders shimmer rows matching the column count (shimmer in `globals.scss`,
+    prefers-reduced-motion aware). Use it in the `isLoading` branch of a table `<tbody>`.
+  - **`AdminEmptyState`** (`columns`, `icon`, optional `action={{href,label}}`, message as
+    children) — the empty-table placeholder (muted Phosphor icon + message + optional action
+    link, wired ONLY where a navigable create action already exists). Use it in the no-rows branch.
   - `AdminPlaceholderPage` — for not-yet-built sections.
 - **Known remaining duplication (intentionally left):**
   - The page **header block** (`h4` title + `p` subtitle + right-aligned actions) repeats
@@ -418,7 +468,7 @@ open tabs, and check the backend's `refresh_tokens` table for a family with many
 5. **Client role checks are cosmetic**; never rely on them for security. `middleware.js`
    + the backend are the enforcement.
 6. **`meta.page` is 1-based in the UI, 0-based to the backend.** Convert only in `api.js`.
-7. **Keep the production build green** (`npm run build`, 49 routes). Verify after any change.
+7. **Keep the production build green** (`npm run build`, 50 routes). Verify after any change.
 8. Prefer reusing the admin primitives (§8) over re-implementing pagers/badges/dropdowns.
 
 ---
@@ -427,7 +477,7 @@ open tabs, and check the backend's `refresh_tokens` table for a family with many
 
 The app has **no automated test suite**, so verification is manual:
 
-1. `npm run build` must be green with the **same 49 routes / 62 route entries** as before
+1. `npm run build` must be green with the **same 50 routes** as before
    (compare the route table; static vs dynamic markers unchanged).
 2. Run `npm run dev` and walk the major flows: sign-in → dashboard per role; a student
    taking an exam (`/exam/[code]` → session → result); the parent dashboard
@@ -456,6 +506,100 @@ The app has **no automated test suite**, so verification is manual:
 
 ## 12. Change log (keep append-only; newest first)
 
+- **UX polish — Batch 5: placeholder localization + keyboard focus ring (2026-07-23).** No layout change; build +
+  i18n audit green (50 routes, 182 files). **(1) Placeholders:** localized 26 mixed-English input placeholders across
+  15 components to Azerbaijani source form (+ EN fallback entries in `staticFallbackTranslations`, since placeholders
+  are translated by the i18n observer) — e.g. `Search name or email…`, `Organization name`, `Optional note`,
+  `All`/`Code`/`Count`/`Grade`. A scripted `placeholder=`-only replace (never touches `StaticText`); format hints
+  (`MONTHLY`, `UUID`, the zero-UUID example) intentionally left. **(2) Focus ring:** several custom-classed controls
+  (the pager, the row-action kebab trigger + its menu items, the refresh button) are not Bootstrap `.btn`s and had no
+  visible `:focus-visible` state, so keyboard users lost focus. Added one consistent **keyboard-only** accent ring
+  (`outline: 2px solid var(--main-600)`; `:focus-visible` so mouse clicks are unaffected) in `globals.scss`, hooked
+  via stable classes `.admin-pager` / `.admin-refresh-btn` (added to those two shared components — chosen over the
+  i18n-translated `aria-label` as a stable selector) + the `aria-haspopup="menu"` trigger + `role="menu"` items.
+  Verified in-browser: the search placeholder shows AZ and toggles to EN; the focus rule resolves to the accent
+  (`--main-600` = `hsl(145,52%,38%)`) on the pager/refresh/row-action controls.
+- **UX polish — Batch 3: empty states (2026-07-23).** No layout change; build + i18n audit green (50 routes,
+  182 source files). Replaced the bare gray "No X found." colspan cell in **18 admin list tables** with a reusable
+  `AdminEmptyState` (`components/admin/AdminEmptyState.jsx`): a centered muted Phosphor icon (contextual per page —
+  `ph-users`, `ph-books`, `ph-question`, `ph-flag`, `ph-credit-card`, …), the **existing** message passed as
+  children so its translation key is preserved verbatim, and an **optional action link** — wired ONLY on the four
+  pages that already have a navigable create action (Users → Create User, Subjects → Create Subject, Questions →
+  Create Question, Exams → Create Exam, each reusing the page's existing keyed label + `/new` href). Read-only /
+  populated-elsewhere pages (audit, reports, attempts, payments, subscriptions, results, …) get icon+message only.
+  All existing utility classes/tokens (`bg-neutral-30`, `flex-center`, `w-56`, `text-2xl`) — no new styles, no
+  invented icons (all Phosphor names already in use). Verified in-browser: the Users empty state (nonsense search)
+  shows the `ph-users` icon + "İstifadəçi tapılmadı." + a "İstifadəçi yaradın" → `/admin/users/new` link, all
+  localized and toggling to EN ("No users found." / "Create User"); the Reports empty state (DISMISSED filter)
+  correctly shows icon+message with no action.
+- **UX polish — Batch 2: loading skeletons (2026-07-23).** No layout change; build + i18n audit green (50 routes,
+  181 source files). Replaced the single "Yüklənir…" text row in **19 admin list tables** with a reusable
+  `AdminTableSkeleton` (`components/admin/AdminTableSkeleton.jsx`) that renders shimmer rows matching each table's
+  column count, so the layout no longer jumps when data arrives (the app had **zero** skeletons/spinners before).
+  The shimmer lives in `app/globals.scss` (`.skeleton` / `@keyframes skeleton-shimmer`, ~1.4s, built from the
+  template `--neutral-30`/`--neutral-40` tokens) and **respects `prefers-reduced-motion`** (drops to a flat tint).
+  Accessibility: the shimmer rows are `aria-hidden`; a single visually-hidden `role="status" aria-live="polite"`
+  row announces loading to assistive tech. Verified in-browser: 25 skeleton cells (5×5) flash on the users-page
+  load then get replaced by data; computed style confirms the gradient + `skeleton-shimmer` animation + neutral
+  token; the reduced-motion rule is present. **Scope:** tables only — ~20 single-record **detail/form** pages still
+  use a `<p>Loading…</p>` (a table skeleton doesn't fit them; a card skeleton is a possible later follow-up).
+- **UX polish — Batch 4: accessibility in shared primitives (2026-07-23).** No visual redesign; build + i18n
+  audit green (50 routes). One change set in the shared list-page primitives, so the fix propagates across every
+  admin list (~15+ pages). **`AdminPagination`:** wrapped in a labelled `<nav aria-label>`; the page counter is
+  now an `aria-live="polite"` region (screen readers announce page changes); disabled Prev/Next get a visible
+  dimmed state (inline `opacity:0.5` + `cursor` — there is no opacity utility in the template, so it is scoped
+  inline, no global style added). **`AdminRowActions`:** the kebab menu is now keyboard-operable — **Esc closes +
+  returns focus to the trigger**, `aria-haspopup="menu"` on the trigger, `role="menu"`/`role="menuitem"` on the
+  list, decorative icons `aria-hidden`. **`AdminRefreshButton`:** default label now renders through `StaticText`
+  (was a raw English prop default that never translated → now "Yeniləyin"/"Refresh"), plus `aria-label` +
+  `aria-busy` and `aria-hidden` on the spinner icon. **Search inputs** (3) gained localized `aria-label`s (a
+  placeholder is not a reliable accessible name) and their decorative magnifier icons are `aria-hidden`. New AZ
+  a11y strings got matching EN entries in `staticFallbackTranslations` (aria-labels are translated by the i18n
+  observer). Verified in-browser: pagination nav/live-region/dimmed-disabled present; row menu opens with roles,
+  Esc closes + focus returns; aria-labels translate on the EN toggle.
+- **UX polish — Batch 1: error &amp; feedback localization (2026-07-23).** No layout/logic/redesign change;
+  build + i18n audit green (50 routes, 3526 locale entries). Fixed a consistency defect where ~126 user-facing
+  error, validation, success/notice, and confirmation strings were hard-coded **English** and rendered as raw
+  `{error}`/`{notice}` text (bypassing `StaticText`), so the AZ-default app showed English on every failure/action.
+  Converted each literal to its Azerbaijani source form (matching the existing auth-component convention — the
+  runtime DOM i18n walker, §6b, translates raw `{error}` text by exact match) and added matching **EN fallback
+  entries** to `staticFallbackTranslations.en` in `lib/i18n.js` so the EN toggle still works. Verified in-browser:
+  a raw AZ error node toggles to English via the live i18n map. Scope: `setError`/`setNotice`/`setCopyStatus`/
+  `successMessage`/`confirmation`/`window.confirm` static strings across ~24 admin components (native `window.confirm`
+  strings become AZ-only — the DOM walker can't reach a browser dialog, which is correct for the launch audience).
+  **Known follow-up:** a few *dynamic* success strings built with template literals (e.g. `` `${n} assignment(s) added.` ``,
+  `` `Template loaded: ${name}` ``) were left English — they interpolate values and need a params-based i18n helper,
+  out of scope for a string-swap pass.
+- **Remaining-issues fix pass (2026-07-23).** Three §14 items resolved, each verified end-to-end
+  against the live backend + DB in-browser (both locales); production build green (50 routes — the
+  new `/payment/return`) + `i18n:audit` green. No redesign, no business-logic change.
+  - **Payment checkout 404 → new `/payment/return` page.** Checkout's `redirectUrl`
+    (`.../payment/return?ref=mock_<paymentId>`) previously hit a non-existent route. Added
+    `app/payment/return/page.jsx` (thin, `Suspense`) → `components/PaymentReturnInner.jsx`: reads the
+    provider's `ref`/`status`, shows **verifying → active / pending / failed**. An authenticated user's
+    page polls `fetchMySubscriptions` and flips to "active" when a subscription goes ACTIVE; because the
+    mock provider activates only via a **separate signed webhook** (never the redirect), a returning
+    user honestly sees "processing" until/unless that webhook fires — no false "success". Public
+    (checkout is reachable from `/pricing-plan`); "Back to subscriptions" points at `/admin/subscriptions`
+    when signed in, else `/pricing-plan`. Verified all four states + the real backend checkout contract +
+    a webhook-activated "active" render.
+  - **One-shot exam "already completed" UX.** `ExamTakePage.start()` now inspects the session returned by
+    `startExamByCode`: a terminal status (SUBMITTED/EXPIRED/ABANDONED — a resumed finished one-shot) shows a
+    clear "you have already completed this exam / view results" banner and swaps the "Start exam" button
+    for "View results", instead of silently opening the read-only runner. `ExamSessionPage` likewise shows a
+    completed/expired banner + a result link when the session isn't IN_PROGRESS (replacing the bare
+    "Status: SUBMITTED"). Behaviour/data unchanged (backend still resumes the session) — messaging only.
+    Verified end-to-end (start completed one-shot → banner → View results → read-only runner → scored result).
+  - **Refresh-token double-rotation → cross-tab guard.** Implemented the §7 guard (confirmed the
+    reuse-detection mechanism against the live backend first). `authStore` mirrors the access token to a
+    `localStorage` signal; `AuthProvider` adopts a sibling tab's rotated token via a `storage` event
+    (and mirrors cross-tab logout); `refreshAccessToken` recovers a lost race by adopting the sibling's
+    token instead of clearing auth. Additive, behaviour-preserving; normal single-tab auth + the
+    401→refresh→retry path re-verified. Full detail + the deliberate no-lock limitation in §7.
+  - **i18n note:** new az `StaticText` strings were given English via `staticFallbackTranslations` in
+    `lib/i18n.js`; `getStaticTextTranslations` was generalized to also fold in fallback entries whose
+    source string isn't in the extracted `staticSource` pipeline (previously such entries were silently
+    ignored) — no effect on any existing key. Verified the header/footer translations still resolve.
 - **Project handoff.** Documentation-only finalization: reworked this file into a whole-project
   entry point — added **§0 Project Overview** (product / architecture / backend summary / database
   summary / development progress) so a brand-new session understands the system without prior
@@ -667,10 +811,11 @@ Open items that still require work. None block the verified flows.
 
 | Issue | Why it remains | Priority | Needs product decision? |
 |---|---|---|---|
-| **Payment checkout leads to a 404.** Clicking "Ödənişə keç" redirects to the backend's `return-url` default `http://localhost:3000/payment/return`, a route that does not exist. | This is the **mock** payment provider. Real payment (Payriff) is **vendor-blocked** per backend CLAUDE.md §26. The return URL is a placeholder. | Medium | **Yes** — either hide checkout until real payments land, or add a `/payment/return` page. A real provider changes the return contract, so building the page now may be wasted. |
-| **One-shot exam "already completed" UX.** Starting an already-completed one-shot exam silently lands the student on the **read-only submitted session** instead of a clear "you already completed this — here's your result." | Behaviour and data are **correct** (the backend resumes the existing one-shot session). Only the messaging is unpolished. | Low | No (small UX copy/redirect), but confirm the desired message. |
-| **Refresh-token double-rotation (watch-item).** Documented in §7. A cross-tab race could theoretically log a user out (per-tab refresh dedupe, not cross-tab). | **Not reproduced through normal usage** — only triggered by manual out-of-band `/auth/refresh` calls during debugging. | Low (watch-only) | No — only investigate if "random logouts" are reported. |
 | **No automated frontend test suite.** Verification is manual (§10). | Out of scope for this review; ESLint is also not configured (`npm run lint` prompts interactive setup). | Low | Partially — deciding on a test stack is a project call. |
+
+*(The payment-checkout 404, the one-shot-exam "already completed" UX, and the refresh-token
+double-rotation watch-item were all resolved on 2026-07-23 — see the change log §12; the refresh-token
+cross-tab guard is documented in §7.)*
 
 ---
 
@@ -679,6 +824,15 @@ Open items that still require work. None block the verified flows.
 Non-essential suggestions for future consideration. **Do not implement these as part of a review
 or refactor pass unless explicitly asked.**
 
+- **Params-based i18n for dynamic strings.** A handful of user-facing strings are built with
+  template literals (e.g. `` `${n} assignment(s) added.` ``, `` `Template loaded: ${name}` ``, the
+  `` `${label} is required.` `` validation helpers in `OrganizationInvitesPage`) and remain English —
+  they interpolate values, so the source-string DOM-translation path (§6b-bis) can't reach them.
+  A small `t(key, params)`-style helper (the key-based `t()` already exists, §6a) would localize them.
+- **Card/detail-page skeletons.** The 2026-07-23 skeleton pass (`AdminTableSkeleton`) covered list
+  **tables** only; ~20 single-record **detail/form** pages still show a plain `<p>Loading…</p>`
+  (`AdminExamDetailPage`, `AccountProfilePage`, form pages, `ParentProgressPage`'s trend cards, …).
+  A small card-shaped skeleton could cover those for consistency — a table skeleton doesn't fit them.
 - **Shared `useAdminList` hook.** Would remove the remaining list-page state-machine duplication
   (~35 files) and centrally fix a latent **race condition** (rapid filter changes fire
   overlapping fetches with no out-of-order guard — low severity, unobservable on a local

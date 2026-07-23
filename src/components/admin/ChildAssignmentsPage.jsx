@@ -11,6 +11,8 @@ import {
 } from "@/lib/api";
 import { formatDateTime as formatDate } from "@/lib/format";
 import StaticText from "@/components/StaticText";
+import AdminEmptyState from "@/components/admin/AdminEmptyState";
+import AdminTableSkeleton from "@/components/admin/AdminTableSkeleton";
 
 
 const ChildAssignmentsPage = () => {
@@ -32,7 +34,7 @@ const ChildAssignmentsPage = () => {
       setExams(examResponse);
       setInvitations(invitationResponse);
     } catch (requestError) {
-      setError(requestError?.message || "Assignments could not be loaded.");
+      setError(requestError?.message || "Təyinatlar yüklənmədi.");
     } finally {
       setIsLoading(false);
     }
@@ -50,7 +52,7 @@ const ChildAssignmentsPage = () => {
       setNotice(result?.approved ? "Invitation approved." : "Invitation rejected.");
       await load();
     } catch (requestError) {
-      setError(requestError?.message || "Invitation could not be updated.");
+      setError(requestError?.message || "Dəvət yenilənmədi.");
     }
   };
 
@@ -62,7 +64,7 @@ const ChildAssignmentsPage = () => {
       setPreview(response);
     } catch (requestError) {
       setPreview(null);
-      setError(requestError?.message || "Preview could not be loaded.");
+      setError(requestError?.message || "Önizləmə yüklənmədi.");
     }
   };
 
@@ -115,7 +117,7 @@ const ChildAssignmentsPage = () => {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'><StaticText text={"Loading..."} /></td></tr>
+                <AdminTableSkeleton columns={6} />
               ) : exams.length ? (
                 exams.map((exam) => (
                   <tr key={exam.examId || exam.examCode}>
@@ -137,7 +139,7 @@ const ChildAssignmentsPage = () => {
                   </tr>
                 ))
               ) : (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'><StaticText text={"No assigned exams found."} /></td></tr>
+                <AdminEmptyState columns={6} icon='ph ph-clipboard'><StaticText text={"No assigned exams found."} /></AdminEmptyState>
               )}
             </tbody>
           </table>

@@ -15,6 +15,7 @@ import {
 } from "@/lib/api";
 import { formatDateTime as formatDate } from "@/lib/format";
 import StaticText from "@/components/StaticText";
+import AdminEmptyState from "@/components/admin/AdminEmptyState";
 
 
 const getExamCode = (exam) => exam?.examCode || exam?.shareToken || exam?.code || "";
@@ -47,7 +48,7 @@ const AdminExamDetailPage = ({ examId }) => {
     try {
       setExam(await fetchExam(examId));
     } catch (requestError) {
-      setError(requestError?.message || "Exam could not be loaded.");
+      setError(requestError?.message || "İmtahan yüklənmədi.");
     } finally {
       setIsLoading(false);
     }
@@ -62,9 +63,9 @@ const AdminExamDetailPage = ({ examId }) => {
     if (!examLink) return;
     try {
       await navigator.clipboard.writeText(examLink);
-      setCopyStatus("Copied");
+      setCopyStatus("Kopyalandı");
     } catch {
-      setCopyStatus("Select the link and copy manually");
+      setCopyStatus("Linki seçib əl ilə kopyalayın");
     }
   };
 
@@ -83,7 +84,7 @@ const AdminExamDetailPage = ({ examId }) => {
       }
       setNotice(successMessage);
     } catch (requestError) {
-      setError(requestError?.message || "Exam action failed.");
+      setError(requestError?.message || "İmtahan əməliyyatı alınmadı.");
     } finally {
       setIsActing(false);
     }
@@ -92,15 +93,15 @@ const AdminExamDetailPage = ({ examId }) => {
   const changeArchiveState = () =>
     runAction({
       action: () => (exam?.status === "ARCHIVED" ? unarchiveExam(examId) : archiveExam(examId)),
-      successMessage: exam?.status === "ARCHIVED" ? "Exam restored." : "Exam archived.",
+      successMessage: exam?.status === "ARCHIVED" ? "İmtahan bərpa edildi." : "İmtahan arxivləşdirildi.",
       confirmation:
         exam?.status === "ARCHIVED"
-          ? "Restore this exam and allow learners to access it again?"
-          : "Archive this exam? Learners will no longer be able to preview or start it.",
+          ? "Bu imtahanı bərpa edib şagirdlərə yenidən giriş icazəsi verək?"
+          : "Bu imtahanı arxivləşdirək? Şagirdlər artıq onu önizləyə və ya başlada bilməyəcək.",
     });
 
   const removeExam = async () => {
-    if (!window.confirm("Permanently delete this exam? This only succeeds when it has no attempts.")) return;
+    if (!window.confirm("Bu imtahanı həmişəlik silək? Bu, yalnız cəhdləri olmadıqda mümkündür.")) return;
     setIsActing(true);
     setError("");
     try {
@@ -108,7 +109,7 @@ const AdminExamDetailPage = ({ examId }) => {
       router.replace("/admin/exams");
       router.refresh();
     } catch (requestError) {
-      setError(requestError?.message || "Exam could not be deleted. Archive exams that already have attempts.");
+      setError(requestError?.message || "İmtahan silinmədi. Artıq cəhdləri olan imtahanları arxivləşdirin.");
       setIsActing(false);
     }
   };
@@ -117,7 +118,7 @@ const AdminExamDetailPage = ({ examId }) => {
     event.preventDefault();
     const userIds = [...new Set(assignmentInput.split(/[\s,;]+/).map((value) => value.trim()).filter(Boolean))];
     if (!userIds.length) {
-      setError("Enter at least one user ID.");
+      setError("Ən azı bir istifadəçi ID-si daxil edin.");
       return;
     }
 
@@ -131,8 +132,8 @@ const AdminExamDetailPage = ({ examId }) => {
   const revokeAssignment = (userId) =>
     runAction({
       action: () => revokeExamAssignment(examId, userId),
-      successMessage: "Assignment revoked.",
-      confirmation: "Remove this learner from the assignment list?",
+      successMessage: "Təyinat ləğv edildi.",
+      confirmation: "Bu şagirdi təyinat siyahısından çıxaraq?",
     });
 
   return (
@@ -208,7 +209,7 @@ const AdminExamDetailPage = ({ examId }) => {
               <form className='d-flex flex-wrap align-items-center gap-10 mb-16' onSubmit={addAssignments}>
                 <input
                   className='common-input rounded-pill flex-grow-1 min-w-240-px'
-                  placeholder='Paste user IDs separated by commas or spaces'
+                  placeholder='İstifadəçi ID-lərini vergül və ya boşluqla ayıraraq daxil edin'
                   value={assignmentInput}
                   onChange={(event) => setAssignmentInput(event.target.value)}
                 />
@@ -264,7 +265,7 @@ const AdminExamDetailPage = ({ examId }) => {
                       </tr>
                     ))
                   ) : (
-                    <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'><StaticText text={"No sections found."} /></td></tr>
+                    <AdminEmptyState columns={6} icon='ph ph-squares-four'><StaticText text={"No sections found."} /></AdminEmptyState>
                   )}
                 </tbody>
               </table>

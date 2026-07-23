@@ -9,6 +9,8 @@ import AdminPagination from "@/components/admin/AdminPagination";
 import { dismissAdminReport, fetchAdminReports, resolveAdminReport } from "@/lib/api";
 import { questionHtmlToText } from "@/lib/questionContent";
 import StaticText from "@/components/StaticText";
+import AdminEmptyState from "@/components/admin/AdminEmptyState";
+import AdminTableSkeleton from "@/components/admin/AdminTableSkeleton";
 import StaticOption from "@/components/StaticOption";
 
 const truncate = (value, maxLength = 80) =>
@@ -32,7 +34,7 @@ const AdminReportsPage = () => {
       setReports(response.data || []);
       setMeta(response.meta || { page, perPage: 10, total: 0, totalPages: 1 });
     } catch {
-      setError("Reports could not be loaded.");
+      setError("Şikayətlər yüklənmədi.");
       setReports([]);
     } finally {
       setIsLoading(false);
@@ -55,7 +57,7 @@ const AdminReportsPage = () => {
       }
       await loadReports({ page: meta.page });
     } catch {
-      setError("Report action failed.");
+      setError("Şikayət əməliyyatı alınmadı.");
     }
   };
 
@@ -103,7 +105,7 @@ const AdminReportsPage = () => {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='5'><StaticText text={"Loading..."} /></td></tr>
+                <AdminTableSkeleton columns={5} />
               ) : reports.length ? (
                 reports.map((report) => (
                   <tr key={report.id}>
@@ -123,7 +125,7 @@ const AdminReportsPage = () => {
                   </tr>
                 ))
               ) : (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='5'><StaticText text={"No reports found."} /></td></tr>
+                <AdminEmptyState columns={5} icon='ph ph-flag'><StaticText text={"No reports found."} /></AdminEmptyState>
               )}
             </tbody>
           </table>

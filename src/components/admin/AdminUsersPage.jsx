@@ -8,6 +8,8 @@ import AdminStatusBadge from "@/components/admin/AdminStatusBadge";
 import AdminPagination from "@/components/admin/AdminPagination";
 import { deleteUser, fetchUsers, restoreUser } from "@/lib/api";
 import StaticText from "@/components/StaticText";
+import AdminTableSkeleton from "@/components/admin/AdminTableSkeleton";
+import AdminEmptyState from "@/components/admin/AdminEmptyState";
 import StaticOption from "@/components/StaticOption";
 
 
@@ -34,7 +36,7 @@ const AdminUsersPage = () => {
       setUsers(response.data || []);
       setMeta(response.meta || { page, perPage: 10, total: 0, totalPages: 1 });
     } catch {
-      setError("Users could not be loaded.");
+      setError("İstifadəçilər yüklənmədi.");
       setUsers([]);
     } finally {
       setIsLoading(false);
@@ -55,7 +57,7 @@ const AdminUsersPage = () => {
       await action(user.id);
       await loadUsers({ page: meta.page });
     } catch {
-      setError("User action failed.");
+      setError("İstifadəçi əməliyyatı alınmadı.");
     }
   };
 
@@ -85,8 +87,8 @@ const AdminUsersPage = () => {
 
         <div className='d-flex flex-wrap align-items-center gap-12 mb-24'>
           <div className='position-relative flex-grow-1 min-w-240-px'>
-            <input type='search' className='common-input rounded-pill ps-16 pe-44' placeholder='Search name or email...' value={searchInput} onChange={(event) => setSearchInput(event.target.value)} />
-            <span className='position-absolute top-50 translate-middle-y inset-inline-end-0 me-16 text-neutral-400'><i className='ph ph-magnifying-glass'></i></span>
+            <input type='search' className='common-input rounded-pill ps-16 pe-44' aria-label='Ad və ya email üzrə axtar' placeholder='Ad və ya email üzrə axtar...' value={searchInput} onChange={(event) => setSearchInput(event.target.value)} />
+            <span className='position-absolute top-50 translate-middle-y inset-inline-end-0 me-16 text-neutral-400'><i className='ph ph-magnifying-glass' aria-hidden='true'></i></span>
           </div>
           <select className='form-select rounded-pill border-neutral-40 text-14 py-11 px-16 w-auto min-w-180-px' value={roleFilter} onChange={(event) => setRoleFilter(event.target.value)}>
             <StaticOption value='' text={"All roles"} />
@@ -113,7 +115,7 @@ const AdminUsersPage = () => {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='5'><StaticText text={"Loading..."} /></td></tr>
+                <AdminTableSkeleton columns={5} />
               ) : users.length ? (
                 users.map((user) => (
                   <tr key={user.id}>
@@ -125,7 +127,9 @@ const AdminUsersPage = () => {
                   </tr>
                 ))
               ) : (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='5'><StaticText text={"No users found."} /></td></tr>
+                <AdminEmptyState columns={5} icon='ph ph-users' action={{ href: "/admin/users/new", label: <StaticText text={"Create User"} /> }}>
+                  <StaticText text={"No users found."} />
+                </AdminEmptyState>
               )}
             </tbody>
           </table>

@@ -13,6 +13,8 @@ import {
 } from "@/lib/api";
 import { formatDateTime as formatDate } from "@/lib/format";
 import StaticText from "@/components/StaticText";
+import AdminTableSkeleton from "@/components/admin/AdminTableSkeleton";
+import AdminEmptyState from "@/components/admin/AdminEmptyState";
 import StaticOption from "@/components/StaticOption";
 
 
@@ -67,7 +69,7 @@ const AdminSubscriptionPlansPage = () => {
       } catch (requestError) {
         setPlans([]);
         setMeta({ ...defaultMeta, page });
-        setError(requestError?.message || "Subscription plans could not be loaded.");
+        setError(requestError?.message || "Abunəlik planları yüklənmədi.");
       } finally {
         setIsLoading(false);
       }
@@ -119,7 +121,7 @@ const AdminSubscriptionPlansPage = () => {
       });
       setIsFormOpen(true);
     } catch (requestError) {
-      setError(requestError?.message || "Plan details could not be loaded.");
+      setError(requestError?.message || "Planın təfərrüatı yüklənmədi.");
     } finally {
       setActionId("");
     }
@@ -143,17 +145,17 @@ const AdminSubscriptionPlansPage = () => {
     };
 
     if (!payload.nameAz || !Number.isFinite(payload.priceAmount) || payload.priceAmount < 0) {
-      setError("Enter a valid name and non-negative price.");
+      setError("Düzgün ad və mənfi olmayan qiymət daxil edin.");
       return;
     }
 
     if (!Number.isInteger(payload.periodDays) || payload.periodDays < 1 || payload.periodDays > 3660) {
-      setError("Period must be between 1 and 3660 days.");
+      setError("Müddət 1 ilə 3660 gün arasında olmalıdır.");
       return;
     }
 
     if (payload.currency.length !== 3) {
-      setError("Currency must be a three-letter code.");
+      setError("Valyuta üç hərfli kod olmalıdır.");
       return;
     }
 
@@ -162,21 +164,21 @@ const AdminSubscriptionPlansPage = () => {
     try {
       if (editingId != null) {
         await updateAdminPlan(editingId, payload);
-        setNotice("Subscription plan updated.");
+        setNotice("Abunəlik planı yeniləndi.");
       } else {
         const code = form.code.trim().toUpperCase();
         if (!/^[A-Z0-9_]+$/.test(code)) {
-          setError("Code may contain only letters, numbers and underscores.");
+          setError("Kod yalnız hərf, rəqəm və alt xəttdən ibarət ola bilər.");
           return;
         }
         await createAdminPlan({ ...payload, code });
-        setNotice("Subscription plan created.");
+        setNotice("Abunəlik planı yaradıldı.");
       }
 
       closeForm();
       await loadPlans(editingId != null ? meta.page : 1);
     } catch (requestError) {
-      setError(requestError?.message || "Subscription plan could not be saved.");
+      setError(requestError?.message || "Abunəlik planı yadda saxlanılmadı.");
     } finally {
       setIsSaving(false);
     }
@@ -194,14 +196,14 @@ const AdminSubscriptionPlansPage = () => {
     try {
       if (plan.active) {
         await deactivateAdminPlan(plan.id);
-        setNotice("Subscription plan deactivated.");
+        setNotice("Abunəlik planı deaktiv edildi.");
       } else {
         await activateAdminPlan(plan.id);
-        setNotice("Subscription plan activated.");
+        setNotice("Abunəlik planı aktivləşdirildi.");
       }
       await loadPlans(meta.page);
     } catch (requestError) {
-      setError(requestError?.message || "Plan status could not be changed.");
+      setError(requestError?.message || "Planın statusu dəyişdirilmədi.");
     } finally {
       setActionId("");
     }
@@ -255,7 +257,7 @@ const AdminSubscriptionPlansPage = () => {
                   maxLength='80'
                   required
                   onChange={(event) => updateForm("nameAz", event.target.value)}
-                  placeholder='Monthly plan'
+                  placeholder='Aylıq plan'
                 />
               </div>
               <div className='col-lg-2 col-md-6'>
@@ -321,12 +323,13 @@ const AdminSubscriptionPlansPage = () => {
             <input
               type='search'
               className='common-input rounded-pill ps-16 pe-44'
-              placeholder='Search plan code...'
+              aria-label='Plan kodu üzrə axtar'
+              placeholder='Plan kodu üzrə axtar...'
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
             />
             <span className='position-absolute top-50 translate-middle-y inset-inline-end-0 me-16 text-neutral-400'>
-              <i className='ph ph-magnifying-glass' />
+              <i className='ph ph-magnifying-glass' aria-hidden='true' />
             </span>
           </div>
           <select
@@ -355,9 +358,7 @@ const AdminSubscriptionPlansPage = () => {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr>
-                  <td className='py-20 px-20 text-neutral-400' colSpan='7'><StaticText text={"Loading plans..."} /></td>
-                </tr>
+                <AdminTableSkeleton columns={7} />
               ) : plans.length ? (
                 plans.map((plan) => (
                   <tr key={plan.id}>
@@ -407,9 +408,7 @@ const AdminSubscriptionPlansPage = () => {
                   </tr>
                 ))
               ) : (
-                <tr>
-                  <td className='py-24 px-20 text-neutral-400' colSpan='7'><StaticText text={"No subscription plans found."} /></td>
-                </tr>
+                <AdminEmptyState columns={7} icon='ph ph-credit-card'><StaticText text={"No subscription plans found."} /></AdminEmptyState>
               )}
             </tbody>
           </table>

@@ -10,6 +10,7 @@ import OrganizationSelector, {
 import { fetchOrganizationMembers } from "@/lib/api";
 import { formatDateTime as formatDate } from "@/lib/format";
 import StaticText from "@/components/StaticText";
+import AdminTableSkeleton from "@/components/admin/AdminTableSkeleton";
 
 
 const emptyMeta = {
@@ -56,7 +57,7 @@ const OrganizationMembersPage = () => {
       } catch (requestError) {
         setMembers([]);
         setMeta({ ...emptyMeta, page });
-        setMemberError(requestError?.message || "Organization members could not be loaded.");
+        setMemberError(requestError?.message || "Təşkilat üzvləri yüklənmədi.");
       } finally {
         setIsLoadingMembers(false);
       }
@@ -166,11 +167,7 @@ const OrganizationMembersPage = () => {
                 </thead>
                 <tbody>
                   {isLoadingMembers ? (
-                    <tr>
-                      <td className='py-20 px-20 text-neutral-400' colSpan='4'>
-                        <StaticText text={"Loading members..."} />
-                      </td>
-                    </tr>
+                    <AdminTableSkeleton columns={4} />
                   ) : members.length ? (
                     members.map((member) => (
                       <tr key={member.studentId}>

@@ -104,7 +104,7 @@ const ExamSessionPage = ({ sessionId }) => {
       setQuestionProgress(nextQuestion, ack);
       return ack;
     } catch (requestError) {
-      setError(requestError?.message || "Answer could not be saved.");
+      setError(requestError?.message || "Cavab yadda saxlanılmadı.");
       throw requestError;
     } finally {
       setSavingIds((current) => current.filter((id) => id !== nextQuestion.sessionQuestionId));
@@ -150,7 +150,7 @@ const ExamSessionPage = ({ sessionId }) => {
       setCurrentIndex(0);
       setRemainingMs(msUntil(sessionResponse?.expiresAt));
     } catch (requestError) {
-      setError(requestError?.message || "Exam session could not be loaded.");
+      setError(requestError?.message || "İmtahan sessiyası yüklənmədi.");
     } finally {
       setIsLoading(false);
     }
@@ -183,7 +183,7 @@ const ExamSessionPage = ({ sessionId }) => {
       await submitSession(sessionId);
       router.replace("/admin/quiz-attempts");
     } catch (requestError) {
-      setError(requestError?.message || "Exam could not be submitted.");
+      setError(requestError?.message || "İmtahan təqdim edilmədi.");
       setIsSubmitting(false);
     }
   }, [flushPendingTextAnswer, isSubmitting, router, session, sessionId]);
@@ -263,6 +263,19 @@ const ExamSessionPage = ({ sessionId }) => {
             </button>
           </div>
         </div>
+
+        {!isActive && session?.status && session.status !== "IN_PROGRESS" ? (
+          <div className='alert alert-info d-flex flex-wrap align-items-center justify-content-between gap-12 text-14 py-12 mb-16'>
+            <span>
+              {session.status === "EXPIRED"
+                ? <StaticText text={"Bu imtahanın vaxtı bitib. Cavablarınız avtomatik təqdim edildi."} />
+                : <StaticText text={"Bu imtahanı artıq tamamlamısınız. Bu, cavablarınızın yalnız oxuna bilən görünüşüdür."} />}
+            </span>
+            <button type='button' className='btn btn-main rounded-pill px-20' onClick={() => router.replace(`/sessions/${sessionId}/result`)}>
+              <StaticText text={"Nəticələrə bax"} />
+            </button>
+          </div>
+        ) : null}
 
         {error ? <div className='alert alert-danger text-14 py-10 mb-16'>{error}</div> : null}
         {isSaving ? <p className='text-13 text-neutral-400 mb-12'><StaticText text={"Saving..."} /></p> : null}

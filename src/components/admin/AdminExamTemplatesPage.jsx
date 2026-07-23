@@ -8,6 +8,8 @@ import AdminPagination from "@/components/admin/AdminPagination";
 import { fetchExamTemplates } from "@/lib/api";
 import { formatDateTime as formatDate } from "@/lib/format";
 import StaticText from "@/components/StaticText";
+import AdminEmptyState from "@/components/admin/AdminEmptyState";
+import AdminTableSkeleton from "@/components/admin/AdminTableSkeleton";
 
 
 const countQuestions = (template) =>
@@ -31,7 +33,7 @@ const AdminExamTemplatesPage = () => {
       setTemplates(response.data || []);
       setMeta(response.meta || { page, perPage: 10, total: 0, totalPages: 1 });
     } catch (requestError) {
-      setError(requestError?.message || "Templates could not be loaded.");
+      setError(requestError?.message || "Şablonlar yüklənmədi.");
       setTemplates([]);
     } finally {
       setIsLoading(false);
@@ -77,7 +79,7 @@ const AdminExamTemplatesPage = () => {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'><StaticText text={"Loading..."} /></td></tr>
+                <AdminTableSkeleton columns={6} />
               ) : templates.length ? (
                 templates.map((template) => (
                   <tr key={template.templateId}>
@@ -93,7 +95,7 @@ const AdminExamTemplatesPage = () => {
                   </tr>
                 ))
               ) : (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'><StaticText text={"No templates found."} /></td></tr>
+                <AdminEmptyState columns={6} icon='ph ph-copy'><StaticText text={"No templates found."} /></AdminEmptyState>
               )}
             </tbody>
           </table>

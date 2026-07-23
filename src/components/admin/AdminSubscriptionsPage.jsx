@@ -6,6 +6,8 @@ import AdminStatusBadge from "@/components/admin/AdminStatusBadge";
 import { fetchAdminSubscriptions } from "@/lib/api";
 import { formatDateTime as formatDate } from "@/lib/format";
 import StaticText from "@/components/StaticText";
+import AdminTableSkeleton from "@/components/admin/AdminTableSkeleton";
+import AdminEmptyState from "@/components/admin/AdminEmptyState";
 import StaticOption from "@/components/StaticOption";
 
 
@@ -40,7 +42,7 @@ const AdminSubscriptionsPage = () => {
     } catch (requestError) {
       setSubscriptions([]);
       setMeta({ ...defaultMeta, page });
-      setError(requestError?.message || "Subscriptions could not be loaded.");
+      setError(requestError?.message || "Abunəliklər yüklənmədi.");
     } finally {
       setIsLoading(false);
     }
@@ -114,7 +116,7 @@ const AdminSubscriptionsPage = () => {
               className='common-input rounded-pill'
               value={filters.planId}
               onChange={(event) => setFilters((current) => ({ ...current, planId: event.target.value }))}
-              placeholder='All'
+              placeholder='Hamısı'
             />
           </div>
           <div className='col-xl-3 col-md-8 d-flex gap-8'>
@@ -154,9 +156,7 @@ const AdminSubscriptionsPage = () => {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr>
-                  <td className='py-20 px-20 text-neutral-400' colSpan='7'><StaticText text={"Loading subscriptions..."} /></td>
-                </tr>
+                <AdminTableSkeleton columns={7} />
               ) : subscriptions.length ? (
                 subscriptions.map((subscription) => (
                   <tr key={subscription.id}>
@@ -185,9 +185,7 @@ const AdminSubscriptionsPage = () => {
                   </tr>
                 ))
               ) : (
-                <tr>
-                  <td className='py-24 px-20 text-neutral-400' colSpan='7'><StaticText text={"No subscriptions found."} /></td>
-                </tr>
+                <AdminEmptyState columns={7} icon='ph ph-credit-card'><StaticText text={"No subscriptions found."} /></AdminEmptyState>
               )}
             </tbody>
           </table>

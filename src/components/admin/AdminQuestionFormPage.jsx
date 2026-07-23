@@ -154,7 +154,7 @@ const AdminQuestionFormPage = ({ questionId }) => {
         );
       })
       .catch(() => {
-        if (isMounted) setError("Question could not be loaded.");
+        if (isMounted) setError("Sual yüklənmədi.");
       })
       .finally(() => {
         if (isMounted) setIsLoading(false);

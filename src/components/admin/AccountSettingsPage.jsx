@@ -21,7 +21,7 @@ const AccountSettingsPage = () => {
       setPreferences((await fetchNotificationPreferences()) || { emailEnabled: false, smsEnabled: false });
       setHasLoadedPreferences(true);
     } catch (requestError) {
-      setError(requestError?.message || "Settings could not be loaded.");
+      setError(requestError?.message || "Parametrlər yüklənmədi.");
     } finally {
       setIsLoading(false);
     }
@@ -42,9 +42,9 @@ const AccountSettingsPage = () => {
         smsEnabled: Boolean(preferences.smsEnabled),
       });
       setPreferences(updated || preferences);
-      setNotice("Notification settings updated.");
+      setNotice("Bildiriş parametrləri yeniləndi.");
     } catch (requestError) {
-      setError(requestError?.message || "Settings could not be updated.");
+      setError(requestError?.message || "Parametrlər yenilənmədi.");
     } finally {
       setIsSaving(false);
     }

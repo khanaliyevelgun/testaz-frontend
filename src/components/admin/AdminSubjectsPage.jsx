@@ -8,6 +8,8 @@ import AdminStatusBadge from "@/components/admin/AdminStatusBadge";
 import AdminPagination from "@/components/admin/AdminPagination";
 import { activateSubject, deactivateSubject, fetchSubjects, updateSubject } from "@/lib/api";
 import StaticText from "@/components/StaticText";
+import AdminEmptyState from "@/components/admin/AdminEmptyState";
+import AdminTableSkeleton from "@/components/admin/AdminTableSkeleton";
 import StaticOption from "@/components/StaticOption";
 
 
@@ -29,7 +31,7 @@ const AdminSubjectsPage = () => {
       setSubjects(response.data || []);
       setMeta(response.meta || { page, perPage: 10, total: 0, totalPages: 1 });
     } catch {
-      setError("Subjects could not be loaded.");
+      setError("Fənlər yüklənmədi.");
       setSubjects([]);
     } finally {
       setIsLoading(false);
@@ -48,7 +50,7 @@ const AdminSubjectsPage = () => {
       await updateSubject(subject.id, { nameAz: nameAz.trim(), nameEn: subject.nameEn || nameAz.trim() });
       await loadSubjects(meta.page);
     } catch {
-      setError("Subject could not be updated.");
+      setError("Fənn yenilənmədi.");
     }
   };
 
@@ -57,7 +59,7 @@ const AdminSubjectsPage = () => {
       await (subject.active ? deactivateSubject(subject.id) : activateSubject(subject.id));
       await loadSubjects(meta.page);
     } catch {
-      setError("Subject status could not be updated.");
+      setError("Fənnin statusu yenilənmədi.");
     }
   };
 
@@ -88,7 +90,7 @@ const AdminSubjectsPage = () => {
         </div>
 
         <div className='d-flex flex-wrap align-items-center gap-12 mb-24'>
-          <input className='common-input rounded-pill flex-grow-1 min-w-240-px' placeholder='Search subjects...' value={search} onChange={(event) => setSearch(event.target.value)} />
+          <input className='common-input rounded-pill flex-grow-1 min-w-240-px' placeholder='Fənlər üzrə axtar...' value={search} onChange={(event) => setSearch(event.target.value)} />
           <select className='form-select rounded-pill border-neutral-40 text-14 py-11 px-16 w-auto min-w-160-px' value={active} onChange={(event) => setActive(event.target.value)}>
             <StaticOption value='' text={"All statuses"} />
             <StaticOption value='true' text={"Active"} />
@@ -110,7 +112,7 @@ const AdminSubjectsPage = () => {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='4'><StaticText text={"Loading..."} /></td></tr>
+                <AdminTableSkeleton columns={4} />
               ) : subjects.length ? (
                 subjects.map((subject) => (
                   <tr key={subject.id}>
@@ -121,7 +123,7 @@ const AdminSubjectsPage = () => {
                   </tr>
                 ))
               ) : (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='4'><StaticText text={"No subjects found."} /></td></tr>
+                <AdminEmptyState columns={4} icon='ph ph-books' action={{ href: "/admin/subjects/new", label: <StaticText text={"Create Subject"} /> }}><StaticText text={"No subjects found."} /></AdminEmptyState>
               )}
             </tbody>
           </table>

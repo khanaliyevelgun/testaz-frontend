@@ -4,6 +4,7 @@ import {
   getRefreshToken,
   setTokens,
 } from "@/stores/authStore";
+import { ACCESS_TOKEN_STORAGE_KEY } from "@/stores/authStore";
 import { localizeApiResponse, translateApiMessage } from "@/lib/i18n";
 import { normalizeRole } from "@/lib/authRoles";
 
@@ -100,11 +101,31 @@ export class ApiError extends Error {
   }
 }
 
+// Reads the access token another tab may have just rotated (written to the shared
+// localStorage signal by that tab's setAuthState). Used to recover from a cross-tab
+// refresh race: if a sibling tab already rotated the family, this tab adopts the
+// fresh token instead of logging out on its own "reuse detected" 401.
+const readSiblingAccessToken = () => {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+};
+
 export async function refreshAccessToken() {
   if (!refreshPromise) {
     const refreshToken = getRefreshToken();
+    // The access token this tab holds before refreshing. If, after a failed refresh,
+    // the shared signal shows a DIFFERENT access token, a sibling tab rotated the
+    // family and we should adopt its token rather than log out.
+    const startingAccessToken = getAccessToken();
 
     if (!refreshToken) {
+      // Another tab may have refreshed a moment ago — adopt its token if present.
+      const sibling = readSiblingAccessToken();
+      if (sibling && sibling !== startingAccessToken) return sibling;
       clearAuthState();
       throw new ApiError("Refresh token is missing", 401, null);
     }
@@ -137,6 +158,14 @@ export async function refreshAccessToken() {
         return accessToken;
       })
       .catch((error) => {
+        // Cross-tab race recovery: if our refresh lost to a sibling tab (its rotation
+        // invalidated the token we sent → reuse-detected 401), that tab wrote a fresh
+        // access token to the shared signal that differs from the one we started with.
+        // Adopt it instead of clearing auth (which would log the user out).
+        const sibling = readSiblingAccessToken();
+        if (sibling && sibling !== startingAccessToken) {
+          return sibling;
+        }
         clearAuthState();
         throw error;
       })

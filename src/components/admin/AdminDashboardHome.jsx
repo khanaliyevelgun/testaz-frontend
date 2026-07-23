@@ -446,7 +446,7 @@ const AdminDashboardHome = () => {
       }
     } catch (requestError) {
       setDashboard(emptyDashboard);
-      setError(requestError?.message || "Dashboard data could not be loaded.");
+      setError(requestError?.message || "İdarə paneli məlumatları yüklənmədi.");
     } finally {
       setIsLoading(false);
     }

@@ -8,6 +8,8 @@ import AdminStatusBadge from "@/components/admin/AdminStatusBadge";
 import AdminPagination from "@/components/admin/AdminPagination";
 import { fetchAdminAiJob, fetchAdminAiJobs, fetchSubjects, fetchTopics, generateAdminAiQuestions } from "@/lib/api";
 import StaticText from "@/components/StaticText";
+import AdminEmptyState from "@/components/admin/AdminEmptyState";
+import AdminTableSkeleton from "@/components/admin/AdminTableSkeleton";
 import StaticOption from "@/components/StaticOption";
 
 
@@ -40,7 +42,7 @@ const AdminAiJobsPage = () => {
       setJobs(response.data || []);
       setMeta(response.meta || { page, perPage: 10, total: 0, totalPages: 1 });
     } catch {
-      setError("AI jobs could not be loaded.");
+      setError("AI tapşırıqları yüklənmədi.");
       setJobs([]);
     } finally {
       setIsLoading(false);
@@ -117,7 +119,7 @@ const AdminAiJobsPage = () => {
       await generateAdminAiQuestions(form);
       await loadJobs(1);
     } catch {
-      setError("AI generation job could not be started.");
+      setError("AI generasiya tapşırığı başladıla bilmədi.");
     } finally {
       setIsSubmitting(false);
     }
@@ -131,7 +133,7 @@ const AdminAiJobsPage = () => {
       setSelectedJob(await fetchAdminAiJob(id));
     } catch (requestError) {
       setSelectedJob(null);
-      setError(requestError?.message || "AI job detail could not be loaded.");
+      setError(requestError?.message || "AI tapşırığının təfərrüatı yüklənmədi.");
     } finally {
       setIsDetailLoading(false);
     }
@@ -152,7 +154,7 @@ const AdminAiJobsPage = () => {
           <AdminSearchSelect
             value={form.subjectId}
             selectedLabel={subjectLabel}
-            placeholder='Search subjects...'
+            placeholder='Fənlər üzrə axtar...'
             required
             loadOptions={subjectOptions}
             onChange={setSubject}
@@ -178,7 +180,7 @@ const AdminAiJobsPage = () => {
             <StaticOption value='MULTIPLE_CHOICE' text={"MULTIPLE CHOICE"} />
             <StaticOption value='SHORT_TEXT' text={"SHORT TEXT"} />
           </select>
-          <input name='count' type='number' min='1' max='50' className='common-input rounded-pill min-w-120-px' placeholder='Count' value={form.count} onChange={handleChange} />
+          <input name='count' type='number' min='1' max='50' className='common-input rounded-pill min-w-120-px' placeholder='Say' value={form.count} onChange={handleChange} />
           <button type='submit' className='btn btn-main rounded-pill px-24' disabled={isSubmitting}>
             {isSubmitting ? <StaticText text={"Starting..."} /> : <StaticText text={"Generate"} />}
           </button>
@@ -200,7 +202,7 @@ const AdminAiJobsPage = () => {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'><StaticText text={"Loading..."} /></td></tr>
+                <AdminTableSkeleton columns={6} />
               ) : jobs.length ? (
                 jobs.map((job) => (
                   <tr key={job.id}>
@@ -213,7 +215,7 @@ const AdminAiJobsPage = () => {
                   </tr>
                 ))
               ) : (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'><StaticText text={"No AI jobs found."} /></td></tr>
+                <AdminEmptyState columns={6} icon='ph ph-robot'><StaticText text={"No AI jobs found."} /></AdminEmptyState>
               )}
             </tbody>
           </table>

@@ -6,12 +6,19 @@ import { fetchExamPreview, startExamByCode } from "@/lib/api";
 import StaticText from "@/components/StaticText";
 
 
+// Terminal session statuses: the attempt is over. Starting a completed one-shot exam
+// resumes (returns) the finished session instead of a fresh one, so we detect it and
+// show a clear "already completed" message rather than dropping the student silently
+// into the read-only runner.
+const TERMINAL_SESSION_STATUSES = new Set(["SUBMITTED", "EXPIRED", "ABANDONED"]);
+
 const ExamTakePage = ({ code, sessionBasePath = "/exam-session" }) => {
   const router = useRouter();
   const [preview, setPreview] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isStarting, setIsStarting] = useState(false);
   const [error, setError] = useState("");
+  const [completedSessionId, setCompletedSessionId] = useState("");
 
   useEffect(() => {
     let isMounted = true;
@@ -21,7 +28,7 @@ const ExamTakePage = ({ code, sessionBasePath = "/exam-session" }) => {
         if (isMounted) setPreview(response);
       })
       .catch((requestError) => {
-        if (isMounted) setError(requestError?.message || "Exam preview could not be loaded.");
+        if (isMounted) setError(requestError?.message || "İmtahanın önizləməsi yüklənmədi.");
       })
       .finally(() => {
         if (isMounted) setIsLoading(false);
@@ -39,13 +46,25 @@ const ExamTakePage = ({ code, sessionBasePath = "/exam-session" }) => {
       const session = await startExamByCode(code);
       const sessionId = session?.id || session?.sessionId;
       if (!sessionId) {
-        throw new Error("Exam session id was not returned.");
+        throw new Error("İmtahan sessiyasının ID-si qaytarılmadı.");
+      }
+      // A one-shot exam that the student has already finished resumes the terminal
+      // session rather than starting a new one. Surface that clearly instead of
+      // navigating straight into the read-only runner.
+      if (TERMINAL_SESSION_STATUSES.has(session?.status)) {
+        setCompletedSessionId(sessionId);
+        setIsStarting(false);
+        return;
       }
       router.replace(`${sessionBasePath}/${sessionId}`);
     } catch (requestError) {
-      setError(requestError?.message || "Exam could not be started.");
+      setError(requestError?.message || "İmtahan başladıla bilmədi.");
       setIsStarting(false);
     }
+  };
+
+  const viewCompletedResult = () => {
+    if (completedSessionId) router.replace(`${sessionBasePath}/${completedSessionId}`);
   };
 
   return (
@@ -53,6 +72,14 @@ const ExamTakePage = ({ code, sessionBasePath = "/exam-session" }) => {
       <div className='bg-white rounded-10 px-24 py-24'>
         {isLoading ? <p className='text-14 text-neutral-400 mb-0'><StaticText text={"Loading..."} /></p> : null}
         {error ? <div className='alert alert-danger text-14 py-10 mb-16'>{error}</div> : null}
+        {completedSessionId ? (
+          <div className='alert alert-info d-flex flex-wrap align-items-center justify-content-between gap-12 text-14 py-12 mb-16'>
+            <span><StaticText text={"Bu imtahanı artıq tamamlamısınız. Nəticələrinizə baxa bilərsiniz."} /></span>
+            <button type='button' className='btn btn-main rounded-pill px-20' onClick={viewCompletedResult}>
+              <StaticText text={"Nəticələrə bax"} />
+            </button>
+          </div>
+        ) : null}
         {preview ? (
           <>
             <div className='d-flex flex-wrap justify-content-between gap-16 mb-24'>
@@ -60,9 +87,15 @@ const ExamTakePage = ({ code, sessionBasePath = "/exam-session" }) => {
                 <h4 className='fw-semibold text-neutral-500 text-20 mb-4'>{preview.title || <StaticText text={"Exam preview"} />}</h4>
                 <p className='text-14 text-neutral-400 mb-0'>{preview.description || <StaticText text={"Review the exam details before starting."} />}</p>
               </div>
-              <button type='button' className='btn btn-main rounded-pill px-24' onClick={start} disabled={isStarting}>
-                {isStarting ? <StaticText text={"Starting..."} /> : <StaticText text={"Start exam"} />}
-              </button>
+              {completedSessionId ? (
+                <button type='button' className='btn btn-main rounded-pill px-24' onClick={viewCompletedResult}>
+                  <StaticText text={"Nəticələrə bax"} />
+                </button>
+              ) : (
+                <button type='button' className='btn btn-main rounded-pill px-24' onClick={start} disabled={isStarting}>
+                  {isStarting ? <StaticText text={"Starting..."} /> : <StaticText text={"Start exam"} />}
+                </button>
+              )}
             </div>
 
             <div className='row gy-3 mb-20'>
