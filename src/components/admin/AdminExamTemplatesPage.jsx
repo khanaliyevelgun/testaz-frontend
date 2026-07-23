@@ -4,14 +4,13 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import AdminRefreshButton from "@/components/admin/AdminRefreshButton";
 import AdminRowActions from "@/components/admin/AdminRowActions";
+import AdminPagination from "@/components/admin/AdminPagination";
 import { fetchExamTemplates } from "@/lib/api";
+import { formatDateTime as formatDate } from "@/lib/format";
 import StaticText from "@/components/StaticText";
+import AdminEmptyState from "@/components/admin/AdminEmptyState";
+import AdminTableSkeleton from "@/components/admin/AdminTableSkeleton";
 
-
-const formatDate = (value) => {
-  if (!value) return "-";
-  return new Intl.DateTimeFormat("az-AZ", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
-};
 
 const countQuestions = (template) =>
   (template?.config?.sections || []).reduce(
@@ -34,7 +33,7 @@ const AdminExamTemplatesPage = () => {
       setTemplates(response.data || []);
       setMeta(response.meta || { page, perPage: 10, total: 0, totalPages: 1 });
     } catch (requestError) {
-      setError(requestError?.message || "Templates could not be loaded.");
+      setError(requestError?.message || "Şablonlar yüklənmədi.");
       setTemplates([]);
     } finally {
       setIsLoading(false);
@@ -80,7 +79,7 @@ const AdminExamTemplatesPage = () => {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'><StaticText text={"Loading..."} /></td></tr>
+                <AdminTableSkeleton columns={6} />
               ) : templates.length ? (
                 templates.map((template) => (
                   <tr key={template.templateId}>
@@ -96,17 +95,13 @@ const AdminExamTemplatesPage = () => {
                   </tr>
                 ))
               ) : (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'><StaticText text={"No templates found."} /></td></tr>
+                <AdminEmptyState columns={6} icon='ph ph-copy'><StaticText text={"No templates found."} /></AdminEmptyState>
               )}
             </tbody>
           </table>
         </div>
 
-        <div className='d-flex align-items-center justify-content-end gap-8 mt-24'>
-          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page <= 1} onClick={() => loadTemplates(Math.max(meta.page - 1, 1))}><StaticText text={"Previous"} /></button>
-          <span className='text-14 text-neutral-400'>{meta.page} / {meta.totalPages}</span>
-          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page >= meta.totalPages} onClick={() => loadTemplates(Math.min(meta.page + 1, meta.totalPages))}><StaticText text={"Next"} /></button>
-        </div>
+        <AdminPagination meta={meta} onPageChange={loadTemplates} />
       </div>
     </div>
   );

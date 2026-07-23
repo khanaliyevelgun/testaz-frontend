@@ -49,12 +49,12 @@ const OrganizationManagementPage = () => {
     setActionError("");
 
     if (!name) {
-      setActionError("Organization name is required.");
+      setActionError("Təşkilatın adı tələb olunur.");
       return;
     }
 
     if (name.length > 200) {
-      setActionError("Organization name cannot be longer than 200 characters.");
+      setActionError("Təşkilatın adı 200 simvoldan uzun ola bilməz.");
       return;
     }
 
@@ -65,10 +65,10 @@ const OrganizationManagementPage = () => {
         type: form.type,
       });
       setForm({ name: "", type: form.type });
-      setNotice("Organization created successfully.");
+      setNotice("Təşkilat uğurla yaradıldı.");
       await loadOrganizations(createdOrganization?.id || "");
     } catch (requestError) {
-      setActionError(requestError?.message || "Organization could not be created.");
+      setActionError(requestError?.message || "Təşkilat yaradılmadı.");
     } finally {
       setIsSubmitting(false);
     }
@@ -90,7 +90,7 @@ const OrganizationManagementPage = () => {
       await loadOrganizations(organization.id);
     } catch (requestError) {
       setActionError(
-        requestError?.message || "Notification setting could not be updated."
+        requestError?.message || "Bildiriş parametri yenilənmədi."
       );
     } finally {
       setUpdatingOrganizationId("");
@@ -134,7 +134,7 @@ const OrganizationManagementPage = () => {
               className='common-input rounded-pill'
               value={form.name}
               maxLength='200'
-              placeholder='Organization name'
+              placeholder='Təşkilatın adı'
               disabled={isSubmitting}
               onChange={handleFormChange}
             />

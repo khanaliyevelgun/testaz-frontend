@@ -15,15 +15,11 @@ import {
   updateParentProfile,
   updateStudentProfile,
 } from "@/lib/api";
+import { formatDateTime as formatDate } from "@/lib/format";
 import StaticText from "@/components/StaticText";
 import StaticOption from "@/components/StaticOption";
 
 
-
-const formatDate = (value) => {
-  if (!value) return "-";
-  return new Intl.DateTimeFormat("az-AZ", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
-};
 
 const AccountProfilePage = () => {
   const { user } = useAuth();
@@ -58,7 +54,7 @@ const AccountProfilePage = () => {
         setOrganizations(await fetchMyOrganizations());
       }
     } catch (requestError) {
-      setError(requestError?.message || "Profile information could not be loaded.");
+      setError(requestError?.message || "Profil məlumatı yüklənmədi.");
     } finally {
       setIsLoading(false);
     }
@@ -82,9 +78,9 @@ const AccountProfilePage = () => {
       }
       const updated = await updateStudentProfile(payload);
       setStudentProfile(updated);
-      setNotice("Student profile updated.");
+      setNotice("Şagird profili yeniləndi.");
     } catch (requestError) {
-      setError(requestError?.message || "Student profile could not be updated.");
+      setError(requestError?.message || "Şagird profili yenilənmədi.");
     } finally {
       setIsSaving(false);
     }
@@ -97,24 +93,24 @@ const AccountProfilePage = () => {
     setError("");
     try {
       setParentProfile(await updateParentProfile({ notifyOnChildResult: Boolean(parentProfile?.notifyOnChildResult) }));
-      setNotice("Parent profile updated.");
+      setNotice("Valideyn profili yeniləndi.");
     } catch (requestError) {
-      setError(requestError?.message || "Parent profile could not be updated.");
+      setError(requestError?.message || "Valideyn profili yenilənmədi.");
     } finally {
       setIsSaving(false);
     }
   };
 
   const removeParent = async (parentId) => {
-    if (!window.confirm("Remove this parent's access to your results and progress?")) return;
+    if (!window.confirm("Bu valideynin nəticələrinizə və tərəqqinizə girişini ləğv edək?")) return;
     setError("");
     setNotice("");
     try {
       await revokeStudentParent(parentId);
       setParents((current) => current.filter((item) => item.parentId !== parentId));
-      setNotice("Parent access revoked.");
+      setNotice("Valideyn girişi ləğv edildi.");
     } catch (requestError) {
-      setError(requestError?.message || "Parent access could not be revoked.");
+      setError(requestError?.message || "Valideyn girişi ləğv edilmədi.");
     }
   };
 

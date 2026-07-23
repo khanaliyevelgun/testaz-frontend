@@ -126,3 +126,55 @@
     grid-template-columns: 1fr;
   }
 }
+
+// Loading skeletons (Batch 2). A subtle shimmer over the template neutral tokens,
+// used to replace bare "loading" text rows in list tables. Respects
+// prefers-reduced-motion by dropping the animation for a flat placeholder tint.
+.skeleton {
+  display: block;
+  border-radius: 6px;
+  background-color: var(--neutral-30);
+  background-image: linear-gradient(
+    90deg,
+    var(--neutral-30) 0%,
+    var(--neutral-40) 50%,
+    var(--neutral-30) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+.skeleton-text {
+  height: 12px;
+  width: 100%;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+    background-image: none;
+  }
+}
+
+// Keyboard focus ring (Batch 5). Several custom-classed controls (the pagination
+// pager, the row-action kebab trigger + its menu items, the refresh button) are not
+// Bootstrap `.btn`s, so they had no visible :focus-visible state — keyboard users
+// lost track of focus. Add one consistent accent ring, keyboard-only (:focus-visible),
+// so mouse clicks are unaffected. `.btn` already has its own focus style; this only
+// fills the gap for the template's bare custom controls.
+.admin-pager button:focus-visible,
+.admin-refresh-btn:focus-visible,
+button[aria-haspopup="menu"]:focus-visible,
+.dropdown-menu[role="menu"] .dropdown-item:focus-visible {
+  outline: 2px solid var(--main-600);
+  outline-offset: 2px;
+}

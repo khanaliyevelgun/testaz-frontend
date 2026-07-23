@@ -4,7 +4,10 @@ import { useEffect, useState } from "react";
 import AdminRefreshButton from "@/components/admin/AdminRefreshButton";
 import AdminStatusBadge from "@/components/admin/AdminStatusBadge";
 import { fetchAdminPayments } from "@/lib/api";
+import { formatDateTime as formatDate } from "@/lib/format";
 import StaticText from "@/components/StaticText";
+import AdminTableSkeleton from "@/components/admin/AdminTableSkeleton";
+import AdminEmptyState from "@/components/admin/AdminEmptyState";
 import StaticOption from "@/components/StaticOption";
 
 
@@ -13,13 +16,6 @@ const PAGE_SIZE = 10;
 const defaultMeta = { page: 1, perPage: PAGE_SIZE, total: 0, totalPages: 1 };
 const emptyFilters = { payerUserId: "", status: "", provider: "" };
 const statuses = ["PENDING", "COMPLETED", "FAILED"];
-
-const formatDate = (value) => {
-  if (!value) return "-";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "-";
-  return new Intl.DateTimeFormat("az-AZ", { dateStyle: "medium", timeStyle: "short" }).format(date);
-};
 
 const formatPrice = (amount, currency = "AZN") =>
   `${Number(amount || 0).toFixed(2)} ${currency || "AZN"}`;
@@ -49,7 +45,7 @@ const AdminPaymentTransactionsPage = () => {
     } catch (requestError) {
       setPayments([]);
       setMeta({ ...defaultMeta, page });
-      setError(requestError?.message || "Payment transactions could not be loaded.");
+      setError(requestError?.message || "Ödəniş əməliyyatları yüklənmədi.");
     } finally {
       setIsLoading(false);
     }
@@ -121,7 +117,7 @@ const AdminPaymentTransactionsPage = () => {
               className='common-input rounded-pill'
               value={filters.provider}
               onChange={(event) => setFilters((current) => ({ ...current, provider: event.target.value }))}
-              placeholder='All'
+              placeholder='Hamısı'
             />
           </div>
           <div className='col-xl-3 col-md-8 d-flex gap-8'>
@@ -162,9 +158,7 @@ const AdminPaymentTransactionsPage = () => {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr>
-                  <td className='py-20 px-20 text-neutral-400' colSpan='8'><StaticText text={"Loading payments..."} /></td>
-                </tr>
+                <AdminTableSkeleton columns={8} />
               ) : payments.length ? (
                 payments.map((payment) => (
                   <tr key={payment.id}>
@@ -199,9 +193,7 @@ const AdminPaymentTransactionsPage = () => {
                   </tr>
                 ))
               ) : (
-                <tr>
-                  <td className='py-24 px-20 text-neutral-400' colSpan='8'><StaticText text={"No payment transactions found."} /></td>
-                </tr>
+                <AdminEmptyState columns={8} icon='ph ph-credit-card'><StaticText text={"No payment transactions found."} /></AdminEmptyState>
               )}
             </tbody>
           </table>

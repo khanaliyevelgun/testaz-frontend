@@ -78,7 +78,7 @@ export const useOrganizationSelection = () => {
       setOrganizations([]);
       selectedOrganizationIdRef.current = "";
       setSelectedOrganizationId("");
-      setOrganizationError(requestError?.message || "Organizations could not be loaded.");
+      setOrganizationError(requestError?.message || "Təşkilatlar yüklənmədi.");
       return [];
     } finally {
       setIsLoadingOrganizations(false);

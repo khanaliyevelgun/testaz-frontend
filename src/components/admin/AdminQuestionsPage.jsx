@@ -17,6 +17,8 @@ import {
 } from "@/lib/api";
 import { questionHtmlToText } from "@/lib/questionContent";
 import StaticText from "@/components/StaticText";
+import AdminEmptyState from "@/components/admin/AdminEmptyState";
+import AdminTableSkeleton from "@/components/admin/AdminTableSkeleton";
 import StaticOption from "@/components/StaticOption";
 
 
@@ -117,7 +119,7 @@ const AdminQuestionsPage = () => {
         }
       } catch (requestError) {
         if (requestId !== latestRequestRef.current) return;
-        setError(requestError?.message || "Questions could not be loaded.");
+        setError(requestError?.message || "Suallar yüklənmədi.");
         setQuestions([]);
         setMeta({ page: nextPage, perPage: PAGE_SIZE, total: 0, totalPages: 1, hasNext: false });
       } finally {
@@ -194,12 +196,12 @@ const AdminQuestionsPage = () => {
       await action(question.id);
       await loadQuestions({ nextPage: page, force: true });
     } catch (requestError) {
-      setError(requestError?.message || "Question action failed.");
+      setError(requestError?.message || "Sual əməliyyatı alınmadı.");
     }
   };
 
   const handleApproveAll = async () => {
-    const confirmed = window.confirm("Approve all pending questions?");
+    const confirmed = window.confirm("Gözləyən bütün sualları təsdiqləyək?");
     if (!confirmed) return;
 
     setIsApprovingAll(true);
@@ -210,7 +212,7 @@ const AdminQuestionsPage = () => {
       await loadQuestions({ nextPage: 1, force: true });
       window.alert(`${count} questions approved.`);
     } catch (requestError) {
-      setError(requestError?.message || "Bulk approval failed.");
+      setError(requestError?.message || "Toplu təsdiq alınmadı.");
     } finally {
       setIsApprovingAll(false);
     }
@@ -251,14 +253,15 @@ const AdminQuestionsPage = () => {
           <input
             type='search'
             className='common-input rounded-pill flex-grow-1 min-w-220-px'
-            placeholder='Search question text...'
+            aria-label='Sual mətni üzrə axtar'
+            placeholder='Sual mətni üzrə axtar...'
             value={filters.search}
             onChange={(event) => setFilter("search", event.target.value)}
           />
           <AdminSearchSelect
             value={filters.subjectCode}
             selectedLabel={subjectLabel}
-            placeholder='Search subject...'
+            placeholder='Fənn üzrə axtar...'
             loadOptions={subjectOptions}
             onChange={setSubjectFilter}
             minWidthClass='min-w-220-px'
@@ -272,7 +275,7 @@ const AdminQuestionsPage = () => {
             onChange={setTopicFilter}
             minWidthClass='min-w-220-px'
           />
-          <AdminGradeSelect label='' placeholder='Grade' value={filters.gradeId} onChange={setGradeFilter} minWidthClass='min-w-140-px' />
+          <AdminGradeSelect label='' placeholder='Sinif' value={filters.gradeId} onChange={setGradeFilter} minWidthClass='min-w-140-px' />
           <select className='form-select rounded-pill border-neutral-40 text-14 py-11 px-16 w-auto min-w-160-px' value={filters.difficulty} onChange={(event) => setFilter("difficulty", event.target.value)}>
             <StaticOption value='' text={"Difficulty"} />
             {difficulties.map((item) => <option value={item} key={item}>{difficultyLabels[item]}</option>)}
@@ -304,7 +307,7 @@ const AdminQuestionsPage = () => {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='7'><StaticText text={"Loading..."} /></td></tr>
+                <AdminTableSkeleton columns={7} />
               ) : questions.length ? (
                 questions.map((question) => (
                   <tr key={question.id}>
@@ -321,7 +324,7 @@ const AdminQuestionsPage = () => {
                   </tr>
                 ))
               ) : (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='7'><StaticText text={"No questions found."} /></td></tr>
+                <AdminEmptyState columns={7} icon='ph ph-question' action={{ href: "/admin/questions/new", label: <StaticText text={"Create Question"} /> }}><StaticText text={"No questions found."} /></AdminEmptyState>
               )}
             </tbody>
           </table>

@@ -182,7 +182,7 @@ const AdminExamFormPage = () => {
         }
       })
       .catch((requestError) => {
-        if (isMounted) setChildrenError(requestError?.message || "Linked children could not be loaded.");
+        if (isMounted) setChildrenError(requestError?.message || "Bağlı uşaqlar yüklənmədi.");
       });
 
     return () => {
@@ -219,7 +219,7 @@ const AdminExamFormPage = () => {
         setTemplateNotice(template?.name ? `Template loaded: ${template.name}` : "Template loaded.");
       })
       .catch((requestError) => {
-        if (isMounted) setError(requestError?.message || "Template could not be loaded.");
+        if (isMounted) setError(requestError?.message || "Şablon yüklənmədi.");
       })
       .finally(() => {
         if (isMounted) setIsLoadingTemplate(false);
@@ -341,7 +341,7 @@ const AdminExamFormPage = () => {
     event.preventDefault();
     const query = userSearch.trim();
     if (query.length < 2) {
-      setError("User search needs at least 2 characters.");
+      setError("İstifadəçi axtarışı ən azı 2 simvol tələb edir.");
       return;
     }
 
@@ -351,7 +351,7 @@ const AdminExamFormPage = () => {
       const response = await fetchUsers({ page: 1, perPage: 10, search: query });
       setUserSearchResults(response.data || []);
     } catch (requestError) {
-      setError(requestError?.message || "Users could not be searched.");
+      setError(requestError?.message || "İstifadəçilər axtarıla bilmədi.");
       setUserSearchResults([]);
     } finally {
       setIsSearchingUsers(false);
@@ -382,12 +382,12 @@ const AdminExamFormPage = () => {
   };
 
   const validate = () => {
-    if (!sections.length) return "At least one section is required.";
+    if (!sections.length) return "Ən azı bir bölmə tələb olunur.";
     if (form.durationMinutes && normalizePositiveInt(form.durationMinutes) > 600) {
-      return "Duration cannot be more than 600 minutes.";
+      return "Müddət 600 dəqiqədən çox ola bilməz.";
     }
     if (form.passMark !== "" && (Number(form.passMark) < 0 || Number(form.passMark) > 100)) {
-      return "Pass mark must be between 0 and 100.";
+      return "Keçid balı 0 ilə 100 arasında olmalıdır.";
     }
 
     for (let sectionIndex = 0; sectionIndex < sections.length; sectionIndex += 1) {
@@ -400,7 +400,7 @@ const AdminExamFormPage = () => {
     }
 
     if ((isParent || form.visibility === "ASSIGNED") && !parseAssignedUserIds().length) {
-      return isParent ? "Select the child who will receive this exam." : "Assigned visibility requires at least one user id.";
+      return isParent ? "Select the child who will receive this exam." : "Təyin edilmiş görünürlük ən azı bir istifadəçi ID-si tələb edir.";
     }
 
     return "";
@@ -446,7 +446,7 @@ const AdminExamFormPage = () => {
       const payload = buildPayload();
       if (saveAsTemplate) {
         if (!templateName.trim()) {
-          setError("Template name is required.");
+          setError("Şablon adı tələb olunur.");
           setIsSubmitting(false);
           return;
         }
@@ -455,7 +455,7 @@ const AdminExamFormPage = () => {
       const result = await createExam(payload);
       setCreatedExam(result);
     } catch (requestError) {
-      setError(requestError?.message || "Exam could not be created.");
+      setError(requestError?.message || "İmtahan yaradılmadı.");
     } finally {
       setIsSubmitting(false);
     }
@@ -467,9 +467,9 @@ const AdminExamFormPage = () => {
 
     try {
       await navigator.clipboard.writeText(examLink);
-      setCopyStatus("Copied");
+      setCopyStatus("Kopyalandı");
     } catch {
-      setCopyStatus("Select the link and copy manually");
+      setCopyStatus("Linki seçib əl ilə kopyalayın");
     }
   };
 
@@ -600,7 +600,7 @@ const AdminExamFormPage = () => {
                     onKeyDown={(event) => {
                       if (event.key === "Enter") searchAssignableUsers(event);
                     }}
-                    placeholder='Name, surname, email or ID'
+                    placeholder='Ad, soyad, email və ya ID'
                   />
                   <button type='button' className='btn btn-main rounded-pill px-20' onClick={searchAssignableUsers} disabled={isSearchingUsers}>
                     {isSearchingUsers ? <StaticText text={"Searching..."} /> : <StaticText text={"Search"} />}

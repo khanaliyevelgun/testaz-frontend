@@ -8,7 +8,9 @@ import OrganizationSelector, {
   useOrganizationSelection,
 } from "@/components/admin/OrganizationSelector";
 import { fetchOrganizationMembers } from "@/lib/api";
+import { formatDateTime as formatDate } from "@/lib/format";
 import StaticText from "@/components/StaticText";
+import AdminTableSkeleton from "@/components/admin/AdminTableSkeleton";
 
 
 const emptyMeta = {
@@ -17,18 +19,6 @@ const emptyMeta = {
   total: 0,
   totalPages: 1,
   hasNext: false,
-};
-
-const formatDate = (value) => {
-  if (!value) return "-";
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "-";
-
-  return new Intl.DateTimeFormat("az-AZ", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(date);
 };
 
 const OrganizationMembersPage = () => {
@@ -67,7 +57,7 @@ const OrganizationMembersPage = () => {
       } catch (requestError) {
         setMembers([]);
         setMeta({ ...emptyMeta, page });
-        setMemberError(requestError?.message || "Organization members could not be loaded.");
+        setMemberError(requestError?.message || "Təşkilat üzvləri yüklənmədi.");
       } finally {
         setIsLoadingMembers(false);
       }
@@ -177,16 +167,19 @@ const OrganizationMembersPage = () => {
                 </thead>
                 <tbody>
                   {isLoadingMembers ? (
-                    <tr>
-                      <td className='py-20 px-20 text-neutral-400' colSpan='4'>
-                        <StaticText text={"Loading members..."} />
-                      </td>
-                    </tr>
+                    <AdminTableSkeleton columns={4} />
                   ) : members.length ? (
                     members.map((member) => (
                       <tr key={member.studentId}>
                         <td className='py-16 px-20 text-14 text-neutral-500'>
-                          <span className='font-monospace'>{member.studentId}</span>
+                          {member.studentName ? (
+                            <>
+                              <span className='d-block'>{member.studentName}</span>
+                              <span className='font-monospace text-12 text-neutral-400'>{member.studentId}</span>
+                            </>
+                          ) : (
+                            <span className='font-monospace'>{member.studentId}</span>
+                          )}
                         </td>
                         <td className='py-16 px-20 text-14 text-neutral-500'>
                           {member.gradeId || "-"}
@@ -214,7 +207,7 @@ const OrganizationMembersPage = () => {
 
             <div className='d-flex flex-wrap align-items-center justify-content-between gap-12 mt-24'>
               <span className='text-13 text-neutral-400'>
-                {meta.total} <StaticText text={"member"} />{meta.total === 1 ? "" : <StaticText text={"s"} />}
+                {meta.total} {meta.total === 1 ? <StaticText text={"member"} /> : <StaticText text={"members"} />}
               </span>
               <div className='d-flex align-items-center gap-8'>
                 <button

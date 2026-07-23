@@ -90,5 +90,9 @@
   "components.sessionresultpage.14v4g0o": "Your result is being prepared",
   "components.sessionresultpage.ykc0kx": "Wrong",
   "components.sessionresultpage.11h8141": "Your answer",
-  "components.sessionresultpage.14er9lc": "Question results"
+  "components.sessionresultpage.14er9lc": "Question results",
+  "components.admin.examsessionpage.1ndutmy": "Exam session",
+  "components.admin.examsessionpage.1002bm3": "Status:",
+  "components.admin.examsessionpage.xyblk": "questions",
+  "components.admin.examsessionpage.12kds9k": "answered"
 }

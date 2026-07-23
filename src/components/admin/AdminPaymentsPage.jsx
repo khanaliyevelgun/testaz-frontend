@@ -11,6 +11,8 @@ import {
   startPaymentCheckout,
 } from "@/lib/api";
 import StaticText from "@/components/StaticText";
+import AdminEmptyState from "@/components/admin/AdminEmptyState";
+import AdminTableSkeleton from "@/components/admin/AdminTableSkeleton";
 
 
 const formatDate = (value) => (value ? new Date(value).toLocaleString("az-AZ") : "-");
@@ -42,7 +44,7 @@ const AdminPaymentsPage = () => {
       setSubscriptions(subscriptionResponse || []);
       setEntitlement(entitlementResponse || null);
     } catch (requestError) {
-      setError(requestError?.message || "Subscription information could not be loaded.");
+      setError(requestError?.message || "Abunəlik məlumatı yüklənmədi.");
       setPlans([]);
       setSubscriptions([]);
       setEntitlement(null);
@@ -69,14 +71,14 @@ const AdminPaymentsPage = () => {
 
       await loadPayments();
     } catch (requestError) {
-      setError(requestError?.message || "Checkout could not be started.");
+      setError(requestError?.message || "Ödəniş başladıla bilmədi.");
     } finally {
       setCheckoutCode("");
     }
   };
 
   const handleCancel = async (subscription) => {
-    if (!window.confirm("Cancel this subscription? Access will end immediately.")) return;
+    if (!window.confirm("Bu abunəliyi ləğv edək? Giriş dərhal bitəcək.")) return;
 
     setCancelingId(subscription.id);
     setError("");
@@ -84,10 +86,10 @@ const AdminPaymentsPage = () => {
 
     try {
       await cancelSubscription(subscription.id);
-      setNotice("Subscription canceled.");
+      setNotice("Abunəlik ləğv edildi.");
       await loadPayments();
     } catch (requestError) {
-      setError(requestError?.message || "Subscription could not be canceled.");
+      setError(requestError?.message || "Abunəlik ləğv edilmədi.");
     } finally {
       setCancelingId("");
     }
@@ -179,7 +181,7 @@ const AdminPaymentsPage = () => {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'><StaticText text={"Loading..."} /></td></tr>
+                <AdminTableSkeleton columns={6} />
               ) : subscriptions.length ? (
                 subscriptions.map((subscription) => (
                   <tr key={subscription.id}>
@@ -205,7 +207,7 @@ const AdminPaymentsPage = () => {
                   </tr>
                 ))
               ) : (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'><StaticText text={"No subscriptions found."} /></td></tr>
+                <AdminEmptyState columns={6} icon='ph ph-credit-card'><StaticText text={"No subscriptions found."} /></AdminEmptyState>
               )}
             </tbody>
           </table>

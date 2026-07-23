@@ -4,7 +4,9 @@ import {
   getRefreshToken,
   setTokens,
 } from "@/stores/authStore";
+import { ACCESS_TOKEN_STORAGE_KEY } from "@/stores/authStore";
 import { localizeApiResponse, translateApiMessage } from "@/lib/i18n";
+import { normalizeRole } from "@/lib/authRoles";
 
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(/\/+$/, "");
 const API_PREFIX = "/api/v1";
@@ -44,12 +46,6 @@ const withMessage = (response) => {
   return data;
 };
 
-const normalizeRole = (role) => {
-  const normalizedRole = String(role || "").toLowerCase();
-  if (normalizedRole === "student") return "child";
-  return normalizedRole;
-};
-
 const normalizeUser = (user) => {
   if (!user) return null;
   const roles = Array.isArray(user.roles)
@@ -66,11 +62,6 @@ const normalizeUser = (user) => {
     name: user.fullName || user.name || user.email || user.login || "Istifadeci",
   };
 };
-
-const emptyPage = (page = 1, perPage = 10) => ({
-  data: [],
-  meta: { page, perPage, total: 0, totalPages: 1 },
-});
 
 const normalizePage = (pageResponse, page = 1, perPage = 10) => {
   const content = pageResponse?.content || pageResponse?.data || [];
@@ -110,11 +101,31 @@ export class ApiError extends Error {
   }
 }
 
+// Reads the access token another tab may have just rotated (written to the shared
+// localStorage signal by that tab's setAuthState). Used to recover from a cross-tab
+// refresh race: if a sibling tab already rotated the family, this tab adopts the
+// fresh token instead of logging out on its own "reuse detected" 401.
+const readSiblingAccessToken = () => {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+};
+
 export async function refreshAccessToken() {
   if (!refreshPromise) {
     const refreshToken = getRefreshToken();
+    // The access token this tab holds before refreshing. If, after a failed refresh,
+    // the shared signal shows a DIFFERENT access token, a sibling tab rotated the
+    // family and we should adopt its token rather than log out.
+    const startingAccessToken = getAccessToken();
 
     if (!refreshToken) {
+      // Another tab may have refreshed a moment ago — adopt its token if present.
+      const sibling = readSiblingAccessToken();
+      if (sibling && sibling !== startingAccessToken) return sibling;
       clearAuthState();
       throw new ApiError("Refresh token is missing", 401, null);
     }
@@ -147,6 +158,14 @@ export async function refreshAccessToken() {
         return accessToken;
       })
       .catch((error) => {
+        // Cross-tab race recovery: if our refresh lost to a sibling tab (its rotation
+        // invalidated the token we sent → reuse-detected 401), that tab wrote a fresh
+        // access token to the shared signal that differs from the one we started with.
+        // Adopt it instead of clearing auth (which would log the user out).
+        const sibling = readSiblingAccessToken();
+        if (sibling && sibling !== startingAccessToken) {
+          return sibling;
+        }
         clearAuthState();
         throw error;
       })
@@ -297,7 +316,35 @@ export const resetPassword = (payload) =>
     }),
   });
 
-export const fetchProfile = () => apiFetch("/auth/me").then((response) => normalizeUser(unwrapApiResponse(response)));
+export const fetchMyProfile = () => apiFetch("/users/me").then((response) => unwrapApiResponse(response));
+
+// `/auth/me` is intentionally minimal (id + roles, straight from the JWT — no DB hit).
+// The display name/email/phone live on `/users/me`, so merge them in for the UI. A failed
+// `/users/me` (e.g. transient) must not break auth: fall back to the token-derived user.
+export const fetchProfile = () =>
+  apiFetch("/auth/me").then(async (response) => {
+    const user = normalizeUser(unwrapApiResponse(response));
+    if (!user) return user;
+
+    try {
+      const details = await fetchMyProfile();
+      if (details) {
+        return {
+          ...user,
+          fullName: details.fullName || user.fullName,
+          email: details.email || user.email,
+          phone: details.phone || user.phone,
+          emailVerified: details.emailVerified,
+          phoneVerified: details.phoneVerified,
+          name: user.fullName || details.fullName || user.email || details.email || user.name,
+        };
+      }
+    } catch {
+      // Keep the token-derived user; the display name just falls back.
+    }
+
+    return user;
+  });
 
 const normalizeNotification = (notification) => ({
   ...notification,
@@ -670,10 +717,33 @@ export const fetchChildResults = (studentId, { page = 1, perPage = 10 } = {}) =>
   apiFetch(`/parents/me/children/${studentId}/results${toQueryString({ page: Math.max(page - 1, 0), size: perPage })}`)
     .then((response) => normalizePage(unwrapApiResponse(response), page, perPage));
 
+// The backend paginates the per-question breakdown behind a separate endpoint,
+// but the result screens render every question at once. Collect all pages into a
+// single ordered array so callers can attach it as `result.details`.
+const collectResultDetails = async (basePath) => {
+  const size = 100;
+  const details = [];
+
+  for (let page = 0; ; page += 1) {
+    const response = await apiFetch(`${basePath}${toQueryString({ page, size })}`);
+    const pageData = unwrapApiResponse(response);
+    const content = Array.isArray(pageData?.content) ? pageData.content : [];
+    details.push(...content);
+
+    if (!pageData?.hasNext && page + 1 >= (pageData?.totalPages || 1)) break;
+    if (content.length === 0) break;
+  }
+
+  return details;
+};
+
 export const fetchChildSessionResult = (studentId, sessionId) =>
   apiFetch(`/parents/me/children/${studentId}/sessions/${sessionId}/result`).then((response) =>
     unwrapApiResponse(response)
   );
+
+export const fetchChildSessionResultDetails = (studentId, sessionId) =>
+  collectResultDetails(`/parents/me/children/${studentId}/sessions/${sessionId}/result/details`);
 
 export const fetchChildTrends = (studentId) =>
   apiFetch(`/parents/me/children/${studentId}/trends`).then((response) => unwrapApiResponse(response) || []);
@@ -739,6 +809,8 @@ export const submitSession = (id) =>
 
 export const fetchSessionResult = (id) =>
   apiFetch(`/sessions/${id}/result`).then((response) => unwrapApiResponse(response));
+
+export const fetchSessionResultDetails = (id) => collectResultDetails(`/sessions/${id}/result/details`);
 
 export const fetchResults = ({ page = 1, perPage = 10 } = {}) =>
   apiFetch(`/results${toQueryString({ page: Math.max(page - 1, 0), size: perPage })}`).then((response) =>

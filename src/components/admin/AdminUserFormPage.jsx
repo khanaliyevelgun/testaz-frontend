@@ -41,7 +41,7 @@ const AdminUserFormPage = ({ userId }) => {
         });
       })
       .catch(() => {
-        if (isMounted) setError("User could not be loaded.");
+        if (isMounted) setError("İstifadəçi yüklənmədi.");
       })
       .finally(() => {
         if (isMounted) setIsLoading(false);
@@ -79,7 +79,7 @@ const AdminUserFormPage = ({ userId }) => {
       router.push("/admin/users");
       router.refresh();
     } catch {
-      setError(isEdit ? "User could not be updated." : "User could not be created.");
+      setError(isEdit ? "İstifadəçi yenilənmədi." : "İstifadəçi yaradılmadı.");
     } finally {
       setIsSubmitting(false);
     }

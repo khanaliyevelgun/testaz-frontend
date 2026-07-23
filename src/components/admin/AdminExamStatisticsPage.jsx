@@ -29,7 +29,7 @@ const AdminExamStatisticsPage = ({ examId }) => {
         if (isMounted) setStatistics(response);
       })
       .catch((requestError) => {
-        if (isMounted) setError(requestError?.message || "Statistics could not be loaded.");
+        if (isMounted) setError(requestError?.message || "Statistika yüklənmədi.");
       })
       .finally(() => {
         if (isMounted) setIsLoading(false);

@@ -31,7 +31,7 @@ const AdminSubjectFormPage = ({ subjectId }) => {
         });
       })
       .catch(() => {
-        if (isMounted) setError("Subject could not be loaded.");
+        if (isMounted) setError("Fənn yüklənmədi.");
       })
       .finally(() => {
         if (isMounted) setIsLoading(false);
@@ -69,7 +69,7 @@ const AdminSubjectFormPage = ({ subjectId }) => {
       router.push("/admin/subjects");
       router.refresh();
     } catch {
-      setError(isEdit ? "Subject could not be updated." : "Subject could not be created.");
+      setError(isEdit ? "Fənn yenilənmədi." : "Fənn yaradılmadı.");
     } finally {
       setIsSubmitting(false);
     }

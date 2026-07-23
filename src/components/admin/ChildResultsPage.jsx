@@ -2,24 +2,24 @@
 
 import { useEffect, useState } from "react";
 import AdminRefreshButton from "@/components/admin/AdminRefreshButton";
-import AdminStatusBadge from "@/components/admin/AdminStatusBadge";
+import AdminStatusBadge, { TREND_LABELS } from "@/components/admin/AdminStatusBadge";
+import AdminPagination from "@/components/admin/AdminPagination";
 import {
   fetchResultTopicTrends,
   fetchResultTrends,
   fetchResults,
   fetchSessionResult,
+  fetchSessionResultDetails,
   reportQuestion,
 } from "@/lib/api";
+import { formatDateTime as formatDate } from "@/lib/format";
 import { renderQuestionHtml } from "@/lib/questionContent";
 import StaticText from "@/components/StaticText";
+import AdminEmptyState from "@/components/admin/AdminEmptyState";
+import AdminTableSkeleton from "@/components/admin/AdminTableSkeleton";
 import StaticOption from "@/components/StaticOption";
 
 
-
-const formatDate = (value) => {
-  if (!value) return "-";
-  return new Intl.DateTimeFormat("az-AZ", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
-};
 
 const ChildResultsPage = () => {
   const [results, setResults] = useState([]);
@@ -48,7 +48,7 @@ const ChildResultsPage = () => {
       setSubjectTrends(nextSubjectTrends || []);
       setTopicTrends(nextTopicTrends || []);
     } catch (requestError) {
-      setError(requestError?.message || "Results could not be loaded.");
+      setError(requestError?.message || "Nəticələr yüklənmədi.");
       setResults([]);
     } finally {
       setIsLoading(false);
@@ -65,10 +65,14 @@ const ChildResultsPage = () => {
     setReportForm(null);
     setError("");
     try {
-      setDetail(await fetchSessionResult(sessionId));
+      const [result, details] = await Promise.all([
+        fetchSessionResult(sessionId),
+        fetchSessionResultDetails(sessionId),
+      ]);
+      setDetail({ ...result, details });
     } catch (requestError) {
       setDetail(null);
-      setError(requestError?.message || "Result details could not be loaded.");
+      setError(requestError?.message || "Nəticə təfərrüatları yüklənmədi.");
     } finally {
       setIsDetailLoading(false);
     }
@@ -87,10 +91,10 @@ const ChildResultsPage = () => {
         comment: reportForm.comment.trim() || undefined,
         sessionId: detail?.sessionId,
       });
-      setNotice("Question report sent to the review team.");
+      setNotice("Sual barədə şikayət baxış komandasına göndərildi.");
       setReportForm(null);
     } catch (requestError) {
-      setError(requestError?.message || "Question report could not be sent.");
+      setError(requestError?.message || "Sual barədə şikayət göndərilmədi.");
     } finally {
       setIsReporting(false);
     }
@@ -130,7 +134,7 @@ const ChildResultsPage = () => {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'><StaticText text={"Loading..."} /></td></tr>
+                <AdminTableSkeleton columns={6} />
               ) : results.length ? (
                 results.map((result) => (
                   <tr key={result.id || result.sessionId}>
@@ -147,17 +151,13 @@ const ChildResultsPage = () => {
                   </tr>
                 ))
               ) : (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'><StaticText text={"No results found."} /></td></tr>
+                <AdminEmptyState columns={6} icon='ph ph-chart-bar'><StaticText text={"No results found."} /></AdminEmptyState>
               )}
             </tbody>
           </table>
         </div>
 
-        <div className='d-flex align-items-center justify-content-end gap-8 mt-24'>
-          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page <= 1} onClick={() => load(Math.max(meta.page - 1, 1))}><StaticText text={"Previous"} /></button>
-          <span className='text-14 text-neutral-400'>{meta.page} / {meta.totalPages}</span>
-          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page >= meta.totalPages} onClick={() => load(Math.min(meta.page + 1, meta.totalPages))}><StaticText text={"Next"} /></button>
-        </div>
+        <AdminPagination meta={meta} onPageChange={load} />
       </div>
 
       <div className='row gy-4 mt-1'>
@@ -175,7 +175,7 @@ const ChildResultsPage = () => {
                         <td className='py-12 text-14 text-neutral-500'>{item.subjectName || `#${item.subjectId}`}</td>
                         <td className='py-12 text-14 text-neutral-500'>{Math.round(item.accuracy || 0)}%</td>
                         <td className='py-12 text-14 text-neutral-500'>{item.testsCount || 0}</td>
-                        <td className='py-12 text-14 text-neutral-500'><i className={`${trendIcon(item.trend)} me-6`} />{item.trend || "-"}</td>
+                        <td className='py-12 text-14 text-neutral-500'><i className={`${trendIcon(item.trend)} me-6`} />{TREND_LABELS[item.trend] ? <StaticText text={TREND_LABELS[item.trend]} /> : item.trend || "-"}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -198,7 +198,7 @@ const ChildResultsPage = () => {
                         <td className='py-12 text-14 text-neutral-500'>{item.topicName || `#${item.topicId}`}</td>
                         <td className='py-12 text-14 text-neutral-500'>{Math.round(item.accuracy || 0)}%</td>
                         <td className='py-12 text-14 text-neutral-500'>{item.totalQuestions || 0}</td>
-                        <td className='py-12 text-14 text-neutral-500'><i className={`${trendIcon(item.trend)} me-6`} />{item.trend || "-"}</td>
+                        <td className='py-12 text-14 text-neutral-500'><i className={`${trendIcon(item.trend)} me-6`} />{TREND_LABELS[item.trend] ? <StaticText text={TREND_LABELS[item.trend]} /> : item.trend || "-"}</td>
                       </tr>
                     ))}
                   </tbody>

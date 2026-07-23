@@ -14,7 +14,9 @@ import {
   fetchPublicSubjects,
   fetchPublicTopics,
 } from "@/lib/api";
+import { formatDateTime as formatDate } from "@/lib/format";
 import StaticText from "@/components/StaticText";
+import AdminTableSkeleton from "@/components/admin/AdminTableSkeleton";
 import StaticOption from "@/components/StaticOption";
 
 
@@ -42,18 +44,6 @@ const emptyMeta = {
 
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-const formatDate = (value) => {
-  if (!value) return "-";
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "-";
-
-  return new Intl.DateTimeFormat("az-AZ", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(date);
-};
 
 const optionalPositiveInteger = (value) => {
   if (value === "") return undefined;
@@ -119,7 +109,7 @@ const OrganizationInvitesPage = () => {
     } catch (requestError) {
       setSubjects([]);
       setGrades([]);
-      setTaxonomyError(requestError?.message || "Subjects and grades could not be loaded.");
+      setTaxonomyError(requestError?.message || "Fənlər və siniflər yüklənmədi.");
     } finally {
       setIsLoadingTaxonomy(false);
     }
@@ -154,7 +144,7 @@ const OrganizationInvitesPage = () => {
       .catch((requestError) => {
         if (!isMounted) return;
         setTopics([]);
-        setTaxonomyError(requestError?.message || "Topics could not be loaded.");
+        setTaxonomyError(requestError?.message || "Mövzular yüklənmədi.");
       })
       .finally(() => {
         if (isMounted) setIsLoadingTopics(false);
@@ -179,7 +169,7 @@ const OrganizationInvitesPage = () => {
       }
 
       if (!requestedTestId) {
-        setResultError("Test ID is required.");
+        setResultError("Test ID-si tələb olunur.");
         return;
       }
 
@@ -202,7 +192,7 @@ const OrganizationInvitesPage = () => {
       } catch (requestError) {
         setResults([]);
         setResultMeta({ ...emptyMeta, page });
-        setResultError(requestError?.message || "Test results could not be loaded.");
+        setResultError(requestError?.message || "Test nəticələri yüklənmədi.");
       } finally {
         setIsLoadingResults(false);
       }
@@ -235,12 +225,12 @@ const OrganizationInvitesPage = () => {
 
   const validateInvite = () => {
     if (!selectedOrganizationId) return "Select an organization.";
-    if (!form.subjectId) return "Subject is required.";
+    if (!form.subjectId) return "Fənn tələb olunur.";
     if (form.title.trim().length > 200) {
-      return "Title cannot be longer than 200 characters.";
+      return "Başlıq 200 simvoldan uzun ola bilməz.";
     }
     if (form.description.trim().length > 2000) {
-      return "Description cannot be longer than 2000 characters.";
+      return "Təsvir 2000 simvoldan uzun ola bilməz.";
     }
 
     return (
@@ -284,14 +274,14 @@ const OrganizationInvitesPage = () => {
         buildPayload()
       );
       setCreatedInvite(invite);
-      setNotice("Test invitation created successfully.");
+      setNotice("Test dəvəti uğurla yaradıldı.");
 
       if (invite?.testId) {
         setTestId(invite.testId);
         await loadResults(1, invite.testId, selectedOrganizationId);
       }
     } catch (requestError) {
-      setFormError(requestError?.message || "Test invitation could not be created.");
+      setFormError(requestError?.message || "Test dəvəti yaradılmadı.");
     } finally {
       setIsSubmitting(false);
     }
@@ -302,9 +292,9 @@ const OrganizationInvitesPage = () => {
 
     try {
       await navigator.clipboard.writeText(createdInvite.code);
-      setCopyStatus("Code copied.");
+      setCopyStatus("Kod kopyalandı.");
     } catch {
-      setCopyStatus("Copy failed. Select the code and copy it manually.");
+      setCopyStatus("Kopyalama alınmadı. Kodu seçib əl ilə kopyalayın.");
     }
   };
 
@@ -407,7 +397,7 @@ const OrganizationInvitesPage = () => {
                   className='common-input rounded-pill'
                   value={form.title}
                   maxLength='200'
-                  placeholder='Optional test title'
+                  placeholder='Test başlığı (opsional)'
                   disabled={isSubmitting}
                   onChange={handleFormChange}
                 />
@@ -445,7 +435,7 @@ const OrganizationInvitesPage = () => {
                   rows='3'
                   value={form.description}
                   maxLength='2000'
-                  placeholder='Optional instructions for learners'
+                  placeholder='Şagirdlər üçün əlavə təlimatlar (opsional)'
                   disabled={isSubmitting}
                   onChange={handleFormChange}
                 />
@@ -719,16 +709,19 @@ const OrganizationInvitesPage = () => {
             </thead>
             <tbody>
               {isLoadingResults ? (
-                <tr>
-                  <td className='py-20 px-20 text-neutral-400' colSpan='5'>
-                    <StaticText text={"Loading test results..."} />
-                  </td>
-                </tr>
+                <AdminTableSkeleton columns={5} />
               ) : results.length ? (
                 results.map((result) => (
                   <tr key={result.id || result.sessionId}>
                     <td className='py-16 px-20 text-14 text-neutral-500'>
-                      <span className='font-monospace'>{result.studentId || "-"}</span>
+                      {result.studentName ? (
+                        <>
+                          <span className='d-block'>{result.studentName}</span>
+                          <span className='font-monospace text-12 text-neutral-400'>{result.studentId}</span>
+                        </>
+                      ) : (
+                        <span className='font-monospace'>{result.studentId || "-"}</span>
+                      )}
                     </td>
                     <td className='py-16 px-20 text-14 text-neutral-500'>
                       {String(result.type || "-").replaceAll("_", " ")}
@@ -766,7 +759,7 @@ const OrganizationInvitesPage = () => {
 
         <div className='d-flex flex-wrap align-items-center justify-content-between gap-12 mt-24'>
           <span className='text-13 text-neutral-400'>
-            {resultMeta.total} <StaticText text={"result"} />{resultMeta.total === 1 ? "" : <StaticText text={"s"} />}
+            {resultMeta.total} {resultMeta.total === 1 ? <StaticText text={"result"} /> : <StaticText text={"results"} />}
           </span>
           <div className='d-flex align-items-center gap-8'>
             <button

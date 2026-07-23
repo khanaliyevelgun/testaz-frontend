@@ -3,13 +3,12 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { fetchExamAttempts } from "@/lib/api";
+import { formatDateTime as formatDate } from "@/lib/format";
 import StaticText from "@/components/StaticText";
+import AdminEmptyState from "@/components/admin/AdminEmptyState";
+import AdminTableSkeleton from "@/components/admin/AdminTableSkeleton";
+import AdminPagination from "@/components/admin/AdminPagination";
 
-
-const formatDate = (value) => {
-  if (!value) return "-";
-  return new Intl.DateTimeFormat("az-AZ", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
-};
 
 const AdminExamAttemptsPage = ({ examId }) => {
   const [attempts, setAttempts] = useState([]);
@@ -25,7 +24,7 @@ const AdminExamAttemptsPage = ({ examId }) => {
       setAttempts(response.data || []);
       setMeta(response.meta || { page, perPage: 10, total: 0, totalPages: 1 });
     } catch (requestError) {
-      setError(requestError?.message || "Attempts could not be loaded.");
+      setError(requestError?.message || "Cəhdlər yüklənmədi.");
       setAttempts([]);
     } finally {
       setIsLoading(false);
@@ -66,11 +65,11 @@ const AdminExamAttemptsPage = ({ examId }) => {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'><StaticText text={"Loading..."} /></td></tr>
+                <AdminTableSkeleton columns={6} />
               ) : attempts.length ? (
                 attempts.map((attempt) => (
                   <tr key={attempt.id || attempt.sessionId}>
-                    <td className='py-16 px-20 text-14 text-neutral-500'>{attempt.studentId || "-"}</td>
+                    <td className='py-16 px-20 text-14 text-neutral-500'>{attempt.studentName || attempt.studentId || "-"}</td>
                     <td className='py-16 px-20 text-14 text-neutral-500'>{attempt.sessionId || "-"}</td>
                     <td className='py-16 px-20 text-14 text-neutral-500'>{attempt.totalScore ?? "-"} / {attempt.maxScore ?? "-"}</td>
                     <td className='py-16 px-20 text-14 text-neutral-500'>{attempt.percentage != null ? `${attempt.percentage}%` : "-"}</td>
@@ -79,17 +78,13 @@ const AdminExamAttemptsPage = ({ examId }) => {
                   </tr>
                 ))
               ) : (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'><StaticText text={"No attempts found."} /></td></tr>
+                <AdminEmptyState columns={6} icon='ph ph-chart-bar'><StaticText text={"No attempts found."} /></AdminEmptyState>
               )}
             </tbody>
           </table>
         </div>
 
-        <div className='d-flex align-items-center justify-content-end gap-8 mt-24'>
-          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page <= 1} onClick={() => loadAttempts(Math.max(meta.page - 1, 1))}><StaticText text={"Previous"} /></button>
-          <span className='text-14 text-neutral-400'>{meta.page} / {meta.totalPages}</span>
-          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page >= meta.totalPages} onClick={() => loadAttempts(Math.min(meta.page + 1, meta.totalPages))}><StaticText text={"Next"} /></button>
-        </div>
+        <AdminPagination meta={meta} onPageChange={loadAttempts} />
       </div>
     </div>
   );

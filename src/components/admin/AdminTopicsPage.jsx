@@ -7,8 +7,11 @@ import AdminRefreshButton from "@/components/admin/AdminRefreshButton";
 import AdminRowActions from "@/components/admin/AdminRowActions";
 import AdminSearchSelect from "@/components/admin/AdminSearchSelect";
 import AdminStatusBadge from "@/components/admin/AdminStatusBadge";
+import AdminPagination from "@/components/admin/AdminPagination";
 import { activateTopic, createTopic, deactivateTopic, fetchTopics, updateTopic } from "@/lib/api";
 import StaticText from "@/components/StaticText";
+import AdminEmptyState from "@/components/admin/AdminEmptyState";
+import AdminTableSkeleton from "@/components/admin/AdminTableSkeleton";
 import StaticOption from "@/components/StaticOption";
 
 
@@ -34,7 +37,7 @@ const AdminTopicsPage = ({ subjectId }) => {
       setTopics(response.data || []);
       setMeta(response.meta || { page, perPage: 10, total: 0, totalPages: 1 });
     } catch {
-      setError("Topics could not be loaded.");
+      setError("Mövzular yüklənmədi.");
       setTopics([]);
     } finally {
       setIsLoading(false);
@@ -86,7 +89,7 @@ const AdminTopicsPage = ({ subjectId }) => {
       setParentTopicLabel("");
       await loadTopics(1);
     } catch {
-      setError("Topic could not be created.");
+      setError("Mövzu yaradılmadı.");
     } finally {
       setIsSubmitting(false);
     }
@@ -105,7 +108,7 @@ const AdminTopicsPage = ({ subjectId }) => {
       });
       await loadTopics(meta.page);
     } catch {
-      setError("Topic could not be updated.");
+      setError("Mövzu yenilənmədi.");
     }
   };
 
@@ -114,7 +117,7 @@ const AdminTopicsPage = ({ subjectId }) => {
       await (topic.active ? deactivateTopic(topic.id) : activateTopic(topic.id));
       await loadTopics(meta.page);
     } catch {
-      setError("Topic status could not be updated.");
+      setError("Mövzunun statusu yenilənmədi.");
     }
   };
 
@@ -144,13 +147,13 @@ const AdminTopicsPage = ({ subjectId }) => {
         </div>
 
         <form className='d-flex flex-wrap align-items-center gap-12 mb-24' onSubmit={handleCreate}>
-          <input name='nameAz' className='common-input rounded-pill flex-grow-1 min-w-220-px' placeholder='Topic name' value={form.nameAz} onChange={handleFormChange} />
-          <input name='code' className='common-input rounded-pill min-w-140-px' placeholder='Code' value={form.code} onChange={handleFormChange} />
+          <input name='nameAz' className='common-input rounded-pill flex-grow-1 min-w-220-px' placeholder='Mövzunun adı' value={form.nameAz} onChange={handleFormChange} />
+          <input name='code' className='common-input rounded-pill min-w-140-px' placeholder='Kod' value={form.code} onChange={handleFormChange} />
           <AdminGradeSelect value={form.gradeId} onChange={setFormGrade} minWidthClass='min-w-140-px' />
           <AdminSearchSelect
             value={form.parentTopicId}
             selectedLabel={parentTopicLabel}
-            placeholder='Search parent topics...'
+            placeholder='Əsas mövzular üzrə axtar...'
             loadOptions={parentTopicOptions}
             onChange={setParentTopic}
             minWidthClass='min-w-220-px'
@@ -159,7 +162,7 @@ const AdminTopicsPage = ({ subjectId }) => {
         </form>
 
         <div className='d-flex flex-wrap align-items-center gap-12 mb-24'>
-          <input className='common-input rounded-pill flex-grow-1 min-w-220-px' placeholder='Search topics...' value={search} onChange={(event) => setSearch(event.target.value)} />
+          <input className='common-input rounded-pill flex-grow-1 min-w-220-px' placeholder='Mövzular üzrə axtar...' value={search} onChange={(event) => setSearch(event.target.value)} />
           <AdminGradeSelect value={gradeId} onChange={setGradeId} minWidthClass='min-w-140-px' />
           <select className='form-select rounded-pill border-neutral-40 text-14 py-11 px-16 w-auto min-w-160-px' value={active} onChange={(event) => setActive(event.target.value)}>
             <StaticOption value='' text={"All statuses"} />
@@ -183,7 +186,7 @@ const AdminTopicsPage = ({ subjectId }) => {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='5'><StaticText text={"Loading..."} /></td></tr>
+                <AdminTableSkeleton columns={5} />
               ) : topics.length ? (
                 topics.map((topic) => (
                   <tr key={topic.id}>
@@ -195,17 +198,13 @@ const AdminTopicsPage = ({ subjectId }) => {
                   </tr>
                 ))
               ) : (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='5'><StaticText text={"No topics found."} /></td></tr>
+                <AdminEmptyState columns={5} icon='ph ph-list-bullets'><StaticText text={"No topics found."} /></AdminEmptyState>
               )}
             </tbody>
           </table>
         </div>
 
-        <div className='d-flex align-items-center justify-content-end gap-8 mt-24'>
-          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page <= 1} onClick={() => loadTopics(Math.max(meta.page - 1, 1))}><StaticText text={"Previous"} /></button>
-          <span className='text-14 text-neutral-400'>{meta.page} / {meta.totalPages}</span>
-          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page >= meta.totalPages} onClick={() => loadTopics(Math.min(meta.page + 1, meta.totalPages))}><StaticText text={"Next"} /></button>
-        </div>
+        <AdminPagination meta={meta} onPageChange={loadTopics} />
       </div>
     </div>
   );

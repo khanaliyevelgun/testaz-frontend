@@ -78,7 +78,7 @@ const AdminTopicFormPage = ({ subjectId, topicId }) => {
         }
       })
       .catch(() => {
-        if (isMounted) setError("Topic could not be loaded.");
+        if (isMounted) setError("Mövzu yüklənmədi.");
       })
       .finally(() => {
         if (isMounted) setIsLoading(false);
@@ -157,7 +157,7 @@ const AdminTopicFormPage = ({ subjectId, topicId }) => {
       router.push(`/admin/courses/${form.subjectId}/topics`);
       router.refresh();
     } catch {
-      setError(isEdit ? "Topic could not be updated." : "Topic could not be created.");
+      setError(isEdit ? "Mövzu yenilənmədi." : "Mövzu yaradılmadı.");
     } finally {
       setIsSubmitting(false);
     }
@@ -181,7 +181,7 @@ const AdminTopicFormPage = ({ subjectId, topicId }) => {
                 label='Subject'
                 value={form.subjectId}
                 selectedLabel={subjectLabel}
-                placeholder='Search subjects...'
+                placeholder='Fənlər üzrə axtar...'
                 disabled={isEdit || Boolean(subjectId)}
                 required
                 loadOptions={subjectOptions}

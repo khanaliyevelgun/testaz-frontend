@@ -3,8 +3,11 @@
 import { useEffect, useState } from "react";
 import AdminRefreshButton from "@/components/admin/AdminRefreshButton";
 import AdminStatusBadge from "@/components/admin/AdminStatusBadge";
+import AdminPagination from "@/components/admin/AdminPagination";
 import { fetchAdminAuditLogs } from "@/lib/api";
 import StaticText from "@/components/StaticText";
+import AdminEmptyState from "@/components/admin/AdminEmptyState";
+import AdminTableSkeleton from "@/components/admin/AdminTableSkeleton";
 import StaticOption from "@/components/StaticOption";
 
 
@@ -27,7 +30,7 @@ const AdminAuditPage = () => {
       setLogs(response.data || []);
       setMeta(response.meta || { page, perPage: 10, total: 0, totalPages: 1 });
     } catch {
-      setError("Audit logs could not be loaded.");
+      setError("Audit qeydləri yüklənmədi.");
       setLogs([]);
     } finally {
       setIsLoading(false);
@@ -52,9 +55,9 @@ const AdminAuditPage = () => {
         </div>
 
         <div className='d-flex flex-wrap align-items-center gap-12 mb-24'>
-          <input className='common-input rounded-pill flex-grow-1 min-w-240-px' placeholder='Actor user ID' value={filters.actorUserId} onChange={(event) => setFilter("actorUserId", event.target.value)} />
-          <input className='common-input rounded-pill min-w-180-px' placeholder='Action prefix' value={filters.action} onChange={(event) => setFilter("action", event.target.value)} />
-          <input className='common-input rounded-pill min-w-180-px' placeholder='Target type' value={filters.targetType} onChange={(event) => setFilter("targetType", event.target.value)} />
+          <input className='common-input rounded-pill flex-grow-1 min-w-240-px' placeholder='İcraçı istifadəçi ID-si' value={filters.actorUserId} onChange={(event) => setFilter("actorUserId", event.target.value)} />
+          <input className='common-input rounded-pill min-w-180-px' placeholder='Əməliyyat prefiksi' value={filters.action} onChange={(event) => setFilter("action", event.target.value)} />
+          <input className='common-input rounded-pill min-w-180-px' placeholder='Hədəf növü' value={filters.targetType} onChange={(event) => setFilter("targetType", event.target.value)} />
           <select className='form-select rounded-pill border-neutral-40 text-14 py-11 px-16 w-auto min-w-160-px' value={filters.outcome} onChange={(event) => setFilter("outcome", event.target.value)}>
             <StaticOption value='' text={"Outcome"} />
             {outcomes.map((item) => <option value={item} key={item}>{item}</option>)}
@@ -77,7 +80,7 @@ const AdminAuditPage = () => {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'><StaticText text={"Loading..."} /></td></tr>
+                <AdminTableSkeleton columns={6} />
               ) : logs.length ? (
                 logs.map((log) => (
                   <tr key={log.id}>
@@ -90,17 +93,13 @@ const AdminAuditPage = () => {
                   </tr>
                 ))
               ) : (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='6'><StaticText text={"No audit logs found."} /></td></tr>
+                <AdminEmptyState columns={6} icon='ph ph-clipboard-text'><StaticText text={"No audit logs found."} /></AdminEmptyState>
               )}
             </tbody>
           </table>
         </div>
 
-        <div className='d-flex align-items-center justify-content-end gap-8 mt-24'>
-          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page <= 1} onClick={() => loadLogs(Math.max(meta.page - 1, 1))}><StaticText text={"Previous"} /></button>
-          <span className='text-14 text-neutral-400'>{meta.page} / {meta.totalPages}</span>
-          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page >= meta.totalPages} onClick={() => loadLogs(Math.min(meta.page + 1, meta.totalPages))}><StaticText text={"Next"} /></button>
-        </div>
+        <AdminPagination meta={meta} onPageChange={loadLogs} />
       </div>
     </div>
   );

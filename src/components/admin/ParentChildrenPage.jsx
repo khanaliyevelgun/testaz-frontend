@@ -11,14 +11,10 @@ import {
   sendParentInvitation,
   unlinkChild,
 } from "@/lib/api";
+import { formatDateTime as formatDate } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
 import StaticText from "@/components/StaticText";
 
-
-const formatDate = (value) => {
-  if (!value) return "-";
-  return new Intl.DateTimeFormat("az-AZ", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
-};
 
 const formatResult = (result) => {
   if (!result) return "No result";
@@ -51,7 +47,7 @@ const ParentChildrenPage = () => {
       setDashboard(dashboardResponse);
       setInvitations(invitationResponse);
     } catch (requestError) {
-      setError(requestError?.message || "Children could not be loaded.");
+      setError(requestError?.message || "Uşaqlar yüklənmədi.");
     } finally {
       setIsLoading(false);
     }
@@ -64,7 +60,7 @@ const ParentChildrenPage = () => {
   const handleSearch = async (event) => {
     event.preventDefault();
     if (query.trim().length < 2) {
-      setError("Search needs at least 2 characters.");
+      setError("Axtarış ən azı 2 simvol tələb edir.");
       return;
     }
 
@@ -75,7 +71,7 @@ const ParentChildrenPage = () => {
       const results = await searchLearners(query.trim());
       setSearchResults(results);
     } catch (requestError) {
-      setError(requestError?.message || "Learners could not be searched.");
+      setError(requestError?.message || "Şagirdlər axtarıla bilmədi.");
     } finally {
       setIsSearching(false);
     }
@@ -86,12 +82,12 @@ const ParentChildrenPage = () => {
     setNotice("");
     try {
       await sendParentInvitation({ learnerId, message });
-      setNotice("Invitation sent.");
+      setNotice("Dəvət göndərildi.");
       setMessage("");
       setSearchResults([]);
       await load();
     } catch (requestError) {
-      setError(requestError?.message || "Invitation could not be sent.");
+      setError(requestError?.message || "Dəvət göndərilmədi.");
     }
   };
 
@@ -100,23 +96,23 @@ const ParentChildrenPage = () => {
     setNotice("");
     try {
       await unlinkChild(learnerId);
-      setNotice("Child unlinked.");
+      setNotice("Uşağın bağlantısı ləğv edildi.");
       await load();
     } catch (requestError) {
-      setError(requestError?.message || "Child could not be unlinked.");
+      setError(requestError?.message || "Uşağın bağlantısı ləğv edilmədi.");
     }
   };
 
   const cancelInvitation = async (invitationId) => {
-    if (!window.confirm("Cancel this pending invitation?")) return;
+    if (!window.confirm("Bu gözləyən dəvəti ləğv edək?")) return;
     setError("");
     setNotice("");
     try {
       await cancelParentInvitation(invitationId);
-      setNotice("Invitation cancelled.");
+      setNotice("Dəvət ləğv edildi.");
       await load();
     } catch (requestError) {
-      setError(requestError?.message || "Invitation could not be cancelled.");
+      setError(requestError?.message || "Dəvət ləğv edilmədi.");
     }
   };
 
@@ -139,11 +135,11 @@ const ParentChildrenPage = () => {
         <form className='row gy-3 align-items-end mb-20' onSubmit={handleSearch}>
           <div className='col-lg-5'>
             <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Learner search"} /></label>
-            <input className='common-input rounded-pill' value={query} onChange={(event) => setQuery(event.target.value)} placeholder='Username, email or name' />
+            <input className='common-input rounded-pill' value={query} onChange={(event) => setQuery(event.target.value)} placeholder='İstifadəçi adı, email və ya ad' />
           </div>
           <div className='col-lg-5'>
             <label className='text-14 text-neutral-500 fw-medium mb-8'><StaticText text={"Message"} /></label>
-            <input className='common-input rounded-pill' value={message} onChange={(event) => setMessage(event.target.value)} maxLength='500' placeholder='Optional note' />
+            <input className='common-input rounded-pill' value={message} onChange={(event) => setMessage(event.target.value)} maxLength='500' placeholder='Əlavə qeyd (opsional)' />
           </div>
           <div className='col-lg-2'>
             <button type='submit' className='btn btn-main rounded-pill w-100' disabled={isSearching}>

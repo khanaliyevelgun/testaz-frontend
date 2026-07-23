@@ -53,12 +53,24 @@ export const getRefreshToken = () => {
   return cookieRefreshToken ? decodeURIComponent(cookieRefreshToken) : window.localStorage.getItem("refreshToken");
 };
 
+// localStorage key used only as a cross-tab signal: writing it fires a `storage`
+// event in OTHER tabs, letting them adopt a freshly-rotated access token instead of
+// each independently refreshing (which would race the same pre-rotation refresh
+// token and trip the backend's reuse detection → whole-family revoke → logout).
+const ACCESS_TOKEN_SIGNAL_KEY = "eduall.accessToken";
+
 export const setAuthState = (partialState) => {
   if (Object.prototype.hasOwnProperty.call(partialState, "accessToken")) {
     if (partialState.accessToken) {
       setCookie("accessToken", partialState.accessToken);
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(ACCESS_TOKEN_SIGNAL_KEY, partialState.accessToken);
+      }
     } else {
       clearCookie("accessToken");
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem(ACCESS_TOKEN_SIGNAL_KEY);
+      }
     }
   }
 
@@ -95,6 +107,7 @@ export const setUser = (user) => {
 export const clearAuthState = () => {
   if (typeof window !== "undefined") {
     window.localStorage.removeItem("refreshToken");
+    window.localStorage.removeItem(ACCESS_TOKEN_SIGNAL_KEY);
   }
   clearCookie("accessToken");
   clearCookie("refreshToken");
@@ -105,6 +118,26 @@ export const clearAuthState = () => {
   };
   emitChange();
 };
+
+/**
+ * Adopt an access token that another tab just rotated (delivered via a `storage`
+ * event on ACCESS_TOKEN_SIGNAL_KEY). Updates the in-memory access token WITHOUT
+ * re-persisting (the writing tab already persisted it) so this tab uses the fresh
+ * token and does not run its own `/auth/refresh` — the core of the cross-tab guard.
+ * A no-op if the token is unchanged or empty.
+ */
+export const adoptAccessTokenFromOtherTab = (accessToken) => {
+  if (!accessToken || accessToken === authState.accessToken) return;
+  setCookie("accessToken", accessToken);
+  authState = {
+    ...authState,
+    accessToken,
+    isAuthenticated: true,
+  };
+  emitChange();
+};
+
+export const ACCESS_TOKEN_STORAGE_KEY = ACCESS_TOKEN_SIGNAL_KEY;
 
 export const subscribeAuthStore = (listener) => {
   listeners.add(listener);
@@ -173,6 +206,29 @@ export function AuthProvider({ children }) {
     return () => {
       isMounted = false;
     };
+  }, []);
+
+  // Cross-tab guard: when another tab rotates the access token, adopt it here
+  // instead of independently refreshing (which would race the shared refresh token
+  // and trip the backend's reuse detection). Also mirror a cross-tab sign-out.
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+
+    const onStorage = (event) => {
+      if (event.key === ACCESS_TOKEN_STORAGE_KEY) {
+        if (event.newValue) {
+          adoptAccessTokenFromOtherTab(event.newValue);
+        }
+        return;
+      }
+      // Another tab cleared the refresh token (logout / refresh failure) — mirror it.
+      if (event.key === "refreshToken" && event.newValue === null && getAuthState().accessToken) {
+        clearAuthState();
+      }
+    };
+
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
   }, []);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -2,26 +2,25 @@
 
 import { useCallback, useEffect, useState } from "react";
 import AdminRefreshButton from "@/components/admin/AdminRefreshButton";
-import AdminStatusBadge from "@/components/admin/AdminStatusBadge";
+import AdminStatusBadge, { TREND_LABELS } from "@/components/admin/AdminStatusBadge";
 import {
   fetchChildResults,
   fetchChildSessionResult,
+  fetchChildSessionResultDetails,
   fetchChildTopicTrends,
   fetchChildTrends,
   fetchParentDashboard,
 } from "@/lib/api";
+import { formatDateTime as formatDate } from "@/lib/format";
 import { renderQuestionHtml } from "@/lib/questionContent";
 import StaticText from "@/components/StaticText";
+import AdminEmptyState from "@/components/admin/AdminEmptyState";
+import AdminTableSkeleton from "@/components/admin/AdminTableSkeleton";
 import StaticOption from "@/components/StaticOption";
 
 
 
 const PAGE_SIZE = 10;
-
-const formatDate = (value) => {
-  if (!value) return "-";
-  return new Intl.DateTimeFormat("az-AZ", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
-};
 
 const trendIcon = (trend) => {
   if (trend === "IMPROVING") return "ph-bold ph-trend-up text-success-600";
@@ -80,7 +79,7 @@ const ParentProgressPage = () => {
       }
       await loadProgress(resolvedLearnerId, page);
     } catch (requestError) {
-      setError(requestError?.message || "Progress information could not be loaded.");
+      setError(requestError?.message || "Tərəqqi məlumatı yüklənmədi.");
     } finally {
       setIsLoading(false);
     }
@@ -103,7 +102,7 @@ const ParentProgressPage = () => {
     try {
       await loadProgress(learnerId, 1);
     } catch (requestError) {
-      setError(requestError?.message || "Learner progress could not be loaded.");
+      setError(requestError?.message || "Şagirdin tərəqqisi yüklənmədi.");
     } finally {
       setIsLoading(false);
     }
@@ -115,7 +114,7 @@ const ParentProgressPage = () => {
     try {
       await loadProgress(selectedLearnerId, page);
     } catch (requestError) {
-      setError(requestError?.message || "Results could not be loaded.");
+      setError(requestError?.message || "Nəticələr yüklənmədi.");
     } finally {
       setIsLoading(false);
     }
@@ -126,10 +125,14 @@ const ParentProgressPage = () => {
     setIsDetailLoading(true);
     setError("");
     try {
-      setDetail(await fetchChildSessionResult(selectedLearnerId, sessionId));
+      const [result, details] = await Promise.all([
+        fetchChildSessionResult(selectedLearnerId, sessionId),
+        fetchChildSessionResultDetails(selectedLearnerId, sessionId),
+      ]);
+      setDetail({ ...result, details });
     } catch (requestError) {
       setDetail(null);
-      setError(requestError?.message || "Result detail could not be loaded.");
+      setError(requestError?.message || "Nəticənin təfərrüatı yüklənmədi.");
     } finally {
       setIsDetailLoading(false);
     }
@@ -177,7 +180,7 @@ const ParentProgressPage = () => {
                         <td className='py-12 text-14 text-neutral-500'>{item.subjectName || `#${item.subjectId}`}</td>
                         <td className='py-12 text-14 text-neutral-500'>{Math.round(item.accuracy || 0)}%</td>
                         <td className='py-12 text-14 text-neutral-500'>{item.testsCount || 0}</td>
-                        <td className='py-12 text-13 text-neutral-500'><i className={`${trendIcon(item.trend)} me-6`} />{item.trend || "-"}</td>
+                        <td className='py-12 text-13 text-neutral-500'><i className={`${trendIcon(item.trend)} me-6`} />{TREND_LABELS[item.trend] ? <StaticText text={TREND_LABELS[item.trend]} /> : item.trend || "-"}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -199,7 +202,7 @@ const ParentProgressPage = () => {
                         <td className='py-12 text-14 text-neutral-500'>{item.topicName || `#${item.topicId}`}</td>
                         <td className='py-12 text-14 text-neutral-500'>{Math.round(item.accuracy || 0)}%</td>
                         <td className='py-12 text-14 text-neutral-500'>{item.totalQuestions || 0}</td>
-                        <td className='py-12 text-13 text-neutral-500'><i className={`${trendIcon(item.trend)} me-6`} />{item.trend || "-"}</td>
+                        <td className='py-12 text-13 text-neutral-500'><i className={`${trendIcon(item.trend)} me-6`} />{TREND_LABELS[item.trend] ? <StaticText text={TREND_LABELS[item.trend]} /> : item.trend || "-"}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -216,7 +219,7 @@ const ParentProgressPage = () => {
           <table className='table mb-0'>
             <thead><tr><th className='text-12 py-14 px-16'><StaticText text={"Type"} /></th><th className='text-12 py-14 px-16'><StaticText text={"Score"} /></th><th className='text-12 py-14 px-16'><StaticText text={"Percentage"} /></th><th className='text-12 py-14 px-16'><StaticText text={"Correct"} /></th><th className='text-12 py-14 px-16'><StaticText text={"Scored"} /></th><th className='text-12 py-14 px-16 text-end'><StaticText text={"Action"} /></th></tr></thead>
             <tbody>
-              {isLoading ? <tr><td className='py-20 px-16 text-neutral-400' colSpan='6'><StaticText text={"Loading..."} /></td></tr> : results.length ? results.map((result) => (
+              {isLoading ? <AdminTableSkeleton columns={6} /> : results.length ? results.map((result) => (
                 <tr key={result.id || result.sessionId}>
                   <td className='py-14 px-16 text-14 text-neutral-500'>{result.type || "-"}</td>
                   <td className='py-14 px-16 text-14 text-neutral-500'>{result.totalScore ?? "-"} / {result.maxScore ?? "-"}</td>
@@ -225,7 +228,7 @@ const ParentProgressPage = () => {
                   <td className='py-14 px-16 text-14 text-neutral-500'>{formatDate(result.scoredAt)}</td>
                   <td className='py-14 px-16 text-end'><button type='button' className='px-14 py-8 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white' onClick={() => openDetail(result.sessionId)}><StaticText text={"Details"} /></button></td>
                 </tr>
-              )) : <tr><td className='py-20 px-16 text-neutral-400' colSpan='6'><StaticText text={"No results found."} /></td></tr>}
+              )) : <AdminEmptyState columns={6} icon='ph ph-chart-bar'><StaticText text={"No results found."} /></AdminEmptyState>}
             </tbody>
           </table>
         </div>

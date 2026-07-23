@@ -1,14 +1,20 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import AdminRefreshButton from "@/components/admin/AdminRefreshButton";
 import AdminRowActions from "@/components/admin/AdminRowActions";
 import AdminStatusBadge from "@/components/admin/AdminStatusBadge";
+import AdminPagination from "@/components/admin/AdminPagination";
 import { dismissAdminReport, fetchAdminReports, resolveAdminReport } from "@/lib/api";
+import { questionHtmlToText } from "@/lib/questionContent";
 import StaticText from "@/components/StaticText";
+import AdminEmptyState from "@/components/admin/AdminEmptyState";
+import AdminTableSkeleton from "@/components/admin/AdminTableSkeleton";
 import StaticOption from "@/components/StaticOption";
 
-
+const truncate = (value, maxLength = 80) =>
+  value.length > maxLength ? `${value.slice(0, maxLength).trim()}…` : value;
 
 const statuses = ["OPEN", "RESOLVED", "DISMISSED"];
 
@@ -28,7 +34,7 @@ const AdminReportsPage = () => {
       setReports(response.data || []);
       setMeta(response.meta || { page, perPage: 10, total: 0, totalPages: 1 });
     } catch {
-      setError("Reports could not be loaded.");
+      setError("Şikayətlər yüklənmədi.");
       setReports([]);
     } finally {
       setIsLoading(false);
@@ -51,7 +57,7 @@ const AdminReportsPage = () => {
       }
       await loadReports({ page: meta.page });
     } catch {
-      setError("Report action failed.");
+      setError("Şikayət əməliyyatı alınmadı.");
     }
   };
 
@@ -99,29 +105,33 @@ const AdminReportsPage = () => {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='5'><StaticText text={"Loading..."} /></td></tr>
+                <AdminTableSkeleton columns={5} />
               ) : reports.length ? (
                 reports.map((report) => (
                   <tr key={report.id}>
                     <td className='py-16 px-20 text-14 text-neutral-500'>{report.reason || "-"}</td>
                     <td className='py-16 px-20 text-14 text-neutral-500'>{report.comment || "-"}</td>
-                    <td className='py-16 px-20 text-14 text-neutral-500'>{report.questionId || "-"}</td>
+                    <td className='py-16 px-20 text-14 text-neutral-500'>
+                      {report.questionId ? (
+                        <Link href={`/admin/questions/${report.questionId}/edit`} className='text-main-600 text-decoration-underline'>
+                          {report.questionStem
+                            ? truncate(questionHtmlToText(report.questionStem))
+                            : <StaticText text={"View question"} />}
+                        </Link>
+                      ) : "-"}
+                    </td>
                     <td className='py-16 px-20'><AdminStatusBadge status={report.status} /></td>
                     <td className='py-16 px-20'><div className='d-flex justify-content-end'><AdminRowActions items={actionsFor(report)} /></div></td>
                   </tr>
                 ))
               ) : (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='5'><StaticText text={"No reports found."} /></td></tr>
+                <AdminEmptyState columns={5} icon='ph ph-flag'><StaticText text={"No reports found."} /></AdminEmptyState>
               )}
             </tbody>
           </table>
         </div>
 
-        <div className='d-flex align-items-center justify-content-end gap-8 mt-24'>
-          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page <= 1} onClick={() => loadReports({ page: Math.max(meta.page - 1, 1) })}><StaticText text={"Previous"} /></button>
-          <span className='text-14 text-neutral-400'>{meta.page} / {meta.totalPages}</span>
-          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page >= meta.totalPages} onClick={() => loadReports({ page: Math.min(meta.page + 1, meta.totalPages) })}><StaticText text={"Next"} /></button>
-        </div>
+        <AdminPagination meta={meta} onPageChange={(page) => loadReports({ page })} />
       </div>
     </div>
   );

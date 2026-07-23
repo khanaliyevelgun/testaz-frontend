@@ -5,14 +5,13 @@ import { useEffect, useState } from "react";
 import AdminRefreshButton from "@/components/admin/AdminRefreshButton";
 import AdminRowActions from "@/components/admin/AdminRowActions";
 import AdminStatusBadge from "@/components/admin/AdminStatusBadge";
+import AdminPagination from "@/components/admin/AdminPagination";
 import { fetchExams } from "@/lib/api";
+import { formatDateTime as formatDate } from "@/lib/format";
 import StaticText from "@/components/StaticText";
+import AdminEmptyState from "@/components/admin/AdminEmptyState";
+import AdminTableSkeleton from "@/components/admin/AdminTableSkeleton";
 
-
-const formatDate = (value) => {
-  if (!value) return "-";
-  return new Intl.DateTimeFormat("az-AZ", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
-};
 
 const AdminExamsPage = () => {
   const [exams, setExams] = useState([]);
@@ -28,7 +27,7 @@ const AdminExamsPage = () => {
       setExams(response.data || []);
       setMeta(response.meta || { page, perPage: 10, total: 0, totalPages: 1 });
     } catch (requestError) {
-      setError(requestError?.message || "Exams could not be loaded.");
+      setError(requestError?.message || "İmtahanlar yüklənmədi.");
       setExams([]);
     } finally {
       setIsLoading(false);
@@ -77,7 +76,7 @@ const AdminExamsPage = () => {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='7'><StaticText text={"Loading..."} /></td></tr>
+                <AdminTableSkeleton columns={7} />
               ) : exams.length ? (
                 exams.map((exam) => (
                   <tr key={exam.examId}>
@@ -94,17 +93,13 @@ const AdminExamsPage = () => {
                   </tr>
                 ))
               ) : (
-                <tr><td className='py-20 px-20 text-neutral-400' colSpan='7'><StaticText text={"No exams found."} /></td></tr>
+                <AdminEmptyState columns={7} icon='ph ph-exam' action={{ href: "/admin/exams/new", label: <StaticText text={"Create Exam"} /> }}><StaticText text={"No exams found."} /></AdminEmptyState>
               )}
             </tbody>
           </table>
         </div>
 
-        <div className='d-flex align-items-center justify-content-end gap-8 mt-24'>
-          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page <= 1} onClick={() => loadExams(Math.max(meta.page - 1, 1))}><StaticText text={"Previous"} /></button>
-          <span className='text-14 text-neutral-400'>{meta.page} / {meta.totalPages}</span>
-          <button type='button' className='px-14 py-8 border border-neutral-40 rounded-8 text-14 text-neutral-500' disabled={meta.page >= meta.totalPages} onClick={() => loadExams(Math.min(meta.page + 1, meta.totalPages))}><StaticText text={"Next"} /></button>
-        </div>
+        <AdminPagination meta={meta} onPageChange={loadExams} />
       </div>
     </div>
   );
