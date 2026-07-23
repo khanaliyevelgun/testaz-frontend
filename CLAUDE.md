@@ -7,6 +7,10 @@
 >
 > Keep this file in sync when you change architecture, folder structure, state
 > management, the API layer, the i18n system, or shared conventions.
+>
+> **New session? Start with §17 (Next Session Starting Instructions).** Handoff sections:
+> §13 review summary, §14 remaining issues, §15 future improvements, §16 the
+> intentionally-unimplemented backend APIs that must NOT be deleted.
 
 ---
 
@@ -408,3 +412,192 @@ The app has **no automated test suite**, so verification is manual:
   removed the unused `emptyPage`; deleted dead files (`components/InstructorOne.jsx`,
   `helper/Preloader.jsx`); fixed the stale `ProtectedRoute` reference in `README.md`;
   created this `CLAUDE.md`. Build verified green (49 routes, identical route set).
+
+---
+
+## 13. Frontend Review Summary (latest full review session)
+
+A full frontend code-review + API-verification + end-to-end testing pass was completed. The
+existing UI/UX/design was preserved as-is — **no redesign, no new features, no architectural
+change**. Everything below was verified against the **live backend + Postgres DB** with real
+seeded data (not code inspection alone).
+
+### Frontend refactors performed
+- **`formatDate` consolidation** → new `src/lib/format.js` (`formatDateTime` = date + short
+  time; `formatDate` = date only). The helper was copy-pasted 15× across admin/dashboard
+  components in three slightly-different forms (some without a NaN guard, one date-only).
+  Output is unchanged for any valid date; the shared version adds a NaN guard so a malformed
+  timestamp renders `"-"` instead of `"Invalid Date"`. `AdminPaymentsPage` keeps its distinct
+  `toLocaleString` variant (genuinely different output, intentionally not merged).
+- The rest of the codebase was found to be **already high quality** — no unused imports, no
+  `useAuth`-function-in-effect-deps re-render loops, proper `isMounted` unmount guards in 14
+  components, and correctly-cleaned timers/intervals/polling (AI-job polling, exam countdown,
+  per-question autosave in `ExamSessionPage`). Working, clean code was left untouched.
+
+### Backend bugs fixed (committed on backend feature branches)
+- **Org/exam tables showed raw student UUIDs.** `MemberResponse` and
+  `TestResultSummaryResponse` gained `studentName`, batch-resolved once per page via
+  `UserService.findBasicInfoByIds` (no N+1 — same pattern as the payer-name enrichment in
+  `SubscriptionAdminServiceImpl`). New acyclic backend edges `organization → user` and
+  `result → user`. Branch: `feat/member-result-student-names`. Full `./gradlew build` green.
+- (Earlier in the review cycle, also on branches: `feat/report-question-identification` — added
+  `questionStem`/`questionSubjectId` to the report DTO; `fix/cors-allowed-origins-yaml` — fixed a
+  malformed `app.cors.allowed-origins` default that silently rejected `localhost:3000/3001`.)
+
+### Frontend bugs fixed (committed on `refactor/frontend-review-2`)
+- **User name displayed as the generic "İstifadeci"/"Admin" on every authenticated screen.**
+  Root cause: `/auth/me` is intentionally minimal (id + roles from the JWT — no DB hit), so it
+  never carried the display name; the name/email/phone live on `/users/me`, which the frontend
+  never called. `fetchProfile` now merges `/users/me` into the token-derived user (a failed
+  `/users/me` falls back to the token user, so auth never breaks). Fixes the name across the
+  sidebar greeting, profile page, and profile dropdown. Verified in-browser (shows real names).
+- **Org owner / exam owner saw student UUIDs** in the org members list, org test-results
+  dashboard, and exam-owner attempts view. Wired the new backend `studentName` into all three
+  (`OrganizationMembersPage`, `OrganizationInvitesPage`, `AdminExamAttemptsPage`); the UUID is
+  kept as small secondary text. Verified in-browser (members page now lists real names).
+
+### Verified user flows (real data, live stack)
+- **Auth:** sign-in / sign-out redirect; startup refresh → `/auth/me` → `/users/me` hydration.
+- **Student:** dashboard (recent-average / best-score math cross-checked vs DB), results list
+  (8 rows = DB), result detail modal (per-question breakdown 4 correct / 5 wrong / 1 blank =
+  DB), question-report buttons present.
+- **Exam-taking (core):** a **full fresh take** — preview → start (fresh IN_PROGRESS session,
+  90-min timer) → answer all 9 (1 short-text + 8 options, autosave persisted to DB) → submit →
+  async scoring → result generated in DB. Also confirmed the one-shot-resume path (starting an
+  already-completed exam resumes the read-only submitted session).
+- **Parent:** dashboard (linked-learner count = DB), children (uses `fetchParentDashboard`, so
+  names show), notifications auto-mark-read (unread 12 → 2 after viewing page 1, DB-confirmed).
+- **Organization:** my orgs, members (now with names), test-results dashboard (6 results = DB).
+- **Admin:** users pagination (page 2, 31 total, 4 pages), role filter (STUDENT = 26 = DB),
+  search ("orucov" → 3 = DB), audit filters (action/outcome, counts = DB), plans list,
+  **subject CRUD cycle** (create → update → deactivate, DB-verified), AI generate (job created,
+  gracefully FAILED "Claude API unavailable" — no key configured, expected degradation).
+- **Subscriptions/payments:** plans list (prices correct), entitlement, checkout (creates
+  PENDING subscription + returns provider redirectUrl — mock flow, see Remaining Issues).
+
+### API verification completed
+Every read endpoint the frontend integrates was cross-checked against direct DB queries — all
+matched (counts, pagination `page`/`size`/`totalElements`/`totalPages`, filter/search results,
+per-row values). The `api.js` layer is uniform (`normalizePage` + `toQueryString` everywhere),
+so the verified patterns hold across all list endpoints. `meta.page` 1-based↔0-based conversion
+confirmed correct.
+
+### Database verification completed
+Used direct `psql` queries against the `testaz` Postgres (via the `testaz-postgres` container,
+`testaz/testaz`) to confirm displayed data matches stored rows for every checked screen.
+
+### Testing completed
+Manual E2E in the in-app browser against the live backend (there is no automated FE test suite,
+§10). Backend changes covered by the existing 130-test suite (`./gradlew build` green).
+
+### Branches created
+- **Frontend** (`eduall/`): `refactor/frontend-review-2` (formatDate consolidation, name-display
+  fix, org student-name display, this doc). Committed locally — **not pushed / not merged** per
+  the standing instruction (this repo is commit-only for the assistant).
+- **Backend** (`testaz-backend/`): `feat/member-result-student-names`,
+  `feat/report-question-identification`, `fix/cors-allowed-origins-yaml`. Committed on branches;
+  `main` untouched.
+
+### Important implementation decisions
+- **`fetchProfile` merges `/users/me`** rather than making `/auth/me` do a DB lookup — preserves
+  the deliberate stateless/no-DB-hit design of `/auth/me` while still getting the display name.
+  The merge fails soft (auth never breaks if `/users/me` errors).
+- **Student-name enrichment is a live batch lookup, not a stored snapshot** — mirrors the
+  established `findBasicInfoByIds` payer-name pattern; the owner sees the student's current name.
+- **Did NOT extract a `useAdminList` hook** despite the list-page state-machine duplication —
+  CLAUDE.md §8 warns it must preserve each page's exact debounce/reload timing, and touching 35
+  files risks more than the marginal gain (see Future Improvements).
+- **Did NOT touch working, clean code** just to "improve" it — the review confirmed most of the
+  codebase is already sound.
+
+---
+
+## 14. Remaining Issues
+
+Open items that still require work. None block the verified flows.
+
+| Issue | Why it remains | Priority | Needs product decision? |
+|---|---|---|---|
+| **Payment checkout leads to a 404.** Clicking "Ödənişə keç" redirects to the backend's `return-url` default `http://localhost:3000/payment/return`, a route that does not exist. | This is the **mock** payment provider. Real payment (Payriff) is **vendor-blocked** per backend CLAUDE.md §26. The return URL is a placeholder. | Medium | **Yes** — either hide checkout until real payments land, or add a `/payment/return` page. A real provider changes the return contract, so building the page now may be wasted. |
+| **One-shot exam "already completed" UX.** Starting an already-completed one-shot exam silently lands the student on the **read-only submitted session** instead of a clear "you already completed this — here's your result." | Behaviour and data are **correct** (the backend resumes the existing one-shot session). Only the messaging is unpolished. | Low | No (small UX copy/redirect), but confirm the desired message. |
+| **Refresh-token double-rotation (watch-item).** Documented in §7. A cross-tab race could theoretically log a user out (per-tab refresh dedupe, not cross-tab). | **Not reproduced through normal usage** — only triggered by manual out-of-band `/auth/refresh` calls during debugging. | Low (watch-only) | No — only investigate if "random logouts" are reported. |
+| **No automated frontend test suite.** Verification is manual (§10). | Out of scope for this review; ESLint is also not configured (`npm run lint` prompts interactive setup). | Low | Partially — deciding on a test stack is a project call. |
+
+---
+
+## 15. Future Improvements (documented, NOT current tasks)
+
+Non-essential suggestions for future consideration. **Do not implement these as part of a review
+or refactor pass unless explicitly asked.**
+
+- **Shared `useAdminList` hook.** Would remove the remaining list-page state-machine duplication
+  (~35 files) and centrally fix a latent **race condition** (rapid filter changes fire
+  overlapping fetches with no out-of-order guard — low severity, unobservable on a local
+  backend). Only worth doing if it **exactly preserves** each page's debounce/reload timing
+  (§8) — otherwise it changes behaviour.
+- **Auth redirect timer cleanup.** `SignInInner` / `SignUpInner` / `ResetPasswordInner` set a
+  one-shot `setTimeout(() => router.replace(...), ~1s)` after a successful action and don't clear
+  it on unmount. Harmless (one-shot, only calls `router.replace`, no setState-after-unmount), but
+  a trivial cleanup for zero StrictMode warnings.
+- **Countdown-interval churn in `ExamSessionPage`.** The 1-second countdown effect depends on
+  `submit` (a `useCallback` that changes when `session` updates), so the interval is torn
+  down/recreated whenever the student answers a question. Correct (it recomputes from the real
+  `expiresAt`), just slightly wasteful — accessing `submit` via a ref would stabilize it.
+- **Splitting `lib/api.js`** by domain (`api/auth.js`, `api/exams.js`, …) if it keeps growing —
+  behind the same exported names, no call-site import changes (§5).
+- **Student-name secondary UUID.** The org tables show the name + the UUID as small secondary
+  text; if the UUID is not needed for support, it can be dropped for a cleaner look (a design
+  call, not done).
+
+---
+
+## 16. Intentionally-unimplemented backend APIs (DO NOT DELETE)
+
+Some functions in `lib/api.js` wrap backend endpoints that **have no frontend UI yet**. They are
+**NOT dead code** — they are the ready API surface for features planned in future iterations.
+
+**Rules:**
+- **Do NOT delete them** during a review/refactor/cleanup pass.
+- **Do NOT treat them as findings** ("unused export") — they are deliberate.
+- They will be wired into new UI in future feature iterations.
+- Ignore them when hunting for dead code.
+
+Currently unimplemented (verified: zero component/app usage):
+- **`startSession`** (`POST /sessions`) — ad-hoc practice-session start (choose subject/topic/
+  difficulty and begin). The seeded practice sessions exist in the DB, but there is no UI to
+  create a new one yet; the current UI takes exams by share code only.
+- **`redeemOrganizationInvite`** (`POST /organizations/invites/{code}/redeem`) — a student joins
+  an org and starts its fixed test by code. No redeem UI yet.
+- **`fetchExamDefinitions`** (`GET /exam-definitions`) and **`fetchExamDefinition`**
+  (`GET /exam-definitions/{code}`) — official Buraxılış/Qəbul exam blueprints. Not surfaced yet.
+- **`regenerateExamShareToken`** (`POST /exams/{id}/share-token/regenerate`) — an exam owner
+  rotating a leaked share code. No button wired yet.
+
+**Note:** `fetchLinkedChildren` was previously listed as unimplemented but **IS used** by
+`AdminExamFormPage` (a parent assigning an exam to a linked child) — keep it.
+
+---
+
+## 17. Next Session Starting Instructions
+
+**Every new Claude Code session working on this project MUST, before writing any code:**
+
+1. **Read this entire `CLAUDE.md`** (the frontend single source of truth) end to end.
+2. **Understand the backend architecture** — read `../testaz-backend/CLAUDE.md` (or wherever the
+   backend repo lives); it is the authoritative backend + business-rule reference.
+3. **Understand the frontend architecture** — §§1–11 here (routing, auth, state, API layer, i18n,
+   shared components, conventions).
+4. **Understand completed features** — §13 (review summary) + the change log (§12).
+5. **Understand pending / intentionally-unimplemented features** — §14 (remaining issues) and
+   §16 (unimplemented-but-intentional APIs).
+6. **Understand the business rules** — from the backend CLAUDE.md; never infer them from the UI.
+7. **Never change business logic** unless explicitly instructed.
+8. **Never remove the intentionally-unimplemented frontend API integrations** in §16.
+9. **Ask for clarification whenever a business or product decision is required** (see §14's
+   "Needs product decision" column) instead of assuming. Design/UX changes, copy changes, and
+   removing/hiding reachable features are product decisions.
+
+Only after fully understanding the project — backend + frontend, completed + pending, and the
+hard rules in §9 — should implementation begin. Preserve the existing UI/UX (it is considered
+good); keep the production build green (§10); and keep this file in sync (§20.1-style doc-sync:
+update the change log + the relevant section, then summarize in chat).
