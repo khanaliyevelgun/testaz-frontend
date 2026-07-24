@@ -27,6 +27,7 @@ export const parentSidebarItems = [
 export const childSidebarItems = [
   { label: "Dashboard", href: "/admin", icon: "ph-bold ph-house" },
   { label: "Practice", href: "/admin/practice", icon: "ph ph-exam" },
+  { label: "Official exams", href: "/admin/official-exams", icon: "ph ph-graduation-cap" },
   { label: "Assignments", href: "/admin/assignments", icon: "ph ph-clipboard-text" },
   { label: "Join by code", href: "/admin/join", icon: "ph ph-sign-in" },
   { label: "Results", href: "/admin/quiz-attempts", icon: "ph ph-chart-bar" },

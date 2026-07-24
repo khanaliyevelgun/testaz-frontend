@@ -142,8 +142,12 @@ Two repos, one product:
 - **✅ Org-invite redemption (2026-07-24):** students join a course/tutor/school test by code at
   `/admin/join` (`redeemOrganizationInvite` → join + start/resume → the session runner; also linked
   from Assignments). Change log §12.
-- **⛔ Not yet implemented (frontend — intentional, see §16):** official exam-definition browsing
-  (`fetchExamDefinitions`/`fetchExamDefinition`), exam share-token regeneration
+- **✅ Official exam simulations (2026-07-24):** students browse the Buraxılış/Qəbul blueprints, pick a
+  Qəbul group, and start the real timed simulation at `/admin/official-exams` (`fetchExamDefinitions` +
+  `fetchExamDefinition` + `startSession(OFFICIAL_EXAM)` behind a confirm dialog → the session runner).
+  Change log §12. *(This also fixed a backend Redis-cache-serialization bug on `/exam-definitions` — see
+  the change log; backend now 131 tests.)*
+- **⛔ Not yet implemented (frontend — intentional, see §16):** exam share-token regeneration
   (`regenerateExamShareToken`). **Backend-blocked:** real Email/SMS + payment providers (vendor
   accounts needed).
 
@@ -511,6 +515,45 @@ The app has **no automated test suite**, so verification is manual:
 
 ## 12. Change log (keep append-only; newest first)
 
+- **Feature — official exam simulations (2026-07-24).** Implemented the two remaining §16 read endpoints
+  (`fetchExamDefinitions`/`fetchExamDefinition`) paired with the `OFFICIAL_EXAM` start flow: a student browses the
+  **Buraxılış/Qəbul blueprints and starts the real timed simulation** — the product's headline student use case.
+  No redesign; reuses the existing design language + session runner. Verified end-to-end against the live backend +
+  DB in-browser (both locales); frontend build green (**65 route-table entries** — the new `/admin/official-exams`) +
+  `i18n:audit` green (188 files); backend `./gradlew build` green (**131 tests** — see the cache fix below). Branch
+  `feat/official-exams` (`--no-ff` merge to `main`, per §24).
+  - **New page** `components/admin/ChildOfficialExamsPage.jsx` + thin route `app/admin/official-exams/page.jsx`
+    (`RoleProtectedRoute allowedRoles={["child"]}`). Two selectable exam **cards** (questions/duration/max-score/
+    negative-marking summary, from `fetchExamDefinitions`); selecting one loads its full blueprint
+    (`fetchExamDefinition`) → for **Qəbul** a **group selector** (I_RI/I_RK/II/III_DT/III_TC/IV) reveals that group's
+    **weighted subject-slot breakdown** (subject NAME via a `fetchPublicSubjects` code→name map, question count,
+    closed/open split, max points); **Buraxılış** (single group) shows its 3 slots directly. A **confirmation dialog**
+    ("This is a timed official exam; the countdown begins now — 180 minutes", with the exam + group) gates the start,
+    then `startSession({ type: "OFFICIAL_EXAM", examCode, examGroupCode })` → `router.push('/admin/exam-session/{id}')`
+    (the existing runner; the 180-min timer runs). Verified: full Buraxılış start → runner with 85 questions +
+    "179:55" countdown; Qəbul I_RI slot breakdown (Riyaziyyat/Fizika/İnformatika, 150/150/100).
+  - **Product decisions (asked & confirmed):** feature = official exams (highest-value remaining §16 item — the
+    headline student flow); selection UX = **two cards + group dropdown with the blueprint detail shown on select**;
+    start = **behind a confirmation dialog** (a 180-min timed high-stakes exam should not start on an accidental click).
+    Nav: child sidebar **"Official exams"** item (`ph ph-graduation-cap`, after Practice); route guard
+    `authRoles.js` `routeRoles` (`/admin/official-exams` → `["child"]`).
+  - **Graceful exhaustion (422):** an official exam needs a large pool of UNSEEN questions per subject slot (Qəbul =
+    22 closed + 8 open × 3 subjects); the seeded bank can run dry for a student who has practised those subjects. The
+    page shows the backend message **plus an actionable localized hint** ("try another group or exam") rather than a
+    dead end. The static backend states (`examGroupCode is required`, `no questions … to assemble`) are localized via
+    `api.codes.*` keys.
+  - **Localization (both directions):** AZ source for the page copy (heading/subtitle/card badges/table headers/
+    group label/confirm dialog/buttons/hint) with EN fallbacks in `staticFallbackTranslations.en`; the English-source
+    label "Official exams" (sidebar + heading) got `az` ("Rəsmi imtahanlar") + `en` (identity) fallback entries so both
+    toggle cleanly. Exam names are user data (never translated). Verified: full AZ render, EN toggle (heading/cards/
+    table/dropdown/buttons switch), mobile stack (375px, cards full-width, table scrolls internally), confirm dialog.
+  - **⚠️ Backend fix included (`fix/exam-blueprint-cache-serialization`, merged to backend `main`).** This feature was
+    the first frontend consumer to read `/exam-definitions` repeatedly and exposed a **Redis-cache-serialization bug**:
+    the endpoints returned **500 on the second (cache-served) read** because the cached value was a `Stream.toList()`
+    immutable list, which `GenericJackson2JsonRedisSerializer` can't deserialize. Fixed in `ExamServiceImpl` (mutable
+    `ArrayList`s throughout the cached object graph) + a regression test reading each endpoint twice. Backend 130 →
+    **131 tests**. No frontend code depended on the bug — it just unblocks this page. (Details in the backend
+    CLAUDE.md §22.)
 - **Feature — org-invite redemption (2026-07-24).** Implemented the §16 `redeemOrganizationInvite` integration:
   a student **joins a course/tutor/school test by code**. Previously the only "take by code" flow was exams;
   students in an organization had no way to redeem their teacher's join code. No redesign; reuses the existing
@@ -954,8 +997,11 @@ Currently unimplemented (verified: zero component/app usage):
   starts its fixed test by code via `/admin/join` (`ChildJoinPage`): enter code →
   `redeemOrganizationInvite` → the existing `ExamSessionPage` runner (or "already completed → view
   results" for a finished one-shot). Also linked from the Assignments page. See the change log §12.
-- **`fetchExamDefinitions`** (`GET /exam-definitions`) and **`fetchExamDefinition`**
-  (`GET /exam-definitions/{code}`) — official Buraxılış/Qəbul exam blueprints. Not surfaced yet.
+- ~~**`fetchExamDefinitions`** + **`fetchExamDefinition`**~~ **IMPLEMENTED (2026-07-24)** — the official
+  Buraxılış/Qəbul blueprints are now surfaced at `/admin/official-exams` (`ChildOfficialExamsPage`): a student
+  browses both exams, picks a Qəbul specialization group, sees the weighted subject breakdown, and starts the real
+  timed simulation (`startSession({ type: "OFFICIAL_EXAM", examCode, examGroupCode })`) via a confirm dialog. See
+  the change log §12.
 - **`regenerateExamShareToken`** (`POST /exams/{id}/share-token/regenerate`) — an exam owner
   rotating a leaked share code. No button wired yet.
 
