@@ -188,6 +188,14 @@ const ExamSessionPage = ({ sessionId }) => {
     }
   }, [flushPendingTextAnswer, isSubmitting, router, session, sessionId]);
 
+  // Keep the latest `submit` in a ref so the countdown effect below doesn't depend on it: `submit` is a
+  // useCallback that changes on every answer (it closes over `session`), which would otherwise tear down
+  // and recreate the 1-second interval each time the student answers a question.
+  const submitRef = useRef(submit);
+  useEffect(() => {
+    submitRef.current = submit;
+  }, [submit]);
+
   useEffect(() => {
     if (!session?.expiresAt || session.status !== "IN_PROGRESS") return undefined;
     const timerId = window.setInterval(() => {
@@ -195,12 +203,12 @@ const ExamSessionPage = ({ sessionId }) => {
       setRemainingMs(nextRemaining);
       if (nextRemaining === 0) {
         window.clearInterval(timerId);
-        submit();
+        submitRef.current();
       }
     }, 1000);
 
     return () => window.clearInterval(timerId);
-  }, [session?.expiresAt, session?.status, submit]);
+  }, [session?.expiresAt, session?.status]);
 
   const updateQuestion = (patch, { deferSave = false } = {}) => {
     if (!question || !isActive) return;

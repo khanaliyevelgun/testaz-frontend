@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { resetPassword } from "@/lib/api";
 import StaticText from "@/components/StaticText";
 
@@ -20,6 +20,10 @@ const ResetPasswordInner = () => {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const redirectTimerRef = useRef(null);
+
+  // Clear the post-reset redirect timer if the component unmounts first.
+  useEffect(() => () => window.clearTimeout(redirectTimerRef.current), []);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -52,7 +56,7 @@ const ResetPasswordInner = () => {
         newPassword: form.password,
       });
       setMessage("Şifrəniz uğurla yeniləndi.");
-      window.setTimeout(() => router.replace("/sign-in"), 1200);
+      redirectTimerRef.current = window.setTimeout(() => router.replace("/sign-in"), 1200);
     } catch (requestError) {
       setError(requestError?.message || "Şifrə yenilənmədi. Kodu yoxlayın və yenidən cəhd edin.");
       setIsSubmitting(false);

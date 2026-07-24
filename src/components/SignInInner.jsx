@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,6 +15,10 @@ const SignInInner = () => {
   const { login } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const redirectTimerRef = useRef(null);
+
+  // Clear the post-login redirect timer if the component unmounts first (no stray router.replace).
+  useEffect(() => () => window.clearTimeout(redirectTimerRef.current), []);
 
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);
@@ -41,7 +45,7 @@ const SignInInner = () => {
       const response = await login(form);
       setMessage(response?.message || "Uğurla daxil oldunuz.");
       const next = searchParams.get("next");
-      window.setTimeout(() => {
+      redirectTimerRef.current = window.setTimeout(() => {
         router.replace(next?.startsWith("/") ? next : "/admin");
       }, 800);
     } catch {
