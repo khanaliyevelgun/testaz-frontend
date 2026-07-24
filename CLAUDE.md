@@ -136,11 +136,13 @@ Two repos, one product:
   `staticFallbackTranslations`); (2) loading **skeletons** (`AdminTableSkeleton`, 19 tables); (3) **empty states**
   (`AdminEmptyState`, 18 tables); (4) **accessibility** in shared primitives (pagination live-region/labels,
   keyboard-operable row-action menu, `:focus-visible` rings, aria-labels). No in-flight partial work.
-- **⛔ Not yet implemented (frontend — intentional, see §16):** ad-hoc practice-session start
-  (`startSession`), org-invite redemption UI (`redeemOrganizationInvite`), official exam-definition
-  browsing (`fetchExamDefinitions`/`fetchExamDefinition`), exam share-token regeneration
-  (`regenerateExamShareToken`). **Backend-blocked:** real Email/SMS + payment providers (vendor
-  accounts needed).
+- **✅ Ad-hoc practice-session start (2026-07-24):** students self-start a practice test at
+  `/admin/practice` (subject + difficulty + optional topic + count → `startSession`), reusing the
+  existing session runner + Results page. Change log §12.
+- **⛔ Not yet implemented (frontend — intentional, see §16):** org-invite redemption UI
+  (`redeemOrganizationInvite`), official exam-definition browsing (`fetchExamDefinitions`/
+  `fetchExamDefinition`), exam share-token regeneration (`regenerateExamShareToken`).
+  **Backend-blocked:** real Email/SMS + payment providers (vendor accounts needed).
 
 ---
 
@@ -506,6 +508,39 @@ The app has **no automated test suite**, so verification is manual:
 
 ## 12. Change log (keep append-only; newest first)
 
+- **Feature — ad-hoc practice-session start (2026-07-24).** Implemented the §16 `startSession` integration:
+  students can now **self-start a practice test** (the core "take tests independently" promise — previously a
+  student could only take exams by share code / parent assignment / org invite). No redesign; reuses the existing
+  design language + session runner. Verified end-to-end against the live backend + DB in-browser (both locales);
+  production build green (**63 route-table entries** — the new `/admin/practice`) + `i18n:audit` green (184 source
+  files). Branch `feat/practice-session-start` (`--no-ff` merge to `main`, per §24).
+  - **New page** `components/admin/ChildPracticePage.jsx` + thin route `app/admin/practice/page.jsx`
+    (`RoleProtectedRoute allowedRoles={["child"]}`). A form (subject **required** + difficulty **required** +
+    optional topic + question count 5–50, default 20) → `startSession({ type: "PRACTICE", subjectId, topicId?,
+    difficulty, count })` → `router.push('/admin/exam-session/{id}')` (the **existing** `ExamSessionPage` runner,
+    already `child`-guarded — so autosave/submit/scored-result all reuse the proven exam-taking flow; practice
+    sessions are untimed → the runner shows "Vaxtsız"). Grade is intentionally left unset (backend treats null
+    grade as "any grade", matching the seeder's grade-agnostic practice sessions — avoids over-narrowing → 422).
+  - **Taxonomy source:** uses the **public** `fetchPublicSubjects` (`GET /subjects`) + `fetchPublicTopics`
+    (`GET /subjects/{code}/topics`) — NOT the admin `/admin/subjects` variants (a STUDENT can't call those). Subject
+    change reactively loads that subject's topics (optional filter; a load failure just hides the filter).
+  - **Product decisions (asked & confirmed):** feature = ad-hoc practice (highest-value §16 gap); inputs =
+    subject+difficulty+topic+count (grade left unset); placement = **new sidebar item + dashboard CTA**. Added
+    `childSidebarItems` "Practice" entry (`ph ph-exam`, between Dashboard and Assignments) + a "Practice" quick-link
+    in the child dashboard's Quick-access panel (`getChildDashboard.quickLinks`). Server-side route guard added to
+    `authRoles.js` `routeRoles` (`/admin/practice` → `["child"]`) so `middleware.js` enforces it.
+  - **UX for exhaustion (422):** a narrow (topic + difficulty) selection can genuinely run the unseen-question bank
+    dry (per-topic ACTIVE counts are small in the seed; AI replenishment is off with no Claude key). The page shows
+    the localized backend message **plus an actionable hint** ("choose All topics / try another difficulty") instead
+    of a dead end, and clears stale error/hint on any field change. (Backend `count` is a target, not a floor — it
+    serves however many unseen exist, so a real 422 only occurs at **zero** unseen.)
+  - **Localization (both directions):** AZ is the source for the form copy (heading/subtitle/labels/options/
+    button/hint) with EN fallbacks in `staticFallbackTranslations.en`; the English-source labels "Practice"
+    (sidebar + quick link) and the difficulty options ("Asan"/"Orta"/"Çətin") got matching `az`/`en` fallback
+    entries so both toggle cleanly. Also localized the backend practice messages via `api.codes.*` keys in
+    `az.json`/`en.json` ("No unseen questions…" → AZ, plus the subject/difficulty-required message) — benefits the
+    whole app, not just this page. Verified in-browser: full AZ render, EN toggle (heading/labels/difficulty/nav all
+    switch), mobile stack (375px, 4 fields full-width, no h-scroll), and label↔select `htmlFor`/`id` a11y links.
 - **Finalization — merge to `main` + localization follow-up (2026-07-24).** The whole 2026-07-23 session
   (remaining-issue fixes + the 5-batch UX/accessibility polish) was committed and **merged to `main`** via
   `refactor/frontend-review-2` (`--no-ff`, branch deleted; build green, 50 routes). Two stale already-merged branches
@@ -876,9 +911,10 @@ Some functions in `lib/api.js` wrap backend endpoints that **have no frontend UI
 - Ignore them when hunting for dead code.
 
 Currently unimplemented (verified: zero component/app usage):
-- **`startSession`** (`POST /sessions`) — ad-hoc practice-session start (choose subject/topic/
-  difficulty and begin). The seeded practice sessions exist in the DB, but there is no UI to
-  create a new one yet; the current UI takes exams by share code only.
+- ~~**`startSession`**~~ **IMPLEMENTED (2026-07-24)** — ad-hoc practice-session start now has a full
+  student UI at `/admin/practice` (`ChildPracticePage`): choose subject + difficulty + optional topic +
+  count → `startSession({ type: "PRACTICE", … })` → the existing `ExamSessionPage` runner → scored result.
+  See the change log §12. (`startSession` is now a live integration, not a deferred wrapper.)
 - **`redeemOrganizationInvite`** (`POST /organizations/invites/{code}/redeem`) — a student joins
   an org and starts its fixed test by code. No redeem UI yet.
 - **`fetchExamDefinitions`** (`GET /exam-definitions`) and **`fetchExamDefinition`**

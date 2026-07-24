@@ -9,6 +9,8 @@ let activeLocale = DEFAULT_LOCALE;
 const staticFallbackTranslations = {
   az: {
     "Bloq": "Bloq",
+    // Practice feature — English-source labels (sidebar + dashboard quick link) → Azerbaijani.
+    "Practice": "Məşq",
   },
   en: {
     "Planlar": "Plans",
@@ -78,6 +80,36 @@ const staticFallbackTranslations = {
     "Bu imtahanın vaxtı bitib. Cavablarınız avtomatik təqdim edildi.":
       "This exam has expired. Your answers were submitted automatically.",
     "Nəticələrə bax": "View results",
+    // Practice feature (ad-hoc practice session start)
+    "Bir fənn seçin və özünüzü sınamaq üçün məşq testinə başlayın.":
+      "Choose a subject and start a practice test to challenge yourself.",
+    "Fənn": "Subject",
+    "Mövzu (opsional)": "Topic (optional)",
+    "Çətinlik": "Difficulty",
+    // Difficulty option labels (shared AZ source with the question form) — EN so the EN toggle is consistent.
+    "Asan": "Easy",
+    "Orta": "Medium",
+    "Çətin": "Hard",
+    // Keep the English-source sidebar/quick-link label in English on the EN toggle.
+    "Practice": "Practice",
+    "Sual sayı": "Question count",
+    "Məşqə başla": "Start practice",
+    "Başlayır...": "Starting...",
+    "Məşq testləri vaxt məhdudiyyəti olmadan, faizlə qiymətləndirilir.":
+      "Practice tests are untimed and scored by percentage.",
+    "Fənn seçin": "Select a subject",
+    "Yüklənir...": "Loading...",
+    "Əvvəlcə fənn seçin": "Select a subject first",
+    "Bütün mövzular": "All topics",
+    "Mövzu yoxdur": "No topics",
+    "Zəhmət olmasa bir fənn seçin.": "Please select a subject.",
+    "Zəhmət olmasa çətinlik səviyyəsini seçin.": "Please select a difficulty.",
+    "Sessiya başladıla bilmədi.": "The session could not be started.",
+    "Məşq sessiyası başladıla bilmədi.": "The practice session could not be started.",
+    "İpucu: “Bütün mövzular”ı seçin və ya başqa çətinlik səviyyəsi sınayın.":
+      "Tip: choose “All topics” or try a different difficulty.",
+    "İpucu: başqa fənn və ya çətinlik səviyyəsi sınayın.":
+      "Tip: try a different subject or difficulty.",
     // Error & feedback messages (Batch 1 localization)
     "Audit qeydləri yüklənmədi.": "Audit logs could not be loaded.",
     "Sual yüklənmədi.": "Question could not be loaded.",
