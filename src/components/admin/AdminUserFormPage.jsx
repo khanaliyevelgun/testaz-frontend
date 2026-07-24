@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createUser, fetchUser, updateUser } from "@/lib/api";
 import StaticText from "@/components/StaticText";
+import AdminCardSkeleton from "@/components/admin/AdminCardSkeleton";
 
 
 const roles = ["STUDENT", "PARENT", "COURSE", "PRIVATE_TUTOR", "SCHOOL_TEACHER", "ADMIN"];
@@ -95,7 +96,7 @@ const AdminUserFormPage = ({ userId }) => {
 
         {error ? <p className='text-danger mb-16'>{error}</p> : null}
         {isLoading ? (
-          <p className='text-14 text-neutral-400 mb-0'><StaticText text={"Loading..."} /></p>
+          <AdminCardSkeleton rows={6} />
         ) : (
           <form className='row gy-4' onSubmit={handleSubmit}>
             <div className='col-md-6'>

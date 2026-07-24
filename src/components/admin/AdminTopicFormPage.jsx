@@ -6,6 +6,7 @@ import AdminGradeSelect from "@/components/admin/AdminGradeSelect";
 import AdminSearchSelect from "@/components/admin/AdminSearchSelect";
 import { createTopic, fetchSubject, fetchSubjects, fetchTopic, fetchTopics, updateTopic } from "@/lib/api";
 import StaticText from "@/components/StaticText";
+import AdminCardSkeleton from "@/components/admin/AdminCardSkeleton";
 
 
 const emptyForm = {
@@ -173,7 +174,7 @@ const AdminTopicFormPage = ({ subjectId, topicId }) => {
 
         {error ? <p className='text-danger mb-16'>{error}</p> : null}
         {isLoading ? (
-          <p className='text-14 text-neutral-400 mb-0'><StaticText text={"Loading..."} /></p>
+          <AdminCardSkeleton rows={4} />
         ) : (
           <form className='row gy-4' onSubmit={handleSubmit}>
             <div className='col-md-4'>

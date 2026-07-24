@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import AdminRefreshButton from "@/components/admin/AdminRefreshButton";
 import { fetchNotificationPreferences, updateNotificationPreferences } from "@/lib/api";
 import StaticText from "@/components/StaticText";
+import AdminCardSkeleton from "@/components/admin/AdminCardSkeleton";
 
 
 const AccountSettingsPage = () => {
@@ -62,7 +63,7 @@ const AccountSettingsPage = () => {
         </div>
         {notice ? <div className='alert alert-success text-14 py-10 mb-16'>{notice}</div> : null}
         {error ? <div className='alert alert-danger text-14 py-10 mb-16'>{error}</div> : null}
-        {isLoading ? <p className='text-14 text-neutral-400 mb-0'><StaticText text={"Loading..."} /></p> : hasLoadedPreferences ? (
+        {isLoading ? <AdminCardSkeleton rows={3} columns={1} /> : hasLoadedPreferences ? (
           <form onSubmit={save}>
             <div className='d-flex flex-column gap-12 mb-24'>
               <label className='d-flex align-items-start justify-content-between gap-16 border border-neutral-30 rounded-10 px-18 py-16'>

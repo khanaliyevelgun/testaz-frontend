@@ -149,6 +149,14 @@
   width: 100%;
 }
 
+// Taller block for a form/detail input line (AdminCardSkeleton).
+.skeleton-input {
+  display: block;
+  height: 44px;
+  width: 100%;
+  border-radius: 50rem; // matches the template's rounded-pill inputs
+}
+
 @keyframes skeleton-shimmer {
   0% {
     background-position: 200% 0;

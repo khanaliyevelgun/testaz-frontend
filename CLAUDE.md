@@ -449,6 +449,10 @@ in the backend's `refresh_tokens` table for a family with many rows all `revoked
   - **`AdminTableSkeleton`** (`columns` + optional `rows`) — the loading placeholder for a list
     table; renders shimmer rows matching the column count (shimmer in `globals.scss`,
     prefers-reduced-motion aware). Use it in the `isLoading` branch of a table `<tbody>`.
+  - **`AdminCardSkeleton`** (`rows` + optional `columns` [1 stacked / 2 two-up]) — the loading placeholder
+    for a single-record **detail/form card** (the non-table sibling; each row is a short label line above a
+    taller `.skeleton-input` line). Same shimmer + `role="status"` a11y. Use it in the `isLoading` branch of a
+    detail/form card instead of a plain `<p>Loading…</p>`.
   - **`AdminEmptyState`** (`columns`, `icon`, optional `action={{href,label}}`, message as
     children) — the empty-table placeholder (muted Phosphor icon + message + optional action
     link, wired ONLY where a navigable create action already exists). Use it in the no-rows branch.
@@ -519,6 +523,23 @@ The app has **no automated test suite**, so verification is manual:
 
 ## 12. Change log (keep append-only; newest first)
 
+- **Polish — card/detail-page loading skeletons (2026-07-24).** Resolved the §15 "card/detail-page skeletons"
+  item: the plain `<p>Loading…</p>` on single-record detail/form cards is replaced with a reusable
+  **`AdminCardSkeleton`** (the non-table sibling of `AdminTableSkeleton`). No layout/behaviour change; build +
+  i18n audit green (65 routes, 189 source files). Branch `chore/card-skeletons` (`--no-ff` merge to `main`, per §24).
+  - **New** `components/admin/AdminCardSkeleton.jsx` (`rows` + optional `columns` [1 stacked / 2 two-up]) — renders
+    `rows` shimmer field-rows (a short label line above a taller input line), reusing the existing `.skeleton`
+    shimmer (globals.scss, prefers-reduced-motion aware) + a visually-hidden `role="status" aria-live="polite"`
+    loading announcement. A new `.skeleton-input` SCSS block (44px, rounded-pill) backs the input line.
+  - **Applied to 8 pages:** `AdminUserFormPage`/`AdminSubjectFormPage`/`AdminTopicFormPage`/`AdminQuestionFormPage`
+    (forms), `AdminExamDetailPage`/`AdminExamStatisticsPage` (detail), `AccountProfilePage`/`AccountSettingsPage`.
+    Each swaps its `isLoading` `<p>` for `<AdminCardSkeleton rows={…} [columns={1}]>`. Non-page-level loading
+    text (e.g. `AdminQuestionFormPage`'s image-upload `loadingText`/button spinner) is untouched.
+  - **Verified:** build compiled clean (component + all 8 wirings); the new `.skeleton-input` CSS confirmed in the
+    compiled bundle (`display:block;height:44px;width:100%;border-radius:50rem`); i18n audit green; every import
+    used, no leftover page-level `<p>Loading…</p>`. *(In-app browser E2E skipped — the browser pane was stuck this
+    session; the skeleton is a pure CSS-driven component with no logic, and its `AdminTableSkeleton` sibling using
+    the identical `.skeleton` mechanism is already proven in production.)*
 - **Polish — params-based i18n for dynamic strings (2026-07-24).** Resolved the §15 "params-based i18n" item
   (the last non-interpolated English UI strings): the handful of user-facing messages built with template
   literals now use the key-based **`t("messages.<key>", params)`** helper (§6a, `{{param}}` interpolation) instead
@@ -1000,10 +1021,12 @@ or refactor pass unless explicitly asked.**
   exam-form validations, and the `${label} is required.` / `${label} must be between X and Y.`
   `OrganizationInvitesPage` validators) now use the key-based `t("messages.<key>", params)` helper (§6a)
   with `{{param}}` placeholders, keyed under a new **`messages`** namespace in `az.json`/`en.json`. See §12.
-- **Card/detail-page skeletons.** The 2026-07-23 skeleton pass (`AdminTableSkeleton`) covered list
-  **tables** only; ~20 single-record **detail/form** pages still show a plain `<p>Loading…</p>`
-  (`AdminExamDetailPage`, `AccountProfilePage`, form pages, `ParentProgressPage`'s trend cards, …).
-  A small card-shaped skeleton could cover those for consistency — a table skeleton doesn't fit them.
+- ~~**Card/detail-page skeletons.**~~ **DONE (2026-07-24)** — a reusable `AdminCardSkeleton` (`rows`/`columns`
+  props; the non-table sibling of `AdminTableSkeleton`, same `.skeleton` shimmer + `role="status"` a11y) now
+  replaces the plain `<p>Loading…</p>` on the main single-record **detail/form** cards: the User/Subject/Topic/
+  Question form pages, `AdminExamDetailPage`, `AdminExamStatisticsPage`, `AccountProfilePage`, and
+  `AccountSettingsPage`. See §8 (admin primitives) and §12. *(A few smaller detail cards — e.g.
+  `ParentProgressPage`'s trend cards — still use plain text; extend `AdminCardSkeleton` there if desired.)*
 - **Shared `useAdminList` hook.** Would remove the remaining list-page state-machine duplication
   (~35 files) and centrally fix a latent **race condition** (rapid filter changes fire
   overlapping fetches with no out-of-order guard — low severity, unobservable on a local
