@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { fetchExamStatistics } from "@/lib/api";
 import StaticText from "@/components/StaticText";
+import AdminCardSkeleton from "@/components/admin/AdminCardSkeleton";
 
 
 const StatBox = ({ label, value }) => (
@@ -54,7 +55,7 @@ const AdminExamStatisticsPage = ({ examId }) => {
           </div>
         </div>
 
-        {isLoading ? <p className='text-14 text-neutral-400 mb-0'><StaticText text={"Loading..."} /></p> : null}
+        {isLoading ? <AdminCardSkeleton rows={4} /> : null}
         {error ? <p className='text-danger mb-0'>{error}</p> : null}
 
         {statistics ? (

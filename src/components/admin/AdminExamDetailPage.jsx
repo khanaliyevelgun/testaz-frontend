@@ -17,6 +17,7 @@ import {
 import { formatDateTime as formatDate } from "@/lib/format";
 import StaticText from "@/components/StaticText";
 import AdminEmptyState from "@/components/admin/AdminEmptyState";
+import AdminCardSkeleton from "@/components/admin/AdminCardSkeleton";
 import { useTranslation } from "@/components/LocaleProvider";
 
 
@@ -185,7 +186,7 @@ const AdminExamDetailPage = ({ examId }) => {
           </div>
         </div>
 
-        {isLoading ? <p className='text-14 text-neutral-400 mb-0'><StaticText text={"Loading..."} /></p> : null}
+        {isLoading ? <AdminCardSkeleton rows={4} /> : null}
         {notice ? <div className='alert alert-success text-14 py-10 mb-16'>{notice}</div> : null}
         {error ? <div className='alert alert-danger text-14 py-10 mb-16'>{error}</div> : null}
 

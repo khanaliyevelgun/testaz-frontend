@@ -8,6 +8,7 @@ import AdminSearchSelect from "@/components/admin/AdminSearchSelect";
 import { createAdminQuestion, fetchAdminQuestion, fetchSubject, fetchSubjects, fetchTopic, fetchTopics, getApiAssetUrl, updateAdminQuestion, uploadAdminMedia } from "@/lib/api";
 import { getQuestionImageSrc, isImageOnlyQuestionHtml } from "@/lib/questionContent";
 import StaticText from "@/components/StaticText";
+import AdminCardSkeleton from "@/components/admin/AdminCardSkeleton";
 
 
 const difficulties = ["EASY", "MEDIUM", "HARD"];
@@ -357,7 +358,7 @@ const AdminQuestionFormPage = ({ questionId }) => {
         </div>
 
         {isLoading ? (
-          <p className='text-14 text-neutral-400 mb-0'><StaticText text={"Yüklənir..."} /></p>
+          <AdminCardSkeleton rows={6} />
         ) : (
           <form className='row gy-4' onSubmit={handleSubmit} noValidate>
             <div className='col-md-3'>

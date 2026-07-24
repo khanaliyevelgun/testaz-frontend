@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createSubject, fetchSubject, updateSubject } from "@/lib/api";
 import StaticText from "@/components/StaticText";
+import AdminCardSkeleton from "@/components/admin/AdminCardSkeleton";
 
 
 const emptyForm = { code: "", nameAz: "", nameEn: "" };
@@ -85,7 +86,7 @@ const AdminSubjectFormPage = ({ subjectId }) => {
 
         {error ? <p className='text-danger mb-16'>{error}</p> : null}
         {isLoading ? (
-          <p className='text-14 text-neutral-400 mb-0'><StaticText text={"Loading..."} /></p>
+          <AdminCardSkeleton rows={3} columns={1} />
         ) : (
           <form className='row gy-4' onSubmit={handleSubmit}>
             <div className='col-md-4'>

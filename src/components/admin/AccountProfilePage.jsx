@@ -17,6 +17,7 @@ import {
 } from "@/lib/api";
 import { formatDateTime as formatDate } from "@/lib/format";
 import StaticText from "@/components/StaticText";
+import AdminCardSkeleton from "@/components/admin/AdminCardSkeleton";
 import StaticOption from "@/components/StaticOption";
 
 
@@ -135,7 +136,7 @@ const AccountProfilePage = () => {
           <div className='col-md-6'><div className='border border-neutral-30 rounded-10 p-16 h-100'><span className='text-13 text-neutral-400 d-block'><StaticText text={"Contact"} /></span><strong className='text-14 text-neutral-500'>{user?.email || user?.phone || "-"}</strong></div></div>
         </div>
 
-        {isLoading ? <p className='text-14 text-neutral-400 mb-0'><StaticText text={"Loading..."} /></p> : null}
+        {isLoading ? <AdminCardSkeleton rows={4} /> : null}
 
         {!isLoading && primaryRole === "child" && studentProfile ? (
           <>
