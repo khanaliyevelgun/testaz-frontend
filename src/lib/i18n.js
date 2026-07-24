@@ -13,6 +13,8 @@ const staticFallbackTranslations = {
     "Practice": "Məşq",
     // Org-invite redeem — English-source labels (sidebar + assignments CTA + heading) → Azerbaijani.
     "Join by code": "Kodla qoşul",
+    // Official exams — English-source labels (sidebar + heading) → Azerbaijani.
+    "Official exams": "Rəsmi imtahanlar",
   },
   en: {
     "Planlar": "Plans",
@@ -95,6 +97,7 @@ const staticFallbackTranslations = {
     // Keep the English-source sidebar/quick-link label in English on the EN toggle.
     "Practice": "Practice",
     "Join by code": "Join by code",
+    "Official exams": "Official exams",
     "Sual sayı": "Question count",
     "Məşqə başla": "Start practice",
     "Başlayır...": "Starting...",
@@ -128,6 +131,33 @@ const staticFallbackTranslations = {
     "Dəvət koduna qoşulmaq alınmadı.": "Could not join with the invite code.",
     "Belə bir dəvət kodu tapılmadı. Kodu yoxlayıb yenidən cəhd edin.":
       "No such invite code was found. Check the code and try again.",
+    // Official exams (Buraxılış / Qəbul simulations)
+    "Rəsmi Buraxılış və Qəbul imtahanlarının simulyasiyasına başlayın.":
+      "Start a simulation of the official Buraxılış and Qəbul exams.",
+    "sual": "questions",
+    "dəq": "min",
+    "bal": "points",
+    "dəqiqə": "minutes",
+    "Mənfi qiymətləndirmə": "Negative marking",
+    "Mənfi qiymətləndirmə yoxdur": "No negative marking",
+    "Rəsmi imtahan tapılmadı.": "No official exams found.",
+    "İmtahana başla": "Start exam",
+    "İxtisas qrupu": "Specialization group",
+    "Qrup seçin": "Select a group",
+    "Fənn bölgüsünü görmək üçün ixtisas qrupu seçin.":
+      "Select a specialization group to see the subject breakdown.",
+    "Qapalı": "Closed",
+    "Açıq": "Open",
+    "Maks. bal": "Max. points",
+    "İmtahana başlanılsın?": "Start the exam?",
+    "Bu, vaxt məhdudiyyətli rəsmi imtahandır. Başladıqdan sonra geri sayım dərhal başlayır.":
+      "This is a timed official exam. The countdown begins as soon as you start.",
+    "Ləğv et": "Cancel",
+    "Bəli, başla": "Yes, start",
+    "İmtahan planı yüklənmədi.": "The exam blueprint could not be loaded.",
+    "İmtahan sessiyası başladıla bilmədi.": "The exam session could not be started.",
+    "Bu imtahanın bütün fənləri üzrə kifayət qədər yeni sual olmaya bilər. Başqa qrup və ya imtahan sınayın.":
+      "There may not be enough new questions across all of this exam’s subjects. Try another group or exam.",
     // Error & feedback messages (Batch 1 localization)
     "Audit qeydləri yüklənmədi.": "Audit logs could not be loaded.",
     "Sual yüklənmədi.": "Question could not be loaded.",
