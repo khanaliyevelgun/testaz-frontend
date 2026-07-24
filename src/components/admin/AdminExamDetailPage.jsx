@@ -10,6 +10,7 @@ import {
   archiveExam,
   deleteExam,
   fetchExam,
+  regenerateExamShareToken,
   revokeExamAssignment,
   unarchiveExam,
 } from "@/lib/api";
@@ -136,6 +137,26 @@ const AdminExamDetailPage = ({ examId }) => {
       confirmation: "Bu şagirdi təyinat siyahısından çıxaraq?",
     });
 
+  // Rotate the share code: the old link stops working immediately, so confirm first, then reload the
+  // exam so the displayed link reflects the new code. (regenerate returns only {examId, shareToken},
+  // not the full exam detail, so we can't reuse runAction's set-updated-exam path.)
+  const regenerateCode = async () => {
+    if (!window.confirm("Paylaşım kodunu yeniləyək? Cari link işləməyi dayandıracaq və onu paylaşdığınız hər kəsə yeni link lazım olacaq.")) return;
+    setIsActing(true);
+    setError("");
+    setNotice("");
+    setCopyStatus("");
+    try {
+      await regenerateExamShareToken(examId);
+      await loadExam();
+      setNotice("Paylaşım kodu yeniləndi. Köhnə link artıq işləmir.");
+    } catch (requestError) {
+      setError(requestError?.message || "Paylaşım kodu yenilənmədi.");
+    } finally {
+      setIsActing(false);
+    }
+  };
+
   return (
     <div className='px-24 py-24'>
       <div className='bg-white rounded-10 px-24 py-24'>
@@ -192,8 +213,13 @@ const AdminExamDetailPage = ({ examId }) => {
                 <button type='button' className='btn btn-main rounded-pill px-20' onClick={copyLink}>
                   <StaticText text={"Copy link"} />
                 </button>
+                <button type='button' className='px-18 py-10 border border-neutral-40 rounded-pill text-14 text-neutral-500 bg-white d-inline-flex align-items-center gap-8' disabled={isActing} onClick={regenerateCode}>
+                  <i className='ph ph-arrows-clockwise' aria-hidden='true' />
+                  <StaticText text={"Regenerate code"} />
+                </button>
               </div>
-              {copyStatus ? <p className='text-14 text-neutral-400 mt-8 mb-0'>{copyStatus}</p> : null}
+              <p className='text-13 text-neutral-400 mt-8 mb-0'><StaticText text={"Paylaşım kodunu yeniləmək köhnə linki dərhal işləməz edir."} /></p>
+              {copyStatus ? <p className='text-14 text-neutral-400 mt-4 mb-0'>{copyStatus}</p> : null}
             </div>
 
             <div className='border border-neutral-30 rounded-12 p-20 mb-24'>

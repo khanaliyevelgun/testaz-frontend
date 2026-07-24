@@ -15,6 +15,8 @@ const staticFallbackTranslations = {
     "Join by code": "Kodla qoşul",
     // Official exams — English-source labels (sidebar + heading) → Azerbaijani.
     "Official exams": "Rəsmi imtahanlar",
+    // Exam owner — regenerate share code button (English-source label) → Azerbaijani.
+    "Regenerate code": "Kodu yenilə",
   },
   en: {
     "Planlar": "Plans",
@@ -98,6 +100,7 @@ const staticFallbackTranslations = {
     "Practice": "Practice",
     "Join by code": "Join by code",
     "Official exams": "Official exams",
+    "Regenerate code": "Regenerate code",
     "Sual sayı": "Question count",
     "Məşqə başla": "Start practice",
     "Başlayır...": "Starting...",
@@ -158,6 +161,12 @@ const staticFallbackTranslations = {
     "İmtahan sessiyası başladıla bilmədi.": "The exam session could not be started.",
     "Bu imtahanın bütün fənləri üzrə kifayət qədər yeni sual olmaya bilər. Başqa qrup və ya imtahan sınayın.":
       "There may not be enough new questions across all of this exam’s subjects. Try another group or exam.",
+    // Exam owner — regenerate share code
+    "Paylaşım kodunu yeniləmək köhnə linki dərhal işləməz edir.":
+      "Regenerating the share code makes the old link stop working immediately.",
+    "Paylaşım kodu yeniləndi. Köhnə link artıq işləmir.":
+      "The share code was regenerated. The old link no longer works.",
+    "Paylaşım kodu yenilənmədi.": "The share code could not be regenerated.",
     // Error & feedback messages (Batch 1 localization)
     "Audit qeydləri yüklənmədi.": "Audit logs could not be loaded.",
     "Sual yüklənmədi.": "Question could not be loaded.",
