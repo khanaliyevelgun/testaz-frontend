@@ -76,7 +76,13 @@ const ChildAssignmentsPage = () => {
             <h4 className='fw-semibold text-neutral-500 text-20 mb-4'><StaticText text={"Assignments"} /></h4>
             <p className='text-14 text-neutral-400 mb-0'><StaticText text={"Parent invitations and assigned exams appear here."} /></p>
           </div>
-          <AdminRefreshButton isLoading={isLoading} onClick={load} />
+          <div className='d-flex flex-wrap align-items-center gap-12'>
+            <Link href='/admin/join' className='btn btn-main rounded-pill px-20 d-inline-flex align-items-center gap-8'>
+              <i className='ph ph-sign-in' aria-hidden='true' />
+              <StaticText text={"Join by code"} />
+            </Link>
+            <AdminRefreshButton isLoading={isLoading} onClick={load} />
+          </div>
         </div>
 
         {notice ? <div className='alert alert-success text-14 py-10 mb-16'>{notice}</div> : null}

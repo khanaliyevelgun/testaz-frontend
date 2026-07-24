@@ -11,6 +11,8 @@ const staticFallbackTranslations = {
     "Bloq": "Bloq",
     // Practice feature — English-source labels (sidebar + dashboard quick link) → Azerbaijani.
     "Practice": "Məşq",
+    // Org-invite redeem — English-source labels (sidebar + assignments CTA + heading) → Azerbaijani.
+    "Join by code": "Kodla qoşul",
   },
   en: {
     "Planlar": "Plans",
@@ -92,6 +94,7 @@ const staticFallbackTranslations = {
     "Çətin": "Hard",
     // Keep the English-source sidebar/quick-link label in English on the EN toggle.
     "Practice": "Practice",
+    "Join by code": "Join by code",
     "Sual sayı": "Question count",
     "Məşqə başla": "Start practice",
     "Başlayır...": "Starting...",
@@ -110,6 +113,21 @@ const staticFallbackTranslations = {
       "Tip: choose “All topics” or try a different difficulty.",
     "İpucu: başqa fənn və ya çətinlik səviyyəsi sınayın.":
       "Tip: try a different subject or difficulty.",
+    // Org-invite redeem (join a course/tutor/school test by code)
+    "Kurs, repetitor və ya məktəbdən aldığınız dəvət kodunu daxil edərək testə qoşulun.":
+      "Join a test by entering the invite code you received from a course, tutor, or school.",
+    "Dəvət kodu": "Invite code",
+    "Testə qoşul": "Join test",
+    "Qoşulur...": "Joining...",
+    "Qoşulduqdan sonra test dərhal başlayır. Vaxt məhdudiyyəti varsa, geri sayım qoşulan andan başlayır.":
+      "The test starts immediately after you join. If it is timed, the countdown begins the moment you join.",
+    "Bu testi artıq tamamlamısınız. Nəticələrinizə baxa bilərsiniz.":
+      "You have already completed this test. You can view your results.",
+    "Zəhmət olmasa dəvət kodunu daxil edin.": "Please enter the invite code.",
+    "Test sessiyası başladıla bilmədi.": "The test session could not be started.",
+    "Dəvət koduna qoşulmaq alınmadı.": "Could not join with the invite code.",
+    "Belə bir dəvət kodu tapılmadı. Kodu yoxlayıb yenidən cəhd edin.":
+      "No such invite code was found. Check the code and try again.",
     // Error & feedback messages (Batch 1 localization)
     "Audit qeydləri yüklənmədi.": "Audit logs could not be loaded.",
     "Sual yüklənmədi.": "Question could not be loaded.",

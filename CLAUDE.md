@@ -139,10 +139,13 @@ Two repos, one product:
 - **✅ Ad-hoc practice-session start (2026-07-24):** students self-start a practice test at
   `/admin/practice` (subject + difficulty + optional topic + count → `startSession`), reusing the
   existing session runner + Results page. Change log §12.
-- **⛔ Not yet implemented (frontend — intentional, see §16):** org-invite redemption UI
-  (`redeemOrganizationInvite`), official exam-definition browsing (`fetchExamDefinitions`/
-  `fetchExamDefinition`), exam share-token regeneration (`regenerateExamShareToken`).
-  **Backend-blocked:** real Email/SMS + payment providers (vendor accounts needed).
+- **✅ Org-invite redemption (2026-07-24):** students join a course/tutor/school test by code at
+  `/admin/join` (`redeemOrganizationInvite` → join + start/resume → the session runner; also linked
+  from Assignments). Change log §12.
+- **⛔ Not yet implemented (frontend — intentional, see §16):** official exam-definition browsing
+  (`fetchExamDefinitions`/`fetchExamDefinition`), exam share-token regeneration
+  (`regenerateExamShareToken`). **Backend-blocked:** real Email/SMS + payment providers (vendor
+  accounts needed).
 
 ---
 
@@ -508,6 +511,38 @@ The app has **no automated test suite**, so verification is manual:
 
 ## 12. Change log (keep append-only; newest first)
 
+- **Feature — org-invite redemption (2026-07-24).** Implemented the §16 `redeemOrganizationInvite` integration:
+  a student **joins a course/tutor/school test by code**. Previously the only "take by code" flow was exams;
+  students in an organization had no way to redeem their teacher's join code. No redesign; reuses the existing
+  design language + session runner. Verified end-to-end against the live backend + DB in-browser (both locales);
+  production build green (**64 route-table entries** — the new `/admin/join`) + `i18n:audit` green (186 files).
+  Branch `feat/org-invite-redeem` (`--no-ff` merge to `main`, per §24).
+  - **New page** `components/admin/ChildJoinPage.jsx` + thin route `app/admin/join/page.jsx` (`Suspense` +
+    `RoleProtectedRoute allowedRoles={["child"]}`). A single code field (auto-uppercased, `maxLength 16`,
+    `?code=` deep-link prefill) → `redeemOrganizationInvite(code)` → **join + start/resume in one step** → the
+    backend returns a `SessionResponse`, and we `router.push('/admin/exam-session/{id}')` (the existing
+    `child`-guarded `ExamSessionPage` runner). Org fixed-tests are typically **timed** — the runner's countdown
+    starts at join, which the page copy states up front.
+  - **Terminal-session handling** (mirrors `ExamTakePage`): redeeming a **finished one-shot** returns the
+    terminal session (get-or-resume), so instead of dropping into the read-only runner the page shows an
+    "already completed → View results" info banner (`TERMINAL_SESSION_STATUSES` = SUBMITTED/EXPIRED/ABANDONED).
+  - **Product decisions (asked & confirmed):** feature = org-invite redemption (highest-value remaining §16 item);
+    placement = **new `/admin/join` sidebar page ("Join by code", `ph ph-sign-in`, after Assignments) + a
+    "Join by code" CTA button on the Assignments page header**; flow = **straight into the runner** on success
+    (the backend does join+start in one step — no separate preview). Route guard `authRoles.js` `routeRoles`
+    (`/admin/join` → `["child"]`).
+  - **Error UX:** a wrong/unknown code is a **dynamic 404** ("Invite not found: <code>") the API-message localizer
+    can't map — the component detects `status === 404` and shows a clean localized message ("No such invite code
+    was found…"); the code field clears its error on edit. The static backend states ("This invite is no longer
+    active" / "…has expired" / "organization is no longer active" / "…reached its maximum number of uses") are
+    localized via `api.codes.*` keys in `az.json`/`en.json` — so every redeem outcome reads in Azerbaijani.
+  - **Localization (both directions):** AZ source for the form copy (heading/subtitle/label/placeholder-note/
+    button/hint/terminal-banner) with EN fallbacks in `staticFallbackTranslations.en`; the English-source label
+    "Join by code" (sidebar + CTA + heading) got `az` ("Kodla qoşul") + `en` (identity) fallback entries so both
+    toggle cleanly. Verified in-browser: fresh join → runner (8-question timed org test, countdown running);
+    re-redeem idempotent; finished one-shot → "already completed" banner → View results (read-only runner);
+    bad code → localized 404; EN toggle (heading/label/button/hint/sidebar all switch); mobile stack (375px);
+    label↔input `htmlFor`/`id` a11y.
 - **Feature — ad-hoc practice-session start (2026-07-24).** Implemented the §16 `startSession` integration:
   students can now **self-start a practice test** (the core "take tests independently" promise — previously a
   student could only take exams by share code / parent assignment / org invite). No redesign; reuses the existing
@@ -915,8 +950,10 @@ Currently unimplemented (verified: zero component/app usage):
   student UI at `/admin/practice` (`ChildPracticePage`): choose subject + difficulty + optional topic +
   count → `startSession({ type: "PRACTICE", … })` → the existing `ExamSessionPage` runner → scored result.
   See the change log §12. (`startSession` is now a live integration, not a deferred wrapper.)
-- **`redeemOrganizationInvite`** (`POST /organizations/invites/{code}/redeem`) — a student joins
-  an org and starts its fixed test by code. No redeem UI yet.
+- ~~**`redeemOrganizationInvite`**~~ **IMPLEMENTED (2026-07-24)** — a student joins an org and
+  starts its fixed test by code via `/admin/join` (`ChildJoinPage`): enter code →
+  `redeemOrganizationInvite` → the existing `ExamSessionPage` runner (or "already completed → view
+  results" for a finished one-shot). Also linked from the Assignments page. See the change log §12.
 - **`fetchExamDefinitions`** (`GET /exam-definitions`) and **`fetchExamDefinition`**
   (`GET /exam-definitions/{code}`) — official Buraxılış/Qəbul exam blueprints. Not surfaced yet.
 - **`regenerateExamShareToken`** (`POST /exams/{id}/share-token/regenerate`) — an exam owner
