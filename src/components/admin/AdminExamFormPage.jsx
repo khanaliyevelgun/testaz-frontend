@@ -17,6 +17,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import StaticText from "@/components/StaticText";
 import StaticOption from "@/components/StaticOption";
+import { useTranslation } from "@/components/LocaleProvider";
 
 
 
@@ -100,6 +101,7 @@ const getPreviewUrl = (exam) => {
 
 const AdminExamFormPage = () => {
   const searchParams = useSearchParams();
+  const { t } = useTranslation();
   const { user } = useAuth();
   const isParent = Boolean(user?.roles?.includes("parent") || user?.role === "parent");
   const templateId = searchParams.get("templateId");
@@ -216,7 +218,7 @@ const AdminExamFormPage = () => {
         );
         setSections(config.sections?.length ? config.sections.map(sectionFromConfig) : [emptySection()]);
         setTemplateName(template?.name ? `${template.name} copy` : "");
-        setTemplateNotice(template?.name ? `Template loaded: ${template.name}` : "Template loaded.");
+        setTemplateNotice(template?.name ? t("messages.templateLoadedNamed", { name: template.name }) : t("messages.templateLoaded"));
       })
       .catch((requestError) => {
         if (isMounted) setError(requestError?.message || "Şablon yüklənmədi.");
@@ -392,10 +394,11 @@ const AdminExamFormPage = () => {
 
     for (let sectionIndex = 0; sectionIndex < sections.length; sectionIndex += 1) {
       const section = sections[sectionIndex];
-      if (!section.subjectId) return `Section ${sectionIndex + 1}: subject is required.`;
-      if (!section.topics.length) return `Section ${sectionIndex + 1}: at least one topic bucket is required.`;
+      const sectionNumber = sectionIndex + 1;
+      if (!section.subjectId) return t("messages.sectionSubjectRequired", { number: sectionNumber });
+      if (!section.topics.length) return t("messages.sectionTopicRequired", { number: sectionNumber });
       if (!section.topics.some((topic) => normalizePositiveInt(topic.questionCount) > 0)) {
-        return `Section ${sectionIndex + 1}: question count is required.`;
+        return t("messages.sectionCountRequired", { number: sectionNumber });
       }
     }
 

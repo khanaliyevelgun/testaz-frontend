@@ -17,6 +17,7 @@ import {
 import { formatDateTime as formatDate } from "@/lib/format";
 import StaticText from "@/components/StaticText";
 import AdminEmptyState from "@/components/admin/AdminEmptyState";
+import { useTranslation } from "@/components/LocaleProvider";
 
 
 const getExamCode = (exam) => exam?.examCode || exam?.shareToken || exam?.code || "";
@@ -35,6 +36,7 @@ const getPreviewUrl = (exam) => {
 
 const AdminExamDetailPage = ({ examId }) => {
   const router = useRouter();
+  const { t } = useTranslation();
   const [exam, setExam] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isActing, setIsActing] = useState(false);
@@ -125,7 +127,7 @@ const AdminExamDetailPage = ({ examId }) => {
 
     await runAction({
       action: () => addExamAssignments(examId, userIds),
-      successMessage: `${userIds.length} assignment${userIds.length === 1 ? "" : "s"} added.`,
+      successMessage: t("messages.assignmentsAdded", { count: userIds.length }),
     });
     setAssignmentInput("");
   };

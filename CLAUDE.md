@@ -519,6 +519,29 @@ The app has **no automated test suite**, so verification is manual:
 
 ## 12. Change log (keep append-only; newest first)
 
+- **Polish — params-based i18n for dynamic strings (2026-07-24).** Resolved the §15 "params-based i18n" item
+  (the last non-interpolated English UI strings): the handful of user-facing messages built with template
+  literals now use the key-based **`t("messages.<key>", params)`** helper (§6a, `{{param}}` interpolation) instead
+  of English `${…}` literals. No layout/behaviour change; build + i18n audit green (65 routes, 188 files, 3526
+  locale entries). Branch `chore/dynamic-string-i18n` (`--no-ff` merge to `main`, per §24).
+  - **New `messages` namespace** in `az.json`/`en.json` (12 keys): `assignmentsAdded` ({{count}}),
+    `templateLoadedNamed` ({{name}}) / `templateLoaded`, `sectionSubjectRequired`/`sectionTopicRequired`/
+    `sectionCountRequired` ({{number}}), `fieldRequired` ({{label}}) / `fieldRange` ({{label}}/{{min}}/{{max}}),
+    and four field-label keys (`labelQuestionCount`/`labelDuration`/`labelMaxUses`/`labelInviteLifetime`).
+  - **Wired 3 components** via `useTranslation()`: `AdminExamDetailPage` ("N assignment(s) added"),
+    `AdminExamFormPage` ("Template loaded: …" + the three "Section N: … is required" validations),
+    `OrganizationInvitesPage` (the `validateRange` helper — now takes `t` + an already-localized label, since it's
+    module-level and can't use the hook itself; called with `t("messages.label*")` labels). The `${template.name}
+    copy` name-prefill and `#${id}` display literals are NOT messages (left as-is).
+  - **Why `t(key, params)` not the DOM-observer path:** these strings are set into `error`/`notice` state and
+    rendered as raw text with interpolated values, which the source-string DOM-translation (§6b-bis) can't reach —
+    the key-based `t()` (which already existed, §6a) is the right tool and interpolates `{{param}}` at build time.
+  - **Verified:** build compiled clean (proves the `t` wiring at every call site); i18n audit green; the exact
+    key-resolution + `{{param}}` interpolation checked against the real `translate`/`interpolate` impl in both
+    locales (AZ: "3 təyinat əlavə edildi.", "Bölmə 2: fənn seçilməlidir.", "Müddət 1 ilə 600 arasında olmalıdır.";
+    EN: "1 assignment(s) added.", "Section 3: question count is required."). *(In-app browser E2E was skipped —
+    the browser pane was stuck this session; a pure-i18n string change is fully covered by the static + logic
+    verification.)*
 - **Feature — exam share-token regeneration (2026-07-24).** Wired the LAST §16 endpoint,
   `regenerateExamShareToken`, into the exam detail page (`AdminExamDetailPage`) — an exam owner rotates a leaked
   share code. **The §16 intentionally-unimplemented backend-API list is now EXHAUSTED.** Investigation found the
@@ -972,11 +995,11 @@ cross-tab guard is documented in §7.)*
 Non-essential suggestions for future consideration. **Do not implement these as part of a review
 or refactor pass unless explicitly asked.**
 
-- **Params-based i18n for dynamic strings.** A handful of user-facing strings are built with
-  template literals (e.g. `` `${n} assignment(s) added.` ``, `` `Template loaded: ${name}` ``, the
-  `` `${label} is required.` `` validation helpers in `OrganizationInvitesPage`) and remain English —
-  they interpolate values, so the source-string DOM-translation path (§6b-bis) can't reach them.
-  A small `t(key, params)`-style helper (the key-based `t()` already exists, §6a) would localize them.
+- ~~**Params-based i18n for dynamic strings.**~~ **DONE (2026-07-24)** — the interpolated user-facing
+  strings (`${n} assignment(s) added.`, `Template loaded: ${name}`, the `Section N: … is required.`
+  exam-form validations, and the `${label} is required.` / `${label} must be between X and Y.`
+  `OrganizationInvitesPage` validators) now use the key-based `t("messages.<key>", params)` helper (§6a)
+  with `{{param}}` placeholders, keyed under a new **`messages`** namespace in `az.json`/`en.json`. See §12.
 - **Card/detail-page skeletons.** The 2026-07-23 skeleton pass (`AdminTableSkeleton`) covered list
   **tables** only; ~20 single-record **detail/form** pages still show a plain `<p>Loading…</p>`
   (`AdminExamDetailPage`, `AccountProfilePage`, form pages, `ParentProgressPage`'s trend cards, …).
