@@ -523,6 +523,18 @@ The app has **no automated test suite**, so verification is manual:
 
 ## 12. Change log (keep append-only; newest first)
 
+- **Polish — effect cleanup (auth redirect timers + exam countdown) (2026-07-24).** Two §15 correctness items,
+  no behaviour change; build + i18n audit green (65 routes, 189 files). Branch `chore/effect-cleanup`
+  (`--no-ff` merge to `main`, per §24).
+  - **Auth redirect timer cleanup:** `SignInInner`/`SignUpInner`/`ResetPasswordInner` now store the post-action
+    `setTimeout(() => router.replace(…))` in a `redirectTimerRef` and clear it in an unmount cleanup effect — no
+    stray navigation if the user leaves before the ~1s redirect fires. (Was harmless but a StrictMode-warning
+    source.)
+  - **Exam countdown-interval churn:** `ExamSessionPage`'s 1-second countdown effect no longer depends on the
+    `submit` `useCallback` (which changes on every answer, since it closes over `session`) — that dependency tore
+    down and recreated the interval each time the student answered. `submit` is now held in a `submitRef` (kept
+    current by its own tiny effect), so the interval effect depends only on `session?.expiresAt`/`session?.status`
+    and survives across answers. The deadline still comes from the real `expiresAt`; behaviour is identical.
 - **Polish — card/detail-page loading skeletons (2026-07-24).** Resolved the §15 "card/detail-page skeletons"
   item: the plain `<p>Loading…</p>` on single-record detail/form cards is replaced with a reusable
   **`AdminCardSkeleton`** (the non-table sibling of `AdminTableSkeleton`). No layout/behaviour change; build +
@@ -1032,14 +1044,13 @@ or refactor pass unless explicitly asked.**
   overlapping fetches with no out-of-order guard — low severity, unobservable on a local
   backend). Only worth doing if it **exactly preserves** each page's debounce/reload timing
   (§8) — otherwise it changes behaviour.
-- **Auth redirect timer cleanup.** `SignInInner` / `SignUpInner` / `ResetPasswordInner` set a
-  one-shot `setTimeout(() => router.replace(...), ~1s)` after a successful action and don't clear
-  it on unmount. Harmless (one-shot, only calls `router.replace`, no setState-after-unmount), but
-  a trivial cleanup for zero StrictMode warnings.
-- **Countdown-interval churn in `ExamSessionPage`.** The 1-second countdown effect depends on
-  `submit` (a `useCallback` that changes when `session` updates), so the interval is torn
-  down/recreated whenever the student answers a question. Correct (it recomputes from the real
-  `expiresAt`), just slightly wasteful — accessing `submit` via a ref would stabilize it.
+- ~~**Auth redirect timer cleanup.**~~ **DONE (2026-07-24)** — `SignInInner`/`SignUpInner`/`ResetPasswordInner`
+  now hold the post-action `setTimeout` in a `redirectTimerRef` and clear it in an unmount cleanup effect (no
+  stray `router.replace` after unmount).
+- ~~**Countdown-interval churn in `ExamSessionPage`.**~~ **DONE (2026-07-24)** — the 1-second countdown effect no
+  longer depends on the `submit` `useCallback` (which changed on every answer, tearing down/recreating the
+  interval). `submit` is kept in a `submitRef` (updated by its own tiny effect), so the interval effect depends
+  only on `session?.expiresAt`/`session?.status` and persists across answers. Behaviour unchanged.
 - **Splitting `lib/api.js`** by domain (`api/auth.js`, `api/exams.js`, …) if it keeps growing —
   behind the same exported names, no call-site import changes (§5).
 - **Student-name secondary UUID.** The org tables show the name + the UUID as small secondary

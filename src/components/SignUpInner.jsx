@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { confirmVerification, sendVerification } from "@/lib/api";
 import StaticText from "@/components/StaticText";
@@ -24,6 +24,10 @@ const SignUpInner = () => {
   const { register } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const redirectTimerRef = useRef(null);
+
+  // Clear the post-verification redirect timer if the component unmounts first.
+  useEffect(() => () => window.clearTimeout(redirectTimerRef.current), []);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -41,7 +45,7 @@ const SignUpInner = () => {
       await confirmVerification({ email: form.email, code: verificationCode.trim() });
       setMessage("Hesabınız təsdiqləndi. Daxil olma səhifəsinə yönləndirilirsiniz.");
       const next = searchParams.get("next");
-      window.setTimeout(() => {
+      redirectTimerRef.current = window.setTimeout(() => {
         const query = next?.startsWith("/") ? `?next=${encodeURIComponent(next)}` : "";
         router.replace(`/sign-in${query}`);
       }, 1000);
