@@ -8,5 +8,19 @@
   },
   "static": {
     "adminPanel": "Admin panel", "newExam": "Create new exam", "users": "Users", "createUser": "Create User", "userManagement": "Admin user management from /admin/users.", "searchNameEmail": "Search name or email...", "allRoles": "All roles", "allStatuses": "All statuses", "name": "Name", "email": "Email", "role": "Role", "status": "Status", "action": "Action", "noUsers": "No users found.", "usersLoadFailed": "Users could not be loaded.", "userActionFailed": "User action failed.", "restore": "Restore", "login": "Sign in", "logout": "Sign out", "settings": "Settings", "profile": "Profile", "dashboard": "Dashboard", "exams": "Exams", "questions": "Questions", "subjects": "Subjects", "topics": "Topics", "reports": "Reports", "notifications": "Notifications", "payments": "Payments", "subscriptions": "Subscriptions", "plans": "Plans", "results": "Results", "children": "Children", "organizations": "Organizations", "members": "Members", "invitations": "Invitations", "optionalNote": "Optional note", "noData": "No data found.", "active": "Active", "pending": "Pending", "suspended": "Suspended", "deleted": "Deleted"
+  },
+  "messages": {
+    "assignmentsAdded": "{{count}} assignment(s) added.",
+    "templateLoadedNamed": "Template loaded: {{name}}",
+    "templateLoaded": "Template loaded.",
+    "sectionSubjectRequired": "Section {{number}}: subject is required.",
+    "sectionTopicRequired": "Section {{number}}: at least one topic bucket is required.",
+    "sectionCountRequired": "Section {{number}}: question count is required.",
+    "fieldRequired": "{{label}} is required.",
+    "fieldRange": "{{label}} must be between {{min}} and {{max}}.",
+    "labelQuestionCount": "Question count",
+    "labelDuration": "Duration",
+    "labelMaxUses": "Maximum uses",
+    "labelInviteLifetime": "Invite lifetime"
   }
 }

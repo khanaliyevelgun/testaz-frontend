@@ -16,6 +16,7 @@ import {
 } from "@/lib/api";
 import { formatDateTime as formatDate } from "@/lib/format";
 import StaticText from "@/components/StaticText";
+import { useTranslation } from "@/components/LocaleProvider";
 import AdminTableSkeleton from "@/components/admin/AdminTableSkeleton";
 import StaticOption from "@/components/StaticOption";
 
@@ -52,21 +53,24 @@ const optionalPositiveInteger = (value) => {
   return numericValue;
 };
 
-const validateRange = (value, label, minimum, maximum, required = false) => {
+// `t` is passed in (this helper is module-level, so it can't use the useTranslation hook itself);
+// `label` is an already-localized field name.
+const validateRange = (t, value, label, minimum, maximum, required = false) => {
   const parsedValue = optionalPositiveInteger(value);
 
   if (parsedValue === undefined) {
-    return required ? `${label} is required.` : "";
+    return required ? t("messages.fieldRequired", { label }) : "";
   }
 
   if (parsedValue === null || parsedValue < minimum || parsedValue > maximum) {
-    return `${label} must be between ${minimum} and ${maximum}.`;
+    return t("messages.fieldRange", { label, min: minimum, max: maximum });
   }
 
   return "";
 };
 
 const OrganizationInvitesPage = () => {
+  const { t } = useTranslation();
   const {
     organizations,
     selectedOrganization,
@@ -234,10 +238,10 @@ const OrganizationInvitesPage = () => {
     }
 
     return (
-      validateRange(form.questionCount, "Question count", 1, 100, true) ||
-      validateRange(form.durationMinutes, "Duration", 1, 600) ||
-      validateRange(form.maxUses, "Maximum uses", 1, 10000) ||
-      validateRange(form.ttlHours, "Invite lifetime", 1, 8760)
+      validateRange(t, form.questionCount, t("messages.labelQuestionCount"), 1, 100, true) ||
+      validateRange(t, form.durationMinutes, t("messages.labelDuration"), 1, 600) ||
+      validateRange(t, form.maxUses, t("messages.labelMaxUses"), 1, 10000) ||
+      validateRange(t, form.ttlHours, t("messages.labelInviteLifetime"), 1, 8760)
     );
   };
 

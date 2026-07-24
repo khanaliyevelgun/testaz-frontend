@@ -8,5 +8,19 @@
   },
   "static": {
     "adminPanel": "İdarə paneli", "newExam": "Yeni imtahan yarat", "users": "İstifadəçilər", "createUser": "İstifadəçi yarat", "userManagement": "/admin/users üçün istifadəçi idarəetməsi.", "searchNameEmail": "Ad və ya e-poçtla axtarın...", "allRoles": "Bütün rollar", "allStatuses": "Bütün statuslar", "name": "Ad", "email": "E-poçt", "role": "Rol", "status": "Status", "action": "Əməliyyat", "noUsers": "İstifadəçi tapılmadı.", "usersLoadFailed": "İstifadəçilər yüklənə bilmədi.", "userActionFailed": "İstifadəçi əməliyyatı yerinə yetirilmədi.", "restore": "Bərpa et", "login": "Daxil ol", "logout": "Çıxış et", "settings": "Tənzimləmələr", "profile": "Profil", "dashboard": "İdarə paneli", "exams": "İmtahanlar", "questions": "Suallar", "subjects": "Fənlər", "topics": "Mövzular", "reports": "Hesabatlar", "notifications": "Bildirişlər", "payments": "Ödənişlər", "subscriptions": "Abunəliklər", "plans": "Planlar", "results": "Nəticələr", "children": "Uşaqlar", "organizations": "Təşkilatlar", "members": "Üzvlər", "invitations": "Dəvətlər", "optionalNote": "Əlavə qeyd", "noData": "Məlumat tapılmadı.", "active": "Aktiv", "pending": "Gözləmədə", "suspended": "Dayandırılıb", "deleted": "Silinib"
+  },
+  "messages": {
+    "assignmentsAdded": "{{count}} təyinat əlavə edildi.",
+    "templateLoadedNamed": "Şablon yükləndi: {{name}}",
+    "templateLoaded": "Şablon yükləndi.",
+    "sectionSubjectRequired": "Bölmə {{number}}: fənn seçilməlidir.",
+    "sectionTopicRequired": "Bölmə {{number}}: ən azı bir mövzu bloku tələb olunur.",
+    "sectionCountRequired": "Bölmə {{number}}: sual sayı tələb olunur.",
+    "fieldRequired": "{{label}} tələb olunur.",
+    "fieldRange": "{{label}} {{min}} ilə {{max}} arasında olmalıdır.",
+    "labelQuestionCount": "Sual sayı",
+    "labelDuration": "Müddət",
+    "labelMaxUses": "Maksimum istifadə",
+    "labelInviteLifetime": "Dəvətin etibarlılıq müddəti"
   }
 }
