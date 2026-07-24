@@ -147,9 +147,13 @@ Two repos, one product:
   `fetchExamDefinition` + `startSession(OFFICIAL_EXAM)` behind a confirm dialog → the session runner).
   Change log §12. *(This also fixed a backend Redis-cache-serialization bug on `/exam-definitions` — see
   the change log; backend now 131 tests.)*
-- **⛔ Not yet implemented (frontend — intentional, see §16):** exam share-token regeneration
-  (`regenerateExamShareToken`). **Backend-blocked:** real Email/SMS + payment providers (vendor
-  accounts needed).
+- **✅ Exam share-token regeneration (2026-07-24):** the exam owner rotates a leaked share code via a
+  "Regenerate code" button on the exam detail page (`regenerateExamShareToken` → old link 404s, displayed
+  link updates). **This was the last §16 item — the intentionally-unimplemented backend-API list is now
+  EXHAUSTED (§16).** Change log §12.
+- **⛔ Not yet implemented (frontend):** nothing from the backend-API gap remains. **Backend-blocked:** real
+  Email/SMS + payment providers (vendor accounts needed) — a backend concern, no frontend UI to build until
+  the providers exist.
 
 ---
 
@@ -515,6 +519,27 @@ The app has **no automated test suite**, so verification is manual:
 
 ## 12. Change log (keep append-only; newest first)
 
+- **Feature — exam share-token regeneration (2026-07-24).** Wired the LAST §16 endpoint,
+  `regenerateExamShareToken`, into the exam detail page (`AdminExamDetailPage`) — an exam owner rotates a leaked
+  share code. **The §16 intentionally-unimplemented backend-API list is now EXHAUSTED.** Investigation found the
+  page already wired the other owner ops (archive/unarchive/delete/assignments); only this one had a ready
+  `api.js` wrapper but no UI. No new route/page — a single-component enhancement. Verified end-to-end against the
+  live backend + DB in-browser (both locales); build green (65 routes, unchanged) + `i18n:audit` green (188
+  files). Branch `feat/exam-regenerate-share-token` (`--no-ff` merge to `main`, per §24).
+  - **Change:** a **"Regenerate code"** button (`ph ph-arrows-clockwise`) next to "Copy link" in the exam-link
+    section, plus a hint line ("Regenerating the share code makes the old link stop working immediately"). Click →
+    a `window.confirm` (matching the page's existing archive/delete/revoke pattern) → `regenerateExamShareToken(examId)`
+    → `loadExam()` reloads so the displayed link updates to the **new** code (the regenerate response is only
+    `{examId, shareToken}`, not the full exam, so it can't reuse `runAction`'s set-updated-exam path). Success
+    notice: "The share code was regenerated. The old link no longer works."
+  - **Product decisions (asked & confirmed):** proceed with wiring the button (the last §16 gap); require a
+    **confirmation** before rotating (it immediately breaks any already-shared link — anyone holding the old link
+    can no longer open the exam).
+  - **Backend contract verified:** regenerate → new `shareToken`; the **old code's `/preview` then 404s** and the
+    new code works (rotation is immediate). Verified in-browser: link updates on confirm, cancel leaves it
+    unchanged, EN toggle (button + hint), mobile (button wraps, no h-scroll). i18n: AZ source for the copy +
+    "Regenerate code" `az`/`en` fallbacks (both directions); the `window.confirm` string is AZ-only (correct — the
+    DOM walker can't reach a browser dialog, §6b-bis).
 - **Feature — official exam simulations (2026-07-24).** Implemented the two remaining §16 read endpoints
   (`fetchExamDefinitions`/`fetchExamDefinition`) paired with the `OFFICIAL_EXAM` start flow: a student browses the
   **Buraxılış/Qəbul blueprints and starts the real timed simulation** — the product's headline student use case.
@@ -1002,11 +1027,19 @@ Currently unimplemented (verified: zero component/app usage):
   browses both exams, picks a Qəbul specialization group, sees the weighted subject breakdown, and starts the real
   timed simulation (`startSession({ type: "OFFICIAL_EXAM", examCode, examGroupCode })`) via a confirm dialog. See
   the change log §12.
-- **`regenerateExamShareToken`** (`POST /exams/{id}/share-token/regenerate`) — an exam owner
-  rotating a leaked share code. No button wired yet.
+- ~~**`regenerateExamShareToken`**~~ **IMPLEMENTED (2026-07-24)** — the exam owner rotates a leaked share
+  code via a "Regenerate code" button on the exam detail page (`AdminExamDetailPage`, next to "Copy link"):
+  confirm → `regenerateExamShareToken(examId)` → the old link 404s, the displayed link updates to the new
+  code. See the change log §12. **This was the LAST §16 item — the intentionally-unimplemented backend-API
+  list is now EXHAUSTED.**
 
 **Note:** `fetchLinkedChildren` was previously listed as unimplemented but **IS used** by
 `AdminExamFormPage` (a parent assigning an exam to a linked child) — keep it.
+
+**§16 status (2026-07-24): the list is EMPTY.** Every backend endpoint that had an `api.js` wrapper but no UI
+is now wired: `startSession` (practice), `redeemOrganizationInvite` (join by code), `fetchExamDefinitions`/
+`fetchExamDefinition` (official exams), and `regenerateExamShareToken` (this entry). If a NEW deferred endpoint
+is ever added to `api.js` ahead of its UI, list it here again with the same DO-NOT-DELETE rules.
 
 ---
 
