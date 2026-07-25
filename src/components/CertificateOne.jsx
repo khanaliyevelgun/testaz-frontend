@@ -17,7 +17,7 @@ const CertificateOne = () => {
                       <StaticText text={"Elə indi başlayaraq övladınızın biliyini test edin."} />
                     </h2>
                     <a
-                      href=''
+                      href='/sign-up'
                       className='btn btn-white rounded-pill flex-align d-inline-flex gap-8 hover-bg-main-800 wow bounceInUp'
                     >
                       <StaticText text={"Qeydiyyatdan keç"} />

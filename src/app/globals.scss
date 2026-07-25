@@ -186,3 +186,12 @@ button[aria-haspopup="menu"]:focus-visible,
   outline: 2px solid var(--main-600);
   outline-offset: 2px;
 }
+
+// Select caret overlap fix. The template's `.px-16` utility sets `padding-inline: 16px
+// !important`, which overrides Bootstrap's ~2.25rem right padding on `.form-select` — so the
+// dropdown caret (an SVG background at the right edge) overlaps the option text on narrow
+// selects (e.g. the "Sinif"/"Çətinlik"/"Növ"/"Vəziyyət" question filters). Restore enough
+// right room for the caret; scoped to `.form-select` so text inputs are unaffected.
+select.form-select.px-16 {
+  padding-right: 2.5rem !important;
+}
