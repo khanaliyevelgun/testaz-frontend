@@ -64,7 +64,7 @@ const BannerOne = () => {
               </p>
               <div className='buttons-wrapper flex-align flex-wrap gap-24 mt-40'>
                 <Link
-                  href='/course'
+                  href='/sign-up'
                   className='btn btn-main rounded-pill flex-align gap-8'
                   data-aos='fade-right'
                 >

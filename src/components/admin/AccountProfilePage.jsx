@@ -279,7 +279,7 @@ const AccountProfilePage = () => {
 
             <div className='border border-neutral-30 rounded-10 p-20'>
               <h5 className='text-16 fw-semibold text-neutral-500 mb-4'><StaticText text={"Linked parents"} /></h5>
-              <p className='text-13 text-neutral-400 mb-16'><StaticText text={"You can withdraw a parent's access at any time."} /></p>
+              <p className='text-13 text-neutral-400 mb-16'><StaticText text={"Valideynin girişini istənilən vaxt ləğv edə bilərsiniz."} /></p>
               {parents.length ? (
                 <div className='d-flex flex-column gap-10'>
                   {parents.map((parent) => (

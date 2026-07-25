@@ -181,6 +181,8 @@ const staticFallbackTranslations = {
       "At least one contact method (email or phone) must remain.",
     "Digər istifadəçilərin profilləri İstifadəçilər səhifəsindən idarə olunur.":
       "Other users' profiles are managed from the Users page.",
+    "Valideynin girişini istənilən vaxt ləğv edə bilərsiniz.":
+      "You can withdraw a parent's access at any time.",
     // Error & feedback messages (Batch 1 localization)
     "Audit qeydləri yüklənmədi.": "Audit logs could not be loaded.",
     "Sual yüklənmədi.": "Question could not be loaded.",

@@ -528,6 +528,40 @@ The app has **no automated test suite**, so verification is manual:
 
 ## 12. Change log (keep append-only; newest first)
 
+- **Bugfix batch — live-testing findings (2026-07-25).** Five issues the user hit while click-testing the running
+  app on `localhost:3001`; all diagnosed against the live backend (`:8080` was reachable) + in-browser repro. Build +
+  i18n audit green (65 routes, 189 files). Branch `fix/live-testing-bugs`.
+  - **Bug 2 (subject/topic picker selection didn't persist) — ROOT CAUSE + fix, the important one.** On
+    `AdminExamFormPage` (and any `AdminSearchSelect`: exam-form subject/topic, question-list subject/topic filters),
+    choosing an option left the trigger showing the placeholder ("Fənn axtar…") and the topic dropdown stayed
+    disabled ("Əvvəl fənn seçin"). **Diagnosed via the React fiber:** the component STATE was correct
+    (`subjectId:"2", subjectLabel:"Fizika (PHYSICS)"`) but the DOM text stayed the placeholder. Cause: the
+    `LocaleProvider` runtime i18n `MutationObserver` (§6b) caches each text node's FIRST-seen value and, on any later
+    mutation, **reverts the node to that cached original if it's a known translation key** (`localizeStaticContent`
+    uses `original.trim()`, not the current value). So when React updated the trigger's text node from the placeholder
+    to the selected label, the observer overwrote it back to the placeholder. **Fix:** mark the `AdminSearchSelect`
+    value `<span>` `data-i18n-managed='true'` (the observer skips such subtrees) and translate the placeholder up-front
+    via `tx()` (since the observer no longer touches it); the selected label is user data, shown verbatim. Verified
+    live: selecting "Kimya (CHEM)" now persists and enables the topic dropdown. **Lesson (§6b):** any element whose
+    text changes at RUNTIME and whose initial text is a translation key must be `data-i18n-managed` — otherwise the
+    observer reverts it. This is the same class of risk §6b warns about, now bitten + fixed for the shared primitive.
+  - **Bug 1 (home-page "Qeydiyyatdan keç" → 404).** The marketing CTAs pointed at a non-existent `/course` route
+    (`BannerOne`) / an empty `href=''` (`CertificateOne`). Fixed: both register CTAs → `/sign-up`; two generic
+    "Ətraflı oxu"/"Daha çox" CTAs (`AboutOne`/`AboutTwo`, also `/course`) → `/about`. No `/course` or empty-href CTA
+    remains.
+  - **Bug 3 ("Sinif"/"Çətinlik" filter caret overlapping the text).** The template's `.px-16` utility sets
+    `padding-inline:16px !important`, overriding Bootstrap's ~2.25rem right padding on `.form-select`, so the dropdown
+    caret (an SVG background) overlapped the option text on the narrow filter selects. Fixed with a scoped
+    `globals.scss` rule `select.form-select.px-16 { padding-right: 2.5rem !important }` (higher specificity; only
+    `.form-select`, so text inputs are unaffected).
+  - **Bug 5 (English string on the profile page).** "You can withdraw a parent's access at any time." was an English
+    `StaticText` literal with no AZ translation. Converted to the AZ source + EN fallback (§6b).
+  - **Bug 4 (official Buraxılış exam "shows no questions") — NOT A BUG (could not reproduce).** Verified via the API:
+    a fresh Buraxılış session returns **85 questions, all with non-empty stems** (Q1 is `SHORT_TEXT` → renders a
+    textarea, not options; the rest render options), and the runner renders them correctly (confirmed by the user's own
+    screenshot showing "Sual 2" with 4 options). Likely a UX perception: Q1 is short-text (no visible options) and the
+    85-tile question navigator pushes the question below the fold. No code change. *(If it recurs, capture the exact
+    session id + which question index looks blank.)*
 - **Feature — self-service profile edit (`PUT /users/me`) (2026-07-24).** Closed the parity-audit 🟡 gap: any
   authenticated user can now edit their **own** name/email/phone (previously `AccountProfilePage` showed these
   read-only and only edited grade [student] / notify-pref [parent]). New api wrapper `updateMyProfile` (`PUT
@@ -1054,11 +1088,17 @@ Open items that still require work. None block the verified flows.
 
 | Issue | Why it remains | Priority | Needs product decision? |
 |---|---|---|---|
-| **No automated frontend test suite.** Verification is manual (§10). | Out of scope for this review; ESLint is also not configured (`npm run lint` prompts interactive setup). | Low | Partially — deciding on a test stack is a project call. |
+| **Admin manual subscription control has no UI.** `POST /admin/subscriptions` (grant a comped subscription) + `PUT /admin/subscriptions/{id}` (modify plan/status/expiry) exist in the backend; `AdminSubscriptionsPage` is read-only (list + filters). | **Intentionally deferred** by user decision (the sole remaining backend-API frontend gap; see the parity audit). | Medium | No — just deferred; build when scheduled. |
+| **6 dead scaffolding routes** render `AdminPlaceholderPage`/a mismapped component: `/admin/child`, `/admin/parent`, `/admin/messages`, `/admin/my-courses`, `/admin/wishlist`, `/admin/courses`. | Template leftovers. **Unreachable via the UI** (no sidebar/link points to them — only via a typed URL); no flow depends on them. | Low | No — safe to delete the routes + `AdminPlaceholderPage`. |
+| **A few dynamic (interpolated) BACKEND messages render English/raw** (e.g. "used all free sessions this month", "Invite not found: <code>"). | They're runtime-interpolated server strings that can't map to a static `api.codes` key; common cases already have localized hints/fallbacks. | Low | No — needs a params-based server-message helper. |
+| **Real Email/SMS + payment providers not wired** (backend seams ready). | **Backend-blocked** — needs vendor accounts; no frontend to build until they exist. | (blocked) | No — backend/vendor concern. |
+| **No automated frontend test suite.** Verification is manual (§10). | Out of scope; ESLint is also not configured (`npm run lint` prompts interactive setup). | Low | Partially — a test stack is a project call. |
 
-*(The payment-checkout 404, the one-shot-exam "already completed" UX, and the refresh-token
-double-rotation watch-item were all resolved on 2026-07-23 — see the change log §12; the refresh-token
-cross-tab guard is documented in §7.)*
+*(Resolved & logged in §12: the payment-checkout 404, one-shot-exam "already completed" UX, refresh-token
+cross-tab guard [2026-07-23]; the four §16 API gaps + self-profile-edit [2026-07-24]; and the 2026-07-25
+live-testing bug batch — subject-picker i18n-revert [Bug 2], home register-CTA 404s [Bug 1], filter-caret
+overlap [Bug 3], profile English string [Bug 5]. Bug 4 "official exam shows no questions" was investigated and
+found NOT to be a bug — the API returns 85 populated questions and the runner renders them.)*
 
 ---
 

@@ -149,7 +149,7 @@ const AboutOne = () => {
                   data-aos-duration={600}
                 >
                   <Link
-                    href='/course'
+                    href='/about'
                     className='btn btn-main rounded-pill flex-align gap-8'
                   >
                     <StaticText text={"Ətraflı oxu"} />

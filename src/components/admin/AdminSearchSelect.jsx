@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import StaticText from "@/components/StaticText";
+import { useTranslation } from "@/components/LocaleProvider";
 
 
 const AdminSearchSelect = ({
@@ -17,6 +18,7 @@ const AdminSearchSelect = ({
   onChange,
   minWidthClass = "",
 }) => {
+  const { tx } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [options, setOptions] = useState([]);
@@ -70,7 +72,12 @@ const AdminSearchSelect = ({
         aria-expanded={isOpen}
         onClick={() => setIsOpen((current) => !current)}
       >
-        <span className={selectedText ? "text-neutral-500" : "text-neutral-300"}>{selectedText || placeholder}</span>
+        {/* data-i18n-managed: the selected label is dynamic (a subject/topic name chosen at runtime).
+            Without this, the LocaleProvider MutationObserver reverts the node to the first-seen text
+            (the placeholder), so the selection never appears. The placeholder is translated up-front via
+            `tx()` here (since the observer now skips this subtree); the selected label is user data and is
+            shown verbatim. See §6b. */}
+        <span data-i18n-managed='true' className={selectedText ? "text-neutral-500" : "text-neutral-300"}>{selectedText || tx(placeholder)}</span>
         <i className='ph ph-caret-down text-neutral-400'></i>
       </button>
       {required ? <input className='d-none' tabIndex='-1' value={value || ""} onChange={() => {}} required /> : null}
