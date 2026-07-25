@@ -17,6 +17,8 @@ const staticFallbackTranslations = {
     "Official exams": "Rəsmi imtahanlar",
     // Exam owner — regenerate share code button (English-source label) → Azerbaijani.
     "Regenerate code": "Kodu yenilə",
+    // Self-profile edit — English-source heading → Azerbaijani.
+    "Basic information": "Əsas məlumatlar",
   },
   en: {
     "Planlar": "Plans",
@@ -101,6 +103,7 @@ const staticFallbackTranslations = {
     "Join by code": "Join by code",
     "Official exams": "Official exams",
     "Regenerate code": "Regenerate code",
+    "Basic information": "Basic information",
     "Sual sayı": "Question count",
     "Məşqə başla": "Start practice",
     "Başlayır...": "Starting...",
@@ -167,6 +170,17 @@ const staticFallbackTranslations = {
     "Paylaşım kodu yeniləndi. Köhnə link artıq işləmir.":
       "The share code was regenerated. The old link no longer works.",
     "Paylaşım kodu yenilənmədi.": "The share code could not be regenerated.",
+    // Self-service profile edit (PUT /users/me)
+    "E-poçt və ya telefon nömrənizi dəyişsəniz, onu yenidən təsdiqləmək lazımdır.":
+      "If you change your email or phone, it will need to be verified again.",
+    "Təsdiqlənib": "Verified",
+    "Təsdiqlənməyib": "Not verified",
+    "Profiliniz yeniləndi.": "Your profile has been updated.",
+    "Profil yenilənmədi.": "The profile could not be updated.",
+    "Ən azı bir əlaqə vasitəsi (e-poçt və ya telefon) qalmalıdır.":
+      "At least one contact method (email or phone) must remain.",
+    "Digər istifadəçilərin profilləri İstifadəçilər səhifəsindən idarə olunur.":
+      "Other users' profiles are managed from the Users page.",
     // Error & feedback messages (Batch 1 localization)
     "Audit qeydləri yüklənmədi.": "Audit logs could not be loaded.",
     "Sual yüklənmədi.": "Question could not be loaded.",

@@ -151,9 +151,14 @@ Two repos, one product:
   "Regenerate code" button on the exam detail page (`regenerateExamShareToken` → old link 404s, displayed
   link updates). **This was the last §16 item — the intentionally-unimplemented backend-API list is now
   EXHAUSTED (§16).** Change log §12.
-- **⛔ Not yet implemented (frontend):** nothing from the backend-API gap remains. **Backend-blocked:** real
-  Email/SMS + payment providers (vendor accounts needed) — a backend concern, no frontend UI to build until
-  the providers exist.
+- **✅ Self-service profile edit (2026-07-24):** any user edits their own name/email/phone via a "Basic
+  information" form on `AccountProfilePage` (`PUT /users/me`), with Verified/Not-verified badges and a
+  re-verification note. Closed the parity-audit 🟡 gap. Change log §12.
+- **⛔ Not yet implemented (frontend):** **admin manual subscription control** — `POST /admin/subscriptions`
+  (grant a comped subscription) + `PUT /admin/subscriptions/{id}` (modify plan/status/expiry) have no UI
+  (`AdminSubscriptionsPage` is read-only); the only remaining backend-API frontend gap (see the parity audit).
+  **Backend-blocked:** real Email/SMS + payment providers (vendor accounts needed) — a backend concern, no
+  frontend UI to build until the providers exist.
 
 ---
 
@@ -523,6 +528,32 @@ The app has **no automated test suite**, so verification is manual:
 
 ## 12. Change log (keep append-only; newest first)
 
+- **Feature — self-service profile edit (`PUT /users/me`) (2026-07-24).** Closed the parity-audit 🟡 gap: any
+  authenticated user can now edit their **own** name/email/phone (previously `AccountProfilePage` showed these
+  read-only and only edited grade [student] / notify-pref [parent]). New api wrapper `updateMyProfile` (`PUT
+  /users/me`) + an editable **"Basic information"** form on `AccountProfilePage` (all roles). No new route/page — a
+  single-component enhancement. Build + i18n audit green (65 routes, 189 files). Branch `feat/self-profile-edit`
+  (`--no-ff` merge to `main`, per §24).
+  - **The form** (name/email/phone) sits after the header, above the role-specific forms; the Account-ID + Roles
+    stay as read-only display. Only **non-empty** fields are sent (`updateMyProfile` — the backend applies only
+    non-null; an empty string would fail its `@Email`/`@Pattern`); a client-side guard blocks removing the last
+    contact (mirrors the backend's "at least one contact" rule → localized message). On success it updates local
+    state AND calls `useAuth().loadProfile()` so the sidebar greeting / profile dropdown pick up the new name.
+  - **Re-verification UX** (the backend resets `emailVerified`/`phoneVerified` when email/phone changes): each of
+    email/phone shows a **Verified / Not verified** badge derived from the SAVED `basicInfo` — the badge is shown
+    only while the input still matches the saved value, so **editing the field hides the badge**, signalling the
+    change will need re-verification. A note above the form states this explicitly.
+  - **Localization:** AZ source for the note/badges/messages (+ EN fallbacks); "Basic information" `az`/`en`
+    fallbacks (both directions); the backend states (`Email/Phone is already registered`, `A user needs at least
+    an email or a phone`) localized via `api.codes.*`. The admin-account note was reworded (it now clearly refers
+    to managing OTHER users from the Users page, since the admin can now self-edit here).
+  - **⚠️ Verification note:** build compiles clean (proves the wrapper + wiring), i18n audit green, all utility
+    classes + i18n keys confirmed present, and the API shape was checked against the backend DTOs
+    (`MyProfileResponse`/`UpdateMyProfileRequest`). **Live E2E was NOT run — Docker Desktop was down this session**
+    (Postgres/Redis unavailable → the backend couldn't serve). The backend `PUT /users/me` behaviour is already
+    covered by `SelfProfileEditIntegrationTest` (one of the 131 green backend tests: name-only keeps flags,
+    same-email keeps flag, changing email/phone resets the flag, duplicate email → 409). Re-run the in-browser
+    flow once Docker is back if you want a live confirmation.
 - **Polish — drop the secondary student UUID from org tables (2026-07-24, user decision).** Resolved the §15
   "student-name secondary UUID" item: the small `font-monospace` secondary-text UUID shown under a student's
   name in `OrganizationMembersPage` (members table) and `OrganizationInvitesPage` (test-results table) is

@@ -318,6 +318,15 @@ export const resetPassword = (payload) =>
 
 export const fetchMyProfile = () => apiFetch("/users/me").then((response) => unwrapApiResponse(response));
 
+// Edit the current user's own basic info (name/email/phone). Only provided fields are applied;
+// changing email/phone resets its verified flag (the new value must be re-verified). Returns the
+// updated MyProfileResponse (incl. the post-edit emailVerified/phoneVerified flags).
+export const updateMyProfile = (payload) =>
+  apiFetch("/users/me", {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  }).then((response) => unwrapApiResponse(response));
+
 // `/auth/me` is intentionally minimal (id + roles, straight from the JWT — no DB hit).
 // The display name/email/phone live on `/users/me`, so merge them in for the UI. A failed
 // `/users/me` (e.g. transient) must not break auth: fall back to the token-derived user.
