@@ -718,14 +718,7 @@ const OrganizationInvitesPage = () => {
                 results.map((result) => (
                   <tr key={result.id || result.sessionId}>
                     <td className='py-16 px-20 text-14 text-neutral-500'>
-                      {result.studentName ? (
-                        <>
-                          <span className='d-block'>{result.studentName}</span>
-                          <span className='font-monospace text-12 text-neutral-400'>{result.studentId}</span>
-                        </>
-                      ) : (
-                        <span className='font-monospace'>{result.studentId || "-"}</span>
-                      )}
+                      {result.studentName || <span className='font-monospace'>{result.studentId || "-"}</span>}
                     </td>
                     <td className='py-16 px-20 text-14 text-neutral-500'>
                       {String(result.type || "-").replaceAll("_", " ")}
