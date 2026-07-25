@@ -523,6 +523,14 @@ The app has **no automated test suite**, so verification is manual:
 
 ## 12. Change log (keep append-only; newest first)
 
+- **Polish — drop the secondary student UUID from org tables (2026-07-24, user decision).** Resolved the §15
+  "student-name secondary UUID" item: the small `font-monospace` secondary-text UUID shown under a student's
+  name in `OrganizationMembersPage` (members table) and `OrganizationInvitesPage` (test-results table) is
+  removed — when a `studentName` exists, only the name shows now, for a cleaner look. The UUID is **kept as the
+  fallback** when a row has no resolved name (it's then the only identifier), and `AdminExamAttemptsPage` already
+  showed name-or-UUID with no secondary line (unchanged). Pure display simplification (a `<span>` removed);
+  build + i18n audit green (65 routes, 189 files). Branch `chore/drop-secondary-uuid` (`--no-ff` merge to
+  `main`, per §24).
 - **Polish — effect cleanup (auth redirect timers + exam countdown) (2026-07-24).** Two §15 correctness items,
   no behaviour change; build + i18n audit green (65 routes, 189 files). Branch `chore/effect-cleanup`
   (`--no-ff` merge to `main`, per §24).
@@ -1053,9 +1061,10 @@ or refactor pass unless explicitly asked.**
   only on `session?.expiresAt`/`session?.status` and persists across answers. Behaviour unchanged.
 - **Splitting `lib/api.js`** by domain (`api/auth.js`, `api/exams.js`, …) if it keeps growing —
   behind the same exported names, no call-site import changes (§5).
-- **Student-name secondary UUID.** The org tables show the name + the UUID as small secondary
-  text; if the UUID is not needed for support, it can be dropped for a cleaner look (a design
-  call, not done).
+- ~~**Student-name secondary UUID.**~~ **DONE (2026-07-24, user decision).** The small secondary-text UUID
+  under a student's name was dropped from the org tables (`OrganizationMembersPage`, `OrganizationInvitesPage`)
+  for a cleaner look — when a `studentName` exists only the name shows. The UUID is still shown as the fallback
+  when a member/result has NO resolved name (it's then the only identifier). See §12.
 
 ---
 
