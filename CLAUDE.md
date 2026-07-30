@@ -116,19 +116,34 @@ Two repos, one product:
   `<generated-email>` / `Parol!2345`. Regenerate: backend CLAUDE.md §27.
 
 ### 0.5 Development Progress
+
+> **HANDOFF STATE (2026-07-25):** Frontend + backend have reached **feature parity** — every backend
+> capability that should be user-accessible is implemented and wired, for all four roles. The ONLY
+> deliberately-deferred item is the **admin manual subscription grant/modify** UI (backend endpoints exist,
+> no UI — by decision). Production build is **green (65 routes)**; i18n audit green (189 source files, 3526
+> locale entries). Repo is on `main`, clean tree, **pushed to `origin` = `github.com/khanaliyevelgun/testaz-frontend`**.
+> A full Backend↔Frontend parity audit + a final feature-completeness audit were completed this session (both
+> concluded: parity reached, excluding the deferred admin-subscription UI). See §14 for the (small) remaining
+> issue list and §17 for the next task.
+
 - **✅ Completed (backend):** all 17 modules; the full MVP build order (auth → taxonomy → question
   bank → AI generation → test-taking + scoring → student/parent linking → organizations →
   notifications → reports → subscriptions/payments → audit → admin → exam management) PLUS the
   deferred-feature run (trends rollups, subscription lifecycle + plan CRUD, retention jobs, AI
   runtime replenishment, org digest, exam owner lifecycle + retakes, security hardening, dev-data
-  seeder). 130 tests green.
+  seeder). **131 tests green** (the frontend official-exams work surfaced + fixed one backend Redis-cache
+  serialization bug on `/exam-definitions` — see §12). Backend is the authoritative SSOT: `testaz-backend/CLAUDE.md`.
 - **✅ Completed (frontend):** auth (sign-in/up, forgot/reset, refresh); role dashboards
-  (admin/parent/child/organization); student results (list + paginated detail modal) + question
-  reporting; exam-taking by share code (preview → start → answer/autosave → submit → scored result);
-  parent dashboard/children/progress/notifications; organization management/members/invites/results;
-  full admin panel (users, subjects, topics, questions + AI generation, reports, audit,
-  subscriptions, payments, plans, dashboard); subscriptions/entitlement/checkout (mock) +
-  **payment-return landing** (`/payment/return`); i18n (az/en). Production build green (**50 routes**).
+  (admin/parent/child/organization); **student self-start practice** (`/admin/practice`), **official exam
+  simulations** (`/admin/official-exams`), **org-invite redemption** (`/admin/join`); student results (list +
+  paginated detail) + question reporting; exam-taking by share code (preview → start → answer/autosave → submit →
+  scored result) + **exam owner lifecycle** (archive/delete/regenerate-share-token/assignments); parent
+  dashboard/children/progress/notifications + invitation flow; organization management/members/invites/results;
+  full admin panel (users, subjects, topics, questions + AI generation, reports, audit, subscriptions [read],
+  payments, plans, dashboard); **self-service profile edit** (`/admin/profile` → `PUT /users/me`);
+  subscriptions/entitlement/checkout (mock) + **payment-return landing** (`/payment/return`); i18n (az/en) with
+  key-based + runtime static + params-based helpers; loading skeletons (table + card), empty states,
+  accessibility in shared primitives. Production build green (**65 routes**).
 - **🔶 Recent sessions (2026-07-23; all in the change log §12):** a **remaining-issues fix pass** (payment
   checkout 404 → new return page; one-shot-exam "already completed" UX; refresh-token cross-tab guard), then a
   **5-batch UX/accessibility polish pass** that preserved the existing identity (no redesign): (1) localized
@@ -154,6 +169,14 @@ Two repos, one product:
 - **✅ Self-service profile edit (2026-07-24):** any user edits their own name/email/phone via a "Basic
   information" form on `AccountProfilePage` (`PUT /users/me`), with Verified/Not-verified badges and a
   re-verification note. Closed the parity-audit 🟡 gap. Change log §12.
+- **✅ Live-testing bug batch (2026-07-25):** 5 issues found by the user click-testing the running app —
+  fixed 4, and one ("official exam shows no questions") was investigated and confirmed **not a bug** (the API
+  returns 85 populated questions; the runner renders them). Notable root cause: the `AdminSearchSelect`
+  subject/topic selection didn't persist because the runtime i18n `MutationObserver` reverted the trigger's
+  text node to its first-seen (placeholder) value — fixed with `data-i18n-managed` + `tx(placeholder)`. Also:
+  home register CTAs → `/sign-up` (were 404), filter-caret padding, a profile English string. Change log §12.
+- **✅ Repo published (2026-07-25):** frontend pushed to `origin = github.com/khanaliyevelgun/testaz-frontend`
+  (`main`, full history). No secrets tracked (`.env` holds only the public `NEXT_PUBLIC_API_BASE_URL`).
 - **⛔ Not yet implemented (frontend):** **admin manual subscription control** — `POST /admin/subscriptions`
   (grant a comped subscription) + `PUT /admin/subscriptions/{id}` (modify plan/status/expiry) have no UI
   (`AdminSubscriptionsPage` is read-only); the only remaining backend-API frontend gap (see the parity audit).
@@ -186,7 +209,7 @@ auth/exam flows.
 
 ```bash
 npm run dev            # dev server on :3000
-npm run build          # production build — MUST stay green (50 routes)
+npm run build          # production build — MUST stay green (65 routes)
 npm run start          # serve the production build
 npm run lint           # next lint
 ```
@@ -490,7 +513,7 @@ in the backend's `refresh_tokens` table for a family with many rows all `revoked
 5. **Client role checks are cosmetic**; never rely on them for security. `middleware.js`
    + the backend are the enforcement.
 6. **`meta.page` is 1-based in the UI, 0-based to the backend.** Convert only in `api.js`.
-7. **Keep the production build green** (`npm run build`, 50 routes). Verify after any change.
+7. **Keep the production build green** (`npm run build`, 65 routes). Verify after any change.
 8. Prefer reusing the admin primitives (§8) over re-implementing pagers/badges/dropdowns.
 
 ---
@@ -499,7 +522,7 @@ in the backend's `refresh_tokens` table for a family with many rows all `revoked
 
 The app has **no automated test suite**, so verification is manual:
 
-1. `npm run build` must be green with the **same 50 routes** as before
+1. `npm run build` must be green with the **same 65 routes** as before
    (compare the route table; static vs dynamic markers unchanged).
 2. Run `npm run dev` and walk the major flows: sign-in → dashboard per role; a student
    taking an exam (`/exam/[code]` → session → result); the parent dashboard
@@ -528,6 +551,21 @@ The app has **no automated test suite**, so verification is manual:
 
 ## 12. Change log (keep append-only; newest first)
 
+- **Session handoff + repo publish (2026-07-25).** Finalized the project for handoff. **(1) Repo published:** added
+  `origin = github.com/khanaliyevelgun/testaz-frontend` (replacing the template's stale `xsonmsc/eduall` remote) and
+  pushed `main` (full history, upstream tracking set). Verified no secrets are tracked (`.env` holds only the public
+  `NEXT_PUBLIC_API_BASE_URL`; `node_modules`/`.next` gitignored). **(2) Two audits completed** (documentation-only, no
+  code change): a Backend↔Frontend parity audit and a final feature-completeness audit — both concluded the frontend
+  and backend have reached **feature parity** except the intentionally-deferred admin manual subscription grant/modify
+  UI. Confirmed zero unused `api.js` wrappers, zero TODO/FIXME/stub markers, every sidebar link resolves to a real page,
+  and all four roles' flows are wired end-to-end. **(3) Cleanup decision:** a scripted comment-strip was attempted but
+  **reverted** — it broke a regex literal in `lib/questionContent.js` (`/^https?:\/\//`); per the user's call, the
+  explanatory 'why' comments are KEPT (they're the project standard and document real gotchas like the i18n-observer
+  revert), and no code was changed in this handoff. The 6 unreachable dead scaffolding routes (`/admin/child`,
+  `/admin/parent`, `/admin/messages`, `/admin/my-courses`, `/admin/wishlist`, `/admin/courses/**` + `AdminPlaceholderPage`)
+  were left in place by decision (they're harmless — unreachable via the UI — and removing them is deferred; see §14).
+  **(4) CLAUDE.md polished** into a complete current snapshot (this file): §0.5 handoff state, route count 50→65,
+  §14/§16/§17 refreshed. Build green (65 routes), i18n audit green (189 files). No in-flight partial work.
 - **Bugfix batch — live-testing findings (2026-07-25).** Five issues the user hit while click-testing the running
   app on `localhost:3001`; all diagnosed against the live backend (`:8080` was reachable) + in-browser repro. Build +
   i18n audit green (65 routes, 189 files). Branch `fix/live-testing-bugs`.
@@ -1204,3 +1242,56 @@ Only after fully understanding the project — backend + frontend, completed + p
 hard rules in §9 — should implementation begin. Preserve the existing UI/UX (it is considered
 good); keep the production build green (§10); and keep this file in sync (doc-sync: update the
 change log §12 + the relevant section, then summarize in chat).
+
+---
+
+## 18. Next Task (the exact next thing to build)
+
+The project is at **feature parity** (§0.5). There is exactly **one** frontend-API gap remaining, plus optional
+polish and a backend-blocked launch item. In priority order:
+
+### ⭐ Next feature — Admin manual subscription control (the only remaining API gap)
+- **What:** wire the two backend admin-subscription endpoints that currently have no UI: **grant** a comped/support
+  subscription (`POST /admin/subscriptions`) and **modify** one (`PUT /admin/subscriptions/{id}` — change plan /
+  status / expiry). Today `AdminSubscriptionsPage` is **read-only** (list + filters).
+- **Why deferred, why next:** the user explicitly deferred it during the parity audits; it's the sole endpoint pair
+  without a wrapper/UI. Medium value (admin-only, low-frequency: comping, fixing bad state, support).
+- **Exact starting point:**
+  1. Add two `api.js` wrappers next to `fetchAdminSubscriptions` (~line 1051): `grantAdminSubscription(payload)` →
+     `POST /admin/subscriptions`, and `updateAdminSubscription(id, payload)` → `PUT /admin/subscriptions/{id}`.
+     Follow the existing wrapper style (`apiFetch` + `JSON.stringify` + `unwrapApiResponse`).
+  2. In `components/admin/AdminSubscriptionsPage.jsx`, add a "Grant subscription" button (opens a form/modal:
+     payer user id + plan code + optional expiry) and a per-row "Edit" action (plan/status/expiry). Reuse the
+     existing modal pattern (see `ChildAssignmentsPage`'s preview modal or the exam-detail confirm dialog).
+- **Backend contract (verify against `testaz-backend/CLAUDE.md` §18 + the DTOs before building):**
+  `GrantSubscriptionRequest(payerUserId, planCode, expiresAt?)`; `UpdateSubscriptionRequest(planCode?, status?,
+  expiresAt?)`. Unknown plan/subscription → 404; both are `@Auditable`. Grant creates the sub **ACTIVE** directly
+  (bypasses checkout/webhook — no payment row). The admin list response (`AdminSubscriptionResponse`) already
+  carries `payerName`/`payerEmail` + `planCode`.
+- **Dependencies:** none new (backend endpoints exist + are tested). No new route (enhance the existing
+  `/admin/subscriptions` admin view).
+- **Files likely modified:** `src/lib/api.js` (2 wrappers), `src/components/admin/AdminSubscriptionsPage.jsx`
+  (grant + edit UI), `src/lib/i18n.js` + `src/locales/{az,en}.json` (new labels/messages + any `api.codes.*` for
+  backend states). Possibly a small new modal component.
+- **Important considerations:** localize per §6 (AZ source + EN fallbacks; the DOM-observer gotcha in §6b — mark
+  any runtime-changing text `data-i18n-managed` like `AdminSearchSelect` does, §12 2026-07-25); paginate/validate
+  per §9/§11; `meta.page` is 1-based in the UI (§9 #6); status values are backend enums (PENDING/ACTIVE/EXPIRED/
+  CANCELED). Verify live against the running backend (Docker must be up).
+
+### Optional cleanup (low priority, deferred by decision — §14)
+- **Delete the 6 dead scaffolding routes** (`/admin/child`, `/admin/parent`, `/admin/messages`, `/admin/my-courses`,
+  `/admin/wishlist`, `/admin/courses/**`) + `AdminPlaceholderPage` + their dead `authRoles.js` rules. They are
+  unreachable via the UI and reuse no unique components (`/admin/courses/**` just re-maps subject/topic components
+  already reachable via `/admin/subjects`). Safe to remove; verify the build after (65 → fewer routes, all real).
+- **Params-based server-message i18n:** a few dynamic backend strings (e.g. "used all free sessions this month",
+  "Invite not found: <code>") render raw because they can't map to a static `api.codes` key.
+
+### Backend-blocked (not a frontend task)
+- Real Email/SMS + payment providers (backend seams ready; needs vendor accounts). No frontend to build until they
+  exist; the mock payment/checkout + `/payment/return` flow already handles the client side.
+
+### DO NOT (without an explicit request)
+- Do not mechanically strip code comments (a scripted strip broke a regex in `lib/questionContent.js` — §12
+  2026-07-25). Comments are the project standard ("why", not "what") and document real gotchas — keep them.
+- Do not reword/reformat visible `StaticText` literals during refactors (breaks the runtime string-match i18n, §6b).
+- Do not remove the §16 API wrappers or change business logic.
