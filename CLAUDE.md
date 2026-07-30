@@ -4,7 +4,8 @@
 > frontend should read this file first. §0 gives the whole-project picture (product, architecture,
 > backend, database, progress) so a brand-new session understands the system without prior
 > conversation; §1–§11 are the detailed **frontend** reference (routing, auth, state, API layer,
-> i18n, shared components, conventions); §12 is the change log; §13–§18 are the handoff sections.
+> i18n, shared components, conventions); §12 is the change log; §13–§18 are the handoff sections; §19 is the
+> **git workflow** (branch → verify → commit → push → merge → push).
 >
 > **The authoritative BACKEND document is `testaz-backend/CLAUDE.md`** (~3600 lines, the backend
 > SSOT). §0 here summarizes it and points to it; do not duplicate backend depth into this file.
@@ -12,10 +13,11 @@
 > **New session? Start with §17 (Next Session).** Then read §0 (project overview), then the
 > frontend detail (§1–§11). Handoff sections: §13 this-session summary (incl. repo-cleanliness
 > result), §14 remaining issues, §15 future improvements, §16 the intentionally-unimplemented
-> backend APIs that must NOT be deleted, §17 next-session starting instructions.
+> backend APIs that must NOT be deleted, §17 next-session starting instructions, §18 the next task,
+> **§19 the MANDATORY git workflow** (mirrors the backend's §24 — the "per §24" notes in §12 mean §19 here).
 >
 > Keep this file in sync when you change architecture, folder structure, state management, the API
-> layer, the i18n system, or shared conventions (§20-style doc-sync: update the change log + the
+> layer, the i18n system, or shared conventions (doc-sync: update the change log §12 + the
 > relevant section, then summarize in chat).
 
 ---
@@ -555,6 +557,25 @@ The app has **no automated test suite**, so verification is manual:
 ---
 
 ## 12. Change log (keep append-only; newest first)
+
+- **Docs — added §19 Git Workflow, aligning the frontend with the backend (2026-07-30, user-directed).**
+  Documentation-only; no code change. The frontend had **no git section at all** even though the change log
+  referenced "per §24" **11 times** (a backend section number), and §13 recorded the opposite policy
+  ("commit-only for the assistant — not pushed / not merged"). Both are now resolved:
+  - **New §19 Git Workflow (MANDATORY)** mirroring `testaz-backend/CLAUDE.md` §24, so both repos follow ONE
+    workflow: branch per change off `main` (`feat/`/`chore/`), never commit to `main` directly, **no Pull
+    Requests**; finish flow = commit → **push the branch** → `--no-ff` merge to `main` → **push `main`** →
+    delete the branch (local + remote). Conflict handling is the backend's verbatim (resolve automatically,
+    preserve functionality, re-verify, commit; stop only for business-logic ambiguity, destructive overwrites,
+    persistent gate failures, or permission blocks).
+  - **Verification gates are the frontend's, not the backend's** — this repo has no automated test suite (§10),
+    so "green" means `npm run build` compiles with the **route set unchanged** + `npm run i18n:audit` passes
+    (the backend's gate is `./gradlew build` with its 131 tests).
+  - **The "commit-only" rule is explicitly SUPERSEDED.** Work is now committed, merged, and **pushed** without
+    waiting for separate approval. §13's note is retained but marked historical.
+  - Also fixed two dangling cross-references: the header's section map (said the file ends at §18; the
+    "per §24" notes now point at §19) and a "§20-style doc-sync" reference (no §20 exists here — the doc-sync
+    instruction is §12 + the relevant section). §17 now names §19 in its starting instructions.
 
 - **Feature — admin manual subscription control (grant + modify) (2026-07-30).** Wired the LAST two backend
   admin-subscription endpoints that had no UI — **the frontend↔backend parity gap is now CLOSED** (§14's only
@@ -1125,8 +1146,10 @@ Manual E2E in the in-app browser against the live backend (there is no automated
 
 ### Branches created
 - **Frontend** (`eduall/`): `refactor/frontend-review-2` (formatDate consolidation, name-display
-  fix, org student-name display, this doc). Committed locally — **not pushed / not merged** per
-  the standing instruction (this repo is commit-only for the assistant).
+  fix, org student-name display, this doc). Committed locally — at the time, **not pushed / not merged**
+  per the then-standing "commit-only for the assistant" instruction. *(Historical: that branch was later
+  merged to `main` — see §12 "Finalization" 2026-07-24 — and the commit-only rule is **superseded by §19**,
+  which now mandates commit → push → merge → push `main`.)*
 - **Backend** (`testaz-backend/`): `feat/member-result-student-names`,
   `feat/report-question-identification`, `fix/cors-allowed-origins-yaml`. Committed on branches;
   `main` untouched.
@@ -1284,8 +1307,9 @@ is ever added to `api.js` ahead of its UI, list it here again with the same DO-N
 
 Only after fully understanding the project — backend + frontend, completed + pending, and the
 hard rules in §9 — should implementation begin. Preserve the existing UI/UX (it is considered
-good); keep the production build green (§10); and keep this file in sync (doc-sync: update the
-change log §12 + the relevant section, then summarize in chat).
+good); keep the production build green (§10); follow the **git workflow in §19** (branch → verify →
+commit → push → `--no-ff` merge to `main` → push → delete the branch); and keep this file in sync
+(doc-sync: update the change log §12 + the relevant section, then summarize in chat).
 
 ---
 
@@ -1327,3 +1351,36 @@ partial-update semantics, and the live verification — in the change log **§12
   2026-07-25). Comments are the project standard ("why", not "what") and document real gotchas — keep them.
 - Do not reword/reformat visible `StaticText` literals during refactors (breaks the runtime string-match i18n, §6b).
 - Do not remove the §16 API wrappers or change business logic.
+
+---
+
+## 19. Git Workflow (MANDATORY — feature branches, NO Pull Requests)
+
+> Mirrors the backend's `testaz-backend/CLAUDE.md` §24 so both repos follow ONE workflow. The many
+> "per §24" references in the change log (§12) mean **this** section — they predate it, when the
+> frontend had no git section of its own. **This supersedes the older "commit-only for the assistant"
+> instruction** recorded in §13 (2026-07-25 and earlier): work is now committed, merged, **and pushed**
+> without waiting for separate approval.
+
+- **Branch per change.** Do all work on a short-lived feature branch off `main` (`feat/<topic>` or
+  `chore/<topic>`). Never commit directly to `main`. **Never open Pull Requests.**
+- **Finish flow — only AFTER the verification gates are GREEN** (this repo has no automated test suite, §10, so
+  the gates are: `npm run build` compiles with the **route set unchanged**, and `npm run i18n:audit` passes):
+  1. **Commit** the work on the feature branch.
+  2. **Push** the feature branch.
+  3. **Merge** the feature branch into `main` (`--no-ff`), then **push `main`**.
+  4. **Delete** the feature branch (local **and** remote).
+- **Merge conflicts — resolve them yourself, automatically, whenever possible:**
+  1. `git fetch` the latest changes.
+  2. Resolve the conflicts automatically.
+  3. **Preserve all intended functionality** — never drop a feature just to make the merge succeed.
+  4. **Re-run the verification gates** after resolving (build + i18n audit), and re-check any touched flow
+     in the browser if the conflict was in component logic.
+  5. **Commit** the conflict resolution.
+- **Stop and ask the user ONLY if:** the conflict changes business logic and there is no objectively correct
+  resolution; the conflict would delete/overwrite important functionality; the build/i18n audit still fails after
+  multiple reasonable repair attempts; or authentication/repository permissions block completion.
+- Otherwise, resolve conflicts yourself and proceed without asking.
+- **Remote:** `origin` = `github.com/khanaliyevelgun/testaz-frontend` (`main`). Never commit secrets — `.env`
+  holds only the public `NEXT_PUBLIC_API_BASE_URL`; `node_modules/` and `.next/` are gitignored. Stage specific
+  paths (`src/`, `CLAUDE.md`, …) rather than `git add -A`, so build output never slips in.
