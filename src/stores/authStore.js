@@ -14,7 +14,11 @@ const initialState = {
 
 let authState = initialState;
 const listeners = new Set();
-const authCookieMaxAge = 60 * 60;
+// The access cookie must not outlive the JWT inside it (backend `jwt.access-token-ttl: 15m`).
+// A longer cookie leaves a window where every /admin/** request ships an already-expired token,
+// costing middleware an extra fetchMe -> refresh -> fetchMe round-trip (and a bounce to /sign-in if
+// the refresh token is stale too). Keep this in sync with the backend TTL.
+const authCookieMaxAge = 15 * 60;
 const refreshCookieMaxAge = 60 * 60 * 24 * 7;
 
 const setCookie = (name, value, maxAge = authCookieMaxAge) => {
