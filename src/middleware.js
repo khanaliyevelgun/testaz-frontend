@@ -96,14 +96,19 @@ export async function middleware(request) {
     if (accessToken) {
       response.cookies.set("accessToken", accessToken, {
         path: "/",
-        maxAge: 60 * 60,
+        // Must not outlive the JWT itself (backend `jwt.access-token-ttl: 15m`) — a longer cookie
+        // just ships a dead token on the next request, forcing another refresh round-trip.
+        maxAge: 15 * 60,
         sameSite: "lax",
       });
 
       if (tokens?.refreshToken) {
         response.cookies.set("refreshToken", tokens.refreshToken, {
           path: "/",
-          maxAge: 60 * 60 * 24 * 30,
+          // Matches the backend `jwt.refresh-token-ttl: 7d` (and authStore's refreshCookieMaxAge).
+          // A 30-day cookie outlived the token by 23 days, so a returning user looked "logged in"
+          // until the first request failed and bounced them to /sign-in.
+          maxAge: 60 * 60 * 24 * 7,
           sameSite: "lax",
         });
       }

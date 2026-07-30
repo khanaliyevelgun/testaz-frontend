@@ -572,6 +572,28 @@ The app has **no automated test suite**, so verification is manual:
 
 ## 12. Change log (keep append-only; newest first)
 
+- **QA fix — auth cookie lifetimes now match the backend token TTLs (2026-07-30, Phase 3).** Resolves the
+  long-standing **"so many login redirects"** complaint, diagnosed to a concrete cookie/token mismatch. Build green
+  (61 routes), i18n audit green (183 files). Branch `fix/qa-auth-redirects`.
+  - **Root cause.** The `accessToken` cookie was written with `maxAge: 60 * 60` (1 hour) in BOTH `middleware.js`
+    and `stores/authStore.js`, but the JWT inside it lives only **15 minutes** (backend `jwt.access-token-ttl: 15m`).
+    Measured live by decoding the cookie's own JWT: `exp - iat = 900s` against a 3600s cookie — a **2700-second
+    (45-minute) window in which every `/admin/**` request shipped an already-expired token**. `middleware.js` then
+    paid `fetchMe` (401) → `refresh` → `fetchMe` again — **3 backend round-trips per navigation** — and bounced the
+    user to `/sign-in` whenever the refresh token was also stale.
+  - **Same class of bug on the refresh cookie:** `middleware.js` set it to **30 days** while the backend
+    `jwt.refresh-token-ttl` is **7 days** (and `authStore` already used 7). A returning user therefore *looked*
+    signed in for 23 extra days until the first request failed.
+  - **Fix:** access cookie → `15 * 60`, refresh cookie → `60 * 60 * 24 * 7`, in both files, with comments tying each
+    to the backend property so they stay in sync. **Keep these aligned if the backend TTLs ever change.**
+  - **Verified live:** the dead-token window is now **0s** (was 2700s); all 15 admin pages return **200 with zero
+    redirects** when authenticated; and **authorization did not regress** — a STUDENT is still redirected away from
+    `/admin/users`, `/admin/audit` and `/admin/children` while reaching `/admin/practice` and `/admin/quiz-attempts`.
+  - **⚠️ Testing note (cost me real time, recorded so it doesn't repeat):** several "500" and "page broken" readings
+    during this QA pass were **stale `next dev` instances** from earlier phases still holding ports 3000/3001 and
+    serving pre-fix code. Before trusting any local failure, kill every `node`/`next dev` listener on 300x and start
+    exactly one server — `netstat -ano | grep ":300" | grep LISTENING`.
+
 - **Full frontend engineering review (2026-07-30, Phase 2 of a 3-phase audit).** A complete production-readiness
   review of all 171 source files: architecture, dead code, React correctness, hooks/effects, memory leaks, state,
   API integration, error handling, a11y, security/XSS, bundle, routing, localization. **Two real defects found and
