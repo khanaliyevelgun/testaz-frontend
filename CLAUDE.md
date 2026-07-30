@@ -124,9 +124,11 @@ Two repos, one product:
 > the previously-deferred **admin manual subscription grant/modify** UI (shipped 2026-07-30 — see §12). There is
 > now **no known backend endpoint without frontend integration**. Production build green; i18n audit green (189
 > source files, 3526 locale entries). Repo on `main`, **pushed to `origin` =
-> `github.com/khanaliyevelgun/testaz-frontend`**. Remaining work is optional cleanup (§14: 6 dead scaffolding
-> routes, dynamic server-message i18n, no automated test suite) plus the **backend-blocked** real Email/SMS +
-> payment vendors. See §14 for the remaining issue list and §18 for the next task.
+> `github.com/khanaliyevelgun/testaz-frontend`**. A **full frontend engineering review (2026-07-30)** removed 5 dead
+> routes (66 → **61**), fixed the untranslated topic-management UI, and corrected a dangerous doc error
+> (`/admin/courses/**` is LIVE — see §11 ⚠️). Remaining work is optional polish (§14: dynamic server-message i18n,
+> no automated test suite) plus the **backend-blocked** real Email/SMS + payment vendors. See §14 for the remaining
+> issue list and §18 for the next task.
 >
 > *(Earlier handoff, 2026-07-25: parity reached except the then-deferred admin-subscription UI; a full
 > Backend↔Frontend parity audit + a feature-completeness audit were completed.)*
@@ -216,7 +218,7 @@ auth/exam flows.
 
 ```bash
 npm run dev            # dev server on :3000
-npm run build          # production build — MUST stay green (65 routes)
+npm run build          # production build — MUST stay green (61 routes since 2026-07-30)
 npm run start          # serve the production build
 npm run lint           # next lint
 ```
@@ -520,7 +522,8 @@ in the backend's `refresh_tokens` table for a family with many rows all `revoked
 5. **Client role checks are cosmetic**; never rely on them for security. `middleware.js`
    + the backend are the enforcement.
 6. **`meta.page` is 1-based in the UI, 0-based to the backend.** Convert only in `api.js`.
-7. **Keep the production build green** (`npm run build`, 65 routes). Verify after any change.
+7. **Keep the production build green** (`npm run build`, **61 routes** since the 2026-07-30 dead-route
+   cleanup). Verify after any change.
 8. Prefer reusing the admin primitives (§8) over re-implementing pagers/badges/dropdowns.
 
 ---
@@ -529,7 +532,7 @@ in the backend's `refresh_tokens` table for a family with many rows all `revoked
 
 The app has **no automated test suite**, so verification is manual:
 
-1. `npm run build` must be green with the **same 65 routes** as before
+1. `npm run build` must be green with the **same 61 routes** as before
    (compare the route table; static vs dynamic markers unchanged).
 2. Run `npm run dev` and walk the major flows: sign-in → dashboard per role; a student
    taking an exam (`/exam/[code]` → session → result); the parent dashboard
@@ -542,6 +545,17 @@ The app has **no automated test suite**, so verification is manual:
 
 ## 11. Gotchas / notes
 
+- **⚠️ `/admin/courses/**` is LIVE — never delete it (verified 2026-07-30).** The name is a template
+  leftover, and older notes in this file wrongly called it a "dead scaffolding route… safe to remove."
+  **It is the ONLY route to topic management.** `AdminSubjectsPage`'s per-row action **"Mövzular"
+  (Topics)** links to `/admin/courses/{subjectId}/topics`, and `AdminTopicsPage` /
+  `AdminTopicFormPage` are reachable from **nowhere else** (`grep` proves 0 other route references).
+  Deleting these routes silently destroys admin topic CRUD — an entire backend surface
+  (`/admin/topics` × 5 endpoints) would become unusable from the UI. `/admin/courses` and
+  `/admin/courses/[id]/edit` *are* thin aliases of the Subjects pages, but the `topics` subtree is
+  not. If the naming is ever cleaned up, **move** the topic routes to `/admin/subjects/[id]/topics`
+  and update the 5 link sites (`AdminSubjectsPage`, `AdminTopicsPage` ×2, `AdminTopicFormPage` ×2) —
+  do not just delete.
 - **No TypeScript.** `jsconfig.json` only sets the `@/*` → `src/*` path alias.
 - **`reactStrictMode: false`** (`next.config.js`) — effects run once in dev.
 - Template globals: **jQuery / Bootstrap JS / Phosphor / AOS / WOW** are loaded via
@@ -557,6 +571,41 @@ The app has **no automated test suite**, so verification is manual:
 ---
 
 ## 12. Change log (keep append-only; newest first)
+
+- **Full frontend engineering review (2026-07-30, Phase 2 of a 3-phase audit).** A complete production-readiness
+  review of all 171 source files: architecture, dead code, React correctness, hooks/effects, memory leaks, state,
+  API integration, error handling, a11y, security/XSS, bundle, routing, localization. **Two real defects found and
+  fixed; one dangerous piece of documentation corrected.** Build green (**66 → 61 routes**, only dead ones removed),
+  i18n audit green (183 files, 3526 entries), zero console errors. Branch `fix/frontend-review-2026-07-30`.
+  - **🔴 Doc correction (the most important finding) — `/admin/courses/**` is LIVE, not dead.** §14/§18 previously
+    listed it among "6 dead scaffolding routes… safe to delete," claiming it only re-maps components reachable via
+    `/admin/subjects`. **That was wrong.** `AdminSubjectsPage`'s row action "Topics" links to
+    `/admin/courses/{id}/topics`, and `AdminTopicsPage`/`AdminTopicFormPage` are reachable from nowhere else —
+    deleting the subtree would have silently destroyed admin topic CRUD (5 backend endpoints orphaned). Verified
+    live: the page loads 8 real MATH topics with working create/edit/filter/pagination. A ⚠️ warning is now in §11
+    and the §14/§18 entries are corrected. **Lesson: verify a route's reachability by grepping link sites, never by
+    its name.**
+  - **Fix 1 — untranslated topic-management UI.** Because the page was believed dead, it had **zero** translation
+    coverage: "Topics", "Create Topic", "Topic", "Action", "Create", "Save", "Subject ID:", "Name AZ", etc. all
+    rendered **English in the AZ-default UI**. Added 15 `az` fallback entries (§6b-bis). Verified live: the page now
+    renders "Mövzular" / "Mövzu yarat" with all 5 table headers in Azerbaijani, data loading unchanged.
+  - **Fix 2 — deleted 5 genuinely-unreachable placeholder routes** (`/admin/child`, `/admin/parent`,
+    `/admin/messages`, `/admin/my-courses`, `/admin/wishlist`) + `AdminPlaceholderPage` + their 5 dead
+    `authRoles.js` rules. These shipped **Turkish** template copy ("Mesajlaşma paneli…") in the production bundle.
+    Confirmed unreachable (0 link sites) and that `/^\/admin\/child(?:\/|$)/` does not shadow the live
+    `/admin/children`. Verified live: all 5 now 404 while `/admin/subjects`, `/admin/courses/1/topics`,
+    `/admin/children`, `/admin/questions` still return 200.
+  - **Verified clean (actively checked, nothing to fix):** zero unused components (every `.jsx` is imported); **zero
+    unused `api.js` exports** (§16 genuinely exhausted); zero timer leaks (`setInterval`/`setTimeout` all paired with
+    clears); zero listener leaks (`addEventListener`/`removeEventListener` balanced); 18 components use `isMounted`
+    guards. **XSS: the `sanitizeQuestionHtml` allow-list was empirically tested against 11 payloads** (unclosed
+    `<script>`, `img onerror`, `javascript:` URI, `svg onload`, nested `<scr<script>ipt>`, `a href=javascript:`) —
+    **all neutralized**, while valid `<img src="/media/…">` and plain math (`3 < 5`) pass through; combined with the
+    backend's OWASP sanitization on save this is proper defense in depth.
+  - **Reviewed and deliberately KEPT:** `setAccessToken` (the only genuinely unreferenced export — a 1-line
+    symmetric part of the auth-store API); `key={index}` in `AdminQuestionFormPage`'s option editor (rows are
+    append/remove-at-end, no reorder, so no identity bug); `}, [loadX]` effect deps (the loaders are `useCallback`-
+    stable); template-page `<img>` a11y gaps (touching them risks the §6b string-match i18n for no functional gain).
 
 - **Docs — added §19 Git Workflow, aligning the frontend with the backend (2026-07-30, user-directed).**
   Documentation-only; no code change. The frontend had **no git section at all** even though the change log
@@ -1193,7 +1242,7 @@ Open items that still require work. None block the verified flows.
 
 | Issue | Why it remains | Priority | Needs product decision? |
 |---|---|---|---|
-| **6 dead scaffolding routes** render `AdminPlaceholderPage`/a mismapped component: `/admin/child`, `/admin/parent`, `/admin/messages`, `/admin/my-courses`, `/admin/wishlist`, `/admin/courses`. | Template leftovers. **Unreachable via the UI** (no sidebar/link points to them — only via a typed URL); no flow depends on them. | Low | No — safe to delete the routes + `AdminPlaceholderPage`. |
+| ~~6 dead scaffolding routes~~ **RESOLVED (2026-07-30)** — the 5 genuinely-unreachable ones (`/admin/child`, `/admin/parent`, `/admin/messages`, `/admin/my-courses`, `/admin/wishlist`) + `AdminPlaceholderPage` + their 5 dead `authRoles` rules were deleted (66 → 61 routes). **`/admin/courses/**` was NOT deleted — it is LIVE** (see §11 ⚠️). | Done. | — | — |
 | **A few dynamic (interpolated) BACKEND messages render English/raw** (e.g. "used all free sessions this month", "Invite not found: <code>"). | They're runtime-interpolated server strings that can't map to a static `api.codes` key; common cases already have localized hints/fallbacks. | Low | No — needs a params-based server-message helper. |
 | **Real Email/SMS + payment providers not wired** (backend seams ready). | **Backend-blocked** — needs vendor accounts; no frontend to build until they exist. | (blocked) | No — backend/vendor concern. |
 | **No automated frontend test suite.** Verification is manual (§10). | Out of scope; ESLint is also not configured (`npm run lint` prompts interactive setup). | Low | Partially — a test stack is a project call. |
@@ -1335,10 +1384,12 @@ ACTIVE-plan dropdown, optional expiry) and a per-row Edit modal (plan/status/exp
 partial-update semantics, and the live verification — in the change log **§12 (2026-07-30)**.
 
 ### Optional cleanup (low priority — §14)
-- **Delete the 6 dead scaffolding routes** (`/admin/child`, `/admin/parent`, `/admin/messages`, `/admin/my-courses`,
-  `/admin/wishlist`, `/admin/courses/**`) + `AdminPlaceholderPage` + their dead `authRoles.js` rules. They are
-  unreachable via the UI and reuse no unique components (`/admin/courses/**` just re-maps subject/topic components
-  already reachable via `/admin/subjects`). Safe to remove; verify the build after (65 → fewer routes, all real).
+- ~~**Delete the 6 dead scaffolding routes**~~ **DONE (2026-07-30), but only 5 of them — the 6th was NOT dead.**
+  Removed: `/admin/child`, `/admin/parent`, `/admin/messages`, `/admin/my-courses`, `/admin/wishlist` +
+  `AdminPlaceholderPage` + their 5 `authRoles.js` rules (66 → 61 routes). **`/admin/courses/**` was KEPT — the old
+  claim that it "just re-maps subject/topic components already reachable via `/admin/subjects`" was WRONG: the
+  `topics` subtree is the ONLY route to topic management (see the ⚠️ in §11). Deleting it would have broken admin
+  topic CRUD.** Lesson: verify reachability by `grep`-ing for link sites before deleting a route, not by name.
 - **Params-based server-message i18n:** a few dynamic backend strings (e.g. "used all free sessions this month",
   "Invite not found: <code>") render raw because they can't map to a static `api.codes` key.
 

@@ -44,23 +44,18 @@ const routeRoles = [
   { pattern: /^\/admin\/invites(?:\/|$)/, roles: ["organization"] },
   { pattern: /^\/admin\/children(?:\/|$)/, roles: ["parent"] },
   { pattern: /^\/admin\/progress(?:\/|$)/, roles: ["parent"] },
-  { pattern: /^\/admin\/parent(?:\/|$)/, roles: ["parent"] },
   { pattern: /^\/admin\/exams\/take(?:\/|$)/, roles: ["child"] },
   { pattern: /^\/admin\/exam-session(?:\/|$)/, roles: ["child"] },
   { pattern: /^\/admin\/exams(?:\/|$)/, roles: ["admin", "parent"] },
-  { pattern: /^\/admin\/child(?:\/|$)/, roles: ["child"] },
-  { pattern: /^\/admin\/my-courses(?:\/|$)/, roles: ["child"] },
   { pattern: /^\/admin\/practice(?:\/|$)/, roles: ["child"] },
   { pattern: /^\/admin\/official-exams(?:\/|$)/, roles: ["child"] },
   { pattern: /^\/admin\/join(?:\/|$)/, roles: ["child"] },
   { pattern: /^\/admin\/assignments(?:\/|$)/, roles: ["child"] },
   { pattern: /^\/admin\/quiz-attempts(?:\/|$)/, roles: ["child"] },
-  { pattern: /^\/admin\/wishlist(?:\/|$)/, roles: ["child"] },
   { pattern: /^\/admin\/profile(?:\/|$)/, roles: ADMIN_ROLES },
   { pattern: /^\/admin\/settings(?:\/|$)/, roles: ADMIN_ROLES },
   { pattern: /^\/admin(?:\/)?$/, roles: ADMIN_ROLES },
   { pattern: /^\/admin\/notifications(?:\/|$)/, roles: ADMIN_ROLES },
-  { pattern: /^\/admin\/messages(?:\/|$)/, roles: ADMIN_ROLES },
 ];
 
 export const getAllowedRolesForPath = (pathname) =>
