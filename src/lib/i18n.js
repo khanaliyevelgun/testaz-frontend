@@ -19,6 +19,23 @@ const staticFallbackTranslations = {
     "Regenerate code": "Kodu yenilə",
     // Self-profile edit — English-source heading → Azerbaijani.
     "Basic information": "Əsas məlumatlar",
+    // Topic management (reached from Subjects → "Topics"; the pages live under /admin/courses/**) —
+    // English-source labels that had NO translation at all, so the page rendered English in the
+    // AZ-default UI. Found in the 2026-07-30 frontend review.
+    "Topics": "Mövzular",
+    "Topic": "Mövzu",
+    "Create Topic": "Mövzu yarat",
+    "Edit Topic": "Mövzunu redaktə et",
+    "Create a topic under a subject.": "Fənn altında mövzu yaradın.",
+    "Update topic metadata.": "Mövzu məlumatlarını yeniləyin.",
+    "No topics found.": "Mövzu tapılmadı.",
+    "Subject ID:": "Fənn ID:",
+    "Name AZ": "Ad (AZ)",
+    "Action": "Əməliyyat",
+    "Create": "Yarat",
+    "Creating...": "Yaradılır...",
+    "Save": "Yadda saxla",
+    "Saving...": "Yadda saxlanılır...",
     // Admin subscription control — English-source labels (buttons/modal titles/fields) → Azerbaijani.
     "Grant subscription": "Abunəlik ver",
     "Edit subscription": "Abunəliyi redaktə et",
