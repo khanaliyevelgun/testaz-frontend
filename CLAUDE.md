@@ -117,14 +117,17 @@ Two repos, one product:
 
 ### 0.5 Development Progress
 
-> **HANDOFF STATE (2026-07-25):** Frontend + backend have reached **feature parity** — every backend
-> capability that should be user-accessible is implemented and wired, for all four roles. The ONLY
-> deliberately-deferred item is the **admin manual subscription grant/modify** UI (backend endpoints exist,
-> no UI — by decision). Production build is **green (65 routes)**; i18n audit green (189 source files, 3526
-> locale entries). Repo is on `main`, clean tree, **pushed to `origin` = `github.com/khanaliyevelgun/testaz-frontend`**.
-> A full Backend↔Frontend parity audit + a final feature-completeness audit were completed this session (both
-> concluded: parity reached, excluding the deferred admin-subscription UI). See §14 for the (small) remaining
-> issue list and §17 for the next task.
+> **HANDOFF STATE (2026-07-30):** Frontend + backend are at **full feature parity — the last API gap is CLOSED.**
+> Every backend capability that should be user-accessible is implemented and wired, for all four roles, including
+> the previously-deferred **admin manual subscription grant/modify** UI (shipped 2026-07-30 — see §12). There is
+> now **no known backend endpoint without frontend integration**. Production build green; i18n audit green (189
+> source files, 3526 locale entries). Repo on `main`, **pushed to `origin` =
+> `github.com/khanaliyevelgun/testaz-frontend`**. Remaining work is optional cleanup (§14: 6 dead scaffolding
+> routes, dynamic server-message i18n, no automated test suite) plus the **backend-blocked** real Email/SMS +
+> payment vendors. See §14 for the remaining issue list and §18 for the next task.
+>
+> *(Earlier handoff, 2026-07-25: parity reached except the then-deferred admin-subscription UI; a full
+> Backend↔Frontend parity audit + a feature-completeness audit were completed.)*
 
 - **✅ Completed (backend):** all 17 modules; the full MVP build order (auth → taxonomy → question
   bank → AI generation → test-taking + scoring → student/parent linking → organizations →
@@ -177,9 +180,11 @@ Two repos, one product:
   home register CTAs → `/sign-up` (were 404), filter-caret padding, a profile English string. Change log §12.
 - **✅ Repo published (2026-07-25):** frontend pushed to `origin = github.com/khanaliyevelgun/testaz-frontend`
   (`main`, full history). No secrets tracked (`.env` holds only the public `NEXT_PUBLIC_API_BASE_URL`).
-- **⛔ Not yet implemented (frontend):** **admin manual subscription control** — `POST /admin/subscriptions`
-  (grant a comped subscription) + `PUT /admin/subscriptions/{id}` (modify plan/status/expiry) have no UI
-  (`AdminSubscriptionsPage` is read-only); the only remaining backend-API frontend gap (see the parity audit).
+- **✅ Admin manual subscription control (2026-07-30):** an admin grants a comped subscription
+  (`POST /admin/subscriptions`) and modifies one (`PUT /admin/subscriptions/{id}` — plan/status/expiry) from
+  `AdminSubscriptionsPage`, which also now shows the payer's name + email instead of a raw UUID. **This was the
+  last backend-API frontend gap — none remain.** Change log §12.
+- **⛔ Not yet implemented (frontend):** nothing — no known backend endpoint lacks frontend integration.
   **Backend-blocked:** real Email/SMS + payment providers (vendor accounts needed) — a backend concern, no
   frontend UI to build until the providers exist.
 
@@ -550,6 +555,45 @@ The app has **no automated test suite**, so verification is manual:
 ---
 
 ## 12. Change log (keep append-only; newest first)
+
+- **Feature — admin manual subscription control (grant + modify) (2026-07-30).** Wired the LAST two backend
+  admin-subscription endpoints that had no UI — **the frontend↔backend parity gap is now CLOSED** (§14's only
+  remaining API item; §18's named next task). `AdminSubscriptionsPage` was read-only (list + filters); an admin can
+  now **grant** a comped/support subscription and **modify** an existing one. No new route — a single-page
+  enhancement. Verified end-to-end against the live backend + Postgres (both locales); build compiles clean (route
+  set unchanged) + `i18n:audit` green (189 files, 3526 entries). Branch `feat/admin-subscription-control`
+  (`--no-ff` merge to `main`, per §24).
+  - **api.js:** `grantAdminSubscription(payload)` → `POST /admin/subscriptions`; `updateAdminSubscription(id,
+    payload)` → `PUT /admin/subscriptions/{id}`. Existing wrapper style, both reusing `normalizeSubscription`.
+  - **Grant modal:** a **searchable user picker** (reuses `AdminSearchSelect` + `fetchUsers`, showing "Name
+    (email)" and resolving to the UUID — chosen over a paste-a-UUID field, which was the read-only page's filter
+    style) + a plan dropdown fed by `fetchSubscriptionPlans` (**ACTIVE plans only**, matching the backend's
+    `requireActivePlanByCode`) + an optional expiry. Empty expiry ⇒ the backend applies the plan's own period.
+  - **Edit modal (per row):** plan / status / expiry. **All four statuses** are exposed (PENDING/ACTIVE/EXPIRED/
+    CANCELED) — the point of manual control is fixing bad state, incl. reactivating a wrongly-cancelled
+    subscription (product decision, confirmed). **Only CHANGED fields are submitted** (each compared against the
+    value the modal opened with), which matches the backend's non-null-only partial update — so an untouched plan
+    or expiry is preserved rather than rewritten. Verified live: a status-only edit flipped the status and stamped
+    `canceledAt` while leaving plan + expiry intact.
+  - **Payer column fix (included by decision):** the table showed the raw `payerUserId` even though the backend has
+    returned `payerName`/`payerEmail` since the 2026-07-19 enrichment (`normalizeSubscription` spreads them
+    through, so no api change was needed). Now renders name + email beneath, **UUID kept as the fallback** when
+    unresolved — same pattern as the org tables. Closes a known backend-§23 display gap.
+  - **Dates:** `datetime-local` ⇄ `Instant` helpers (`toInstant`/`toLocalInput`) convert across the admin's local
+    zone, so a stored UTC expiry pre-fills as local time and is sent back as UTC.
+  - **Localization (both directions, §6b-bis):** English-source labels ("Grant subscription", "Edit subscription",
+    "Save changes", "Select a plan", "Expiry"…) got `az` entries; AZ-source feedback ("Abunəlik verildi.",
+    "İstifadəçi və plan seçilməlidir."…) and the picker labels got `en` fallbacks. **The edit modal's payer name is
+    `data-i18n-managed`** — it is user data resolved at runtime, exactly the §6b/2026-07-25 class of bug where the
+    observer reverts a node to its first-seen text. `AdminSearchSelect` already carries that fix, so the picker
+    inherited it (verified in-browser: selecting a user persists and does **not** revert to the placeholder).
+  - **Verified live:** grant → ACTIVE with the 30-day plan term (DB-confirmed), appears atop the reloaded list;
+    status-only edit → CANCELED + `canceled_at`, plan/expiry unchanged; unknown plan code → 404; unknown
+    subscription id → 404; both actions audited (`SUBSCRIPTION_GRANTED`/`SUBSCRIPTION_UPDATED` rows present); full
+    AZ render; EN toggle across the button/8 table headers/modal title/intro/labels/footer; the validation guard
+    ("A user and a plan must be selected.") localizes and keeps the modal open; **zero console errors**. Test rows
+    were deleted afterwards (dev data back to its original 11 subscriptions, §28); audit rows were deliberately
+    left (the log is append-only).
 
 - **Session handoff + repo publish (2026-07-25).** Finalized the project for handoff. **(1) Repo published:** added
   `origin = github.com/khanaliyevelgun/testaz-frontend` (replacing the template's stale `xsonmsc/eduall` remote) and
@@ -1126,13 +1170,13 @@ Open items that still require work. None block the verified flows.
 
 | Issue | Why it remains | Priority | Needs product decision? |
 |---|---|---|---|
-| **Admin manual subscription control has no UI.** `POST /admin/subscriptions` (grant a comped subscription) + `PUT /admin/subscriptions/{id}` (modify plan/status/expiry) exist in the backend; `AdminSubscriptionsPage` is read-only (list + filters). | **Intentionally deferred** by user decision (the sole remaining backend-API frontend gap; see the parity audit). | Medium | No — just deferred; build when scheduled. |
 | **6 dead scaffolding routes** render `AdminPlaceholderPage`/a mismapped component: `/admin/child`, `/admin/parent`, `/admin/messages`, `/admin/my-courses`, `/admin/wishlist`, `/admin/courses`. | Template leftovers. **Unreachable via the UI** (no sidebar/link points to them — only via a typed URL); no flow depends on them. | Low | No — safe to delete the routes + `AdminPlaceholderPage`. |
 | **A few dynamic (interpolated) BACKEND messages render English/raw** (e.g. "used all free sessions this month", "Invite not found: <code>"). | They're runtime-interpolated server strings that can't map to a static `api.codes` key; common cases already have localized hints/fallbacks. | Low | No — needs a params-based server-message helper. |
 | **Real Email/SMS + payment providers not wired** (backend seams ready). | **Backend-blocked** — needs vendor accounts; no frontend to build until they exist. | (blocked) | No — backend/vendor concern. |
 | **No automated frontend test suite.** Verification is manual (§10). | Out of scope; ESLint is also not configured (`npm run lint` prompts interactive setup). | Low | Partially — a test stack is a project call. |
 
-*(Resolved & logged in §12: the payment-checkout 404, one-shot-exam "already completed" UX, refresh-token
+*(Resolved & logged in §12: **admin manual subscription control — grant + modify — shipped 2026-07-30, closing the
+last frontend↔backend API gap**; the payment-checkout 404, one-shot-exam "already completed" UX, refresh-token
 cross-tab guard [2026-07-23]; the four §16 API gaps + self-profile-edit [2026-07-24]; and the 2026-07-25
 live-testing bug batch — subject-picker i18n-revert [Bug 2], home register-CTA 404s [Bug 1], filter-caret
 overlap [Bug 3], profile English string [Bug 5]. Bug 4 "official exam shows no questions" was investigated and
@@ -1247,38 +1291,26 @@ change log §12 + the relevant section, then summarize in chat).
 
 ## 18. Next Task (the exact next thing to build)
 
-The project is at **feature parity** (§0.5). There is exactly **one** frontend-API gap remaining, plus optional
-polish and a backend-blocked launch item. In priority order:
+The project is at **full feature parity** (§0.5) — **there is no remaining frontend-API gap.** The
+admin-subscription control that this section previously named as next was **shipped on 2026-07-30** (§12). What
+remains is optional cleanup and a backend-blocked launch item, in priority order:
 
-### ⭐ Next feature — Admin manual subscription control (the only remaining API gap)
-- **What:** wire the two backend admin-subscription endpoints that currently have no UI: **grant** a comped/support
-  subscription (`POST /admin/subscriptions`) and **modify** one (`PUT /admin/subscriptions/{id}` — change plan /
-  status / expiry). Today `AdminSubscriptionsPage` is **read-only** (list + filters).
-- **Why deferred, why next:** the user explicitly deferred it during the parity audits; it's the sole endpoint pair
-  without a wrapper/UI. Medium value (admin-only, low-frequency: comping, fixing bad state, support).
-- **Exact starting point:**
-  1. Add two `api.js` wrappers next to `fetchAdminSubscriptions` (~line 1051): `grantAdminSubscription(payload)` →
-     `POST /admin/subscriptions`, and `updateAdminSubscription(id, payload)` → `PUT /admin/subscriptions/{id}`.
-     Follow the existing wrapper style (`apiFetch` + `JSON.stringify` + `unwrapApiResponse`).
-  2. In `components/admin/AdminSubscriptionsPage.jsx`, add a "Grant subscription" button (opens a form/modal:
-     payer user id + plan code + optional expiry) and a per-row "Edit" action (plan/status/expiry). Reuse the
-     existing modal pattern (see `ChildAssignmentsPage`'s preview modal or the exam-detail confirm dialog).
-- **Backend contract (verify against `testaz-backend/CLAUDE.md` §18 + the DTOs before building):**
-  `GrantSubscriptionRequest(payerUserId, planCode, expiresAt?)`; `UpdateSubscriptionRequest(planCode?, status?,
-  expiresAt?)`. Unknown plan/subscription → 404; both are `@Auditable`. Grant creates the sub **ACTIVE** directly
-  (bypasses checkout/webhook — no payment row). The admin list response (`AdminSubscriptionResponse`) already
-  carries `payerName`/`payerEmail` + `planCode`.
-- **Dependencies:** none new (backend endpoints exist + are tested). No new route (enhance the existing
-  `/admin/subscriptions` admin view).
-- **Files likely modified:** `src/lib/api.js` (2 wrappers), `src/components/admin/AdminSubscriptionsPage.jsx`
-  (grant + edit UI), `src/lib/i18n.js` + `src/locales/{az,en}.json` (new labels/messages + any `api.codes.*` for
-  backend states). Possibly a small new modal component.
-- **Important considerations:** localize per §6 (AZ source + EN fallbacks; the DOM-observer gotcha in §6b — mark
-  any runtime-changing text `data-i18n-managed` like `AdminSearchSelect` does, §12 2026-07-25); paginate/validate
-  per §9/§11; `meta.page` is 1-based in the UI (§9 #6); status values are backend enums (PENDING/ACTIVE/EXPIRED/
-  CANCELED). Verify live against the running backend (Docker must be up).
+### ⭐ Next — optional cleanup (no feature work outstanding)
+1. **Delete the 6 dead scaffolding routes** (see below) — the highest-value remaining item: it removes unreachable
+   surface area. Safe; verify the build after.
+2. **Params-based server-message i18n** for the few dynamic backend strings (below).
+3. **Consider an automated test suite** (§14) — a project call; there is none today and verification is manual (§10).
 
-### Optional cleanup (low priority, deferred by decision — §14)
+If a NEW backend endpoint lands without a UI, list it in §16 (currently EMPTY) with the DO-NOT-DELETE rules and it
+becomes the next feature task.
+
+### ✅ DONE (2026-07-30) — Admin manual subscription control (was this section's ⭐ next feature)
+Shipped: `grantAdminSubscription` / `updateAdminSubscription` in `api.js` + a Grant modal (searchable user picker,
+ACTIVE-plan dropdown, optional expiry) and a per-row Edit modal (plan/status/expiry, changed-fields-only) on
+`AdminSubscriptionsPage`, plus the payer name/email display fix. Full detail — including the product decisions, the
+partial-update semantics, and the live verification — in the change log **§12 (2026-07-30)**.
+
+### Optional cleanup (low priority — §14)
 - **Delete the 6 dead scaffolding routes** (`/admin/child`, `/admin/parent`, `/admin/messages`, `/admin/my-courses`,
   `/admin/wishlist`, `/admin/courses/**`) + `AdminPlaceholderPage` + their dead `authRoles.js` rules. They are
   unreachable via the UI and reuse no unique components (`/admin/courses/**` just re-maps subject/topic components

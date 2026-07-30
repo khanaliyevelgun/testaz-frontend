@@ -19,6 +19,19 @@ const staticFallbackTranslations = {
     "Regenerate code": "Kodu yenilə",
     // Self-profile edit — English-source heading → Azerbaijani.
     "Basic information": "Əsas məlumatlar",
+    // Admin subscription control — English-source labels (buttons/modal titles/fields) → Azerbaijani.
+    "Grant subscription": "Abunəlik ver",
+    "Edit subscription": "Abunəliyi redaktə et",
+    "Save changes": "Dəyişiklikləri yadda saxla",
+    "Select a plan": "Plan seçin",
+    "Expiry (optional)": "Bitmə tarixi (istəyə bağlı)",
+    "Expiry": "Bitmə tarixi",
+    "A granted subscription becomes active immediately without a payment.":
+      "Verilən abunəlik ödəniş olmadan dərhal aktivləşir.",
+    "Leave empty to use the plan's own period.":
+      "Planın öz müddətindən istifadə etmək üçün boş buraxın.",
+    "Only the fields you change are submitted.":
+      "Yalnız dəyişdirdiyiniz sahələr göndərilir.",
   },
   en: {
     "Planlar": "Plans",
@@ -269,6 +282,16 @@ const staticFallbackTranslations = {
     "Abunəlik planı yadda saxlanılmadı.": "Subscription plan could not be saved.",
     "Abunəlik planları yüklənmədi.": "Subscription plans could not be loaded.",
     "Abunəliklər yüklənmədi.": "Subscriptions could not be loaded.",
+    // Admin subscription control (grant + modify) — AZ-source feedback + picker labels → English.
+    "Abunəlik verildi.": "The subscription was granted.",
+    "Abunəlik verilmədi.": "The subscription could not be granted.",
+    "Abunəlik yeniləndi.": "The subscription was updated.",
+    "Abunəlik yenilənmədi.": "The subscription could not be updated.",
+    "İstifadəçi və plan seçilməlidir.": "A user and a plan must be selected.",
+    "İstifadəçi": "User",
+    "Ad və ya e-poçtla axtarın...": "Search by name or email...",
+    "Nəticə tapılmadı.": "No results found.",
+    "Bağla": "Close",
     "Şablon yüklənmədi.": "Template could not be loaded.",
     "Şablonlar yüklənmədi.": "Templates could not be loaded.",
     "Test ID-si tələb olunur.": "Test ID is required.",

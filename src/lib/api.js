@@ -1072,6 +1072,18 @@ export const fetchAdminSubscriptions = ({
     };
   });
 
+export const grantAdminSubscription = (payload) =>
+  apiFetch("/admin/subscriptions", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  }).then((response) => normalizeSubscription(unwrapApiResponse(response)));
+
+export const updateAdminSubscription = (id, payload) =>
+  apiFetch(`/admin/subscriptions/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  }).then((response) => normalizeSubscription(unwrapApiResponse(response)));
+
 export const fetchAdminPayments = ({
   page = 1,
   perPage = 10,
